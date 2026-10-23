@@ -147,7 +147,9 @@ for (const sail of readdirSync(SAILS_DIR)) {
   const gpx = join(dir, gpxName);
   const out = join(OUT_DIR, `${sail}.webp`);
   if (!existsSync(gpx)) continue;
-  if (!force && existsSync(out) && statSync(out).mtimeMs >= statSync(gpx).mtimeMs) continue;
+  // In CI, checkout timestamps are meaningless: reuse committed maps instead of re-downloading tiles.
+  const upToDate = existsSync(out) && (process.env.CI || statSync(out).mtimeMs >= statSync(gpx).mtimeMs);
+  if (!force && upToDate) continue;
   try {
     const points = parsePoints(readFileSync(gpx, "utf8"));
     if (points.length < 2) throw new Error("not enough track points");
