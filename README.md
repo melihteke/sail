@@ -6,7 +6,7 @@ A static sailing logbook built with **Astro + React islands + Tailwind v4 + shad
 - **Logbook:** one page per sail with a speed-coloured track (OpenStreetMap + OpenSeaMap seamarks),
   a speed-over-ground chart linked to the map, distance/time/avg/max SOG, notes, photos and videos.
 - **Wind:** the real hourly wind during each sail (Open-Meteo, cached in `src/data/wind-cache.json`)
-  plus a **live wind** widget on the home page.
+  plus a **live wind** widget and an animated **Windy.com wind map** of the Netherlands on the home page.
 - **Activity heatmap** of nautical miles per day (calendar / weekdays / months views).
 - **Boat page** with Polyvalk Classic specs.
 - Career stats, dark mode, GPX download, sitemap.
@@ -115,6 +115,7 @@ npm run preview
 ## Data sources & credits
 
 - Wind: [Open-Meteo](https://open-meteo.com/) (historical forecast / ERA5 archive, CC BY 4.0)
+- Wind map: [Windy.com](https://www.windy.com/) embed widget (logo must stay visible and clickable; personal, non-commercial use)
 - Maps: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, seamarks © [OpenSeaMap](https://www.openseamap.org)
 - Activity heatmap component adapted from the CCgather team's shadcn `ActivityHeatmap`.
 

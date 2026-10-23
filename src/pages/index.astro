@@ -4,6 +4,7 @@ import StatCard from "@/components/StatCard.astro";
 import SailCard from "@/components/SailCard.astro";
 import LiveWind from "@/components/LiveWind";
 import SailHeatmap from "@/components/SailHeatmap";
+import WindyMap from "@/components/WindyMap.astro";
 import { SITE } from "@/config";
 import { BOAT } from "@/data/boat";
 import { activityData, careerStats, getSails } from "@/lib/sails";
@@ -57,6 +58,8 @@ const latest = sails.slice(0, 6);
     </div>
     <LiveWind client:load lat={SITE.homeWaters.lat} lon={SITE.homeWaters.lon} place={SITE.homeWaters.name} timeZone={SITE.timeZone} />
   </section>
+
+  <WindyMap />
 
   <section aria-labelledby="latest" class="mt-12">
     <div class="flex items-end justify-between gap-4">
