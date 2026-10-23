@@ -27,7 +27,7 @@ if (existsSync(dir)) {
   console.error(`Entry already exists: ${dir}`);
   process.exit(1);
 }
-mkdirSync(join(dir, "photos"), { recursive: true });
+mkdirSync(dir, { recursive: true });
 copyFileSync(gpxPath, join(dir, "track.gpx"));
 writeFileSync(
   join(dir, "index.md"),
@@ -35,7 +35,7 @@ writeFileSync(
 title: ${JSON.stringify(title)}
 date: ${date}
 gpx: track.gpx
-location: Grote Poel, Amsterdamse Bos
+location: De Poel, Amstelveen
 summary: One-line summary of the sail.
 boat: Polyvalk
 crew: []
@@ -44,10 +44,14 @@ rating: 3 # 1-5
 sails: Main + jib
 reef: false
 tags: []
-# cover: ./photos/01.jpg
-# photos:
-#   - src: ./photos/01.jpg
-#     caption: Leaving the jetty
+# cover: ./photos/01-example.jpg   # default: first photo
+# captions:
+#   01-example.jpg: Leaving the jetty
+#   02-example.mp4: Gybing in the gusts
+# youtube:
+#   - https://youtu.be/VIDEO_ID
+#   - url: https://www.youtube.com/watch?v=VIDEO_ID&t=1m30s
+#     caption: Race start
 draft: true
 ---
 
@@ -58,4 +62,4 @@ draft: true
 ## Learnings
 `,
 );
-console.log(`Created ${dir}\n- Edit index.md (set draft: false to publish)\n- Put photos in ${join(dir, "photos")}`);
+console.log(`Created ${dir}\n- Edit index.md (set draft: false to publish)\n- Add photos/videos: npm run add-media -- ${slug} <files...>  (or put them in ./inbox/ and omit the files)`);

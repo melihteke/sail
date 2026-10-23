@@ -11,10 +11,10 @@ const career = careerStats(await getSails());
 
 <BaseLayout title="The boat" description={`${BOAT.model}: specifications and story.`}>
   <div class="grid items-start gap-8 lg:grid-cols-2">
-    <div class="overflow-hidden rounded-3xl border border-border bg-gradient-to-b from-sky-100 to-sky-50 shadow-sm dark:from-sky-950 dark:to-slate-900">
+    <figure class="overflow-hidden rounded-3xl border border-border bg-gradient-to-b from-sky-100 to-sky-50 shadow-sm dark:from-sky-950 dark:to-slate-900">
       {
         BOAT.photo ? (
-          <Image src={BOAT.photo} alt={`${BOAT.name}, a ${BOAT.model}`} widths={[640, 1200]} sizes="(min-width: 1024px) 560px, 100vw" class="aspect-[4/3] w-full object-cover" />
+          <Image src={BOAT.photo} alt={`A ${BOAT.model} under sail`} widths={[640, 1200]} sizes="(min-width: 1024px) 560px, 100vw" class="aspect-[4/3] w-full object-cover" />
         ) : (
           <svg viewBox="0 0 400 300" class="aspect-[4/3] w-full" role="img" aria-label="Illustration of a Polyvalk sailboat">
             <circle cx="320" cy="60" r="26" fill="#fbbf24" opacity="0.85" />
@@ -29,7 +29,15 @@ const career = careerStats(await getSails());
           </svg>
         )
       }
-    </div>
+      {
+        BOAT.photo && BOAT.photoCredit && (
+          <figcaption class="bg-card px-4 py-2 text-[11px] text-muted-foreground">
+            <a class="underline underline-offset-2 hover:text-foreground" href={BOAT.photoCredit.url}>{BOAT.photoCredit.text}</a>{" · "}
+            <a class="underline underline-offset-2 hover:text-foreground" href={BOAT.photoCredit.licenseUrl} rel="license">{BOAT.photoCredit.license}</a>
+          </figcaption>
+        )
+      }
+    </figure>
 
     <div>
       <p class="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">The boat</p>

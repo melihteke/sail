@@ -5,3 +5,6 @@ dist/
 .env.*
 .DS_Store
 *.log
+.playwright-mcp/
+# Drop raw phone photos/videos here, then: npm run add-media -- <sail>
+inbox/

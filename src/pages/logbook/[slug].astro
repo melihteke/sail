@@ -1,12 +1,13 @@
 ---
 import type { GetStaticPaths } from "astro";
-import { Image } from "astro:assets";
 import { render } from "astro:content";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import StatCard from "@/components/StatCard.astro";
 import WindStrip from "@/components/WindStrip.astro";
+import MediaGallery from "@/components/MediaGallery.astro";
 import SailTrack from "@/components/SailTrack";
 import { SITE } from "@/config";
+import { sailCover, sailMedia } from "@/lib/media";
 import { formatLocal, getSails, type Sail } from "@/lib/sails";
 import { formatDuration, formatKn, formatNm } from "@/lib/units";
 
@@ -28,6 +29,8 @@ const { sail, newer, older } = Astro.props;
 const { data } = sail.entry;
 const { stats, wind } = sail;
 const { Content } = await render(sail.entry);
+const media = sailMedia(sail.slug, data.captions);
+const cover = sailCover(sail.slug, data.cover);
 const date = formatLocal(stats.start, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 const times = `${formatLocal(stats.start, { hour: "2-digit", minute: "2-digit" })}–${formatLocal(stats.end, { hour: "2-digit", minute: "2-digit" })}`;
 const details = [
@@ -38,7 +41,7 @@ const details = [
 ];
 ---
 
-<BaseLayout title={data.title} description={data.summary} image={data.cover?.src}>
+<BaseLayout title={data.title} description={data.summary} image={cover?.src}>
   <nav class="text-sm text-muted-foreground" aria-label="Breadcrumb">
     <a href="/logbook" class="hover:text-foreground">Logbook</a>{" / "}<span class="text-foreground">{data.title}</span>
   </nav>
@@ -99,23 +102,7 @@ const details = [
     </aside>
   </div>
 
-  {
-    data.photos.length > 0 && (
-      <section aria-labelledby="photos" class="mt-10">
-        <h2 id="photos" class="text-xl font-semibold tracking-tight">Photos</h2>
-        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {data.photos.map((photo) => (
-            <figure class="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-              <a href={photo.src.src} target="_blank" rel="noopener">
-                <Image src={photo.src} alt={photo.caption ?? data.title} widths={[480, 960]} sizes="(min-width: 1024px) 380px, (min-width: 640px) 50vw, 100vw" class="aspect-[4/3] w-full object-cover" />
-              </a>
-              {photo.caption && <figcaption class="px-4 py-2.5 text-sm text-muted-foreground">{photo.caption}</figcaption>}
-            </figure>
-          ))}
-        </div>
-      </section>
-    )
-  }
+  {(media.length > 0 || data.youtube.length > 0) && <MediaGallery items={media} youtube={data.youtube} title={data.title} />}
 
   <nav class="mt-12 grid gap-4 border-t border-border pt-6 sm:grid-cols-2" aria-label="More sails">
     {

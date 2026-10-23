@@ -1,10 +1,10 @@
 # ⛵ sail.mteke.com: Melih's Sailing Logbook
 
 A static sailing logbook built with **Astro + React islands + Tailwind v4 + shadcn/ui**, deployed to
-**GitHub Pages** at <https://sail.mteke.com>.
+**GitHub Pages** at [https://sail.mteke.com](https://sail.mteke.com).
 
 - **Logbook:** one page per sail with a speed-coloured track (OpenStreetMap + OpenSeaMap seamarks),
-  a speed-over-ground chart linked to the map, distance/time/avg/max SOG, notes and photos.
+  a speed-over-ground chart linked to the map, distance/time/avg/max SOG, notes, photos and videos.
 - **Wind:** the real hourly wind during each sail (Open-Meteo, cached in `src/data/wind-cache.json`)
   plus a **live wind** widget on the home page.
 - **Activity heatmap** of nautical miles per day (calendar / weekdays / months views).
@@ -12,6 +12,8 @@ A static sailing logbook built with **Astro + React islands + Tailwind v4 + shad
 - Career stats, dark mode, GPX download, sitemap.
 
 ## Add a sail
+
+Step-by-step guide (Turkish): [ADDING-A-SAIL.md](ADDING-A-SAIL.md)
 
 1. Export the GPX (e.g. Strava → activity → ⋯ → *Export GPX*).
 2. Scaffold the entry:
@@ -23,34 +25,47 @@ A static sailing logbook built with **Astro + React islands + Tailwind v4 + shad
    This creates `src/content/sails/<date>-<slug>/` with `index.md` and `track.gpx`.
 3. Edit `index.md`: summary, crew, role, rating, sails/reef, tags and the story. Set
    **`draft: false`** to publish (drafts are visible in `npm run dev` only).
-4. Photos: put JPGs in the entry's `photos/` folder and list them:
+4. Photos & videos: straight from iCloud (HEIC/MOV) or WhatsApp (JPG/MP4). Drop them in `inbox/`
+   and run:
 
-   ```yaml
-   cover: ./photos/01.jpg
-   photos:
-     - src: ./photos/01.jpg
-       caption: Leaving the jetty
+   ```powershell
+   npm run add-media -- <date-or-part-of-sail-name>   # or pass file paths after the sail name
    ```
 
-   Images are resized and re-encoded at build time (which also strips EXIF/GPS metadata).
+   Photos become JPG (max 2400 px, EXIF/GPS stripped) in `photos/`; videos become H.264 MP4
+   (max 1280 px, ≤ 30 fps, HDR tone-mapped, metadata stripped, with a poster) in `videos/`. Files are
+   numbered in shooting order and shown automatically. Options: `--mute`, `--max-seconds N`.
+   Optional captions:
+
+   ```yaml
+   captions:
+     01-img-4821.jpg: Leaving the jetty
+   youtube:
+     - https://youtu.be/VIDEO_ID
+   ```
+
+   All media is optional. YouTube links render as click-to-load `youtube-nocookie` embeds
+   (Shorts in portrait).
 5. Run `npm run build` once locally so the wind for the new sail is cached, then commit and push.
    GitHub Actions deploys automatically.
 
 ### Frontmatter reference
 
-| Field | Type | Notes |
-| --- | --- | --- |
-| `title`, `summary`, `location` | string | required |
-| `date` | YYYY-MM-DD | local date; exact times come from the GPX |
-| `gpx` | string | defaults to `track.gpx` |
-| `boat` | string | defaults to `Polyvalk` |
-| `crew` | string[] | |
-| `role` | `skipper` · `helm` · `crew` · `trimmer` · `student` | |
-| `rating` | 1–5 | |
-| `sails`, `reef` | string, boolean | e.g. `Main + jib`, `true` |
-| `tags` | string[] | |
-| `cover`, `photos` | image paths | relative to the entry folder |
-| `draft` | boolean | hidden from production builds |
+| Field                                | Type                                                              | Notes                                      |
+| ------------------------------------ | ----------------------------------------------------------------- | ------------------------------------------ |
+| `title`, `summary`, `location` | string                                                            | required                                   |
+| `date`                             | YYYY-MM-DD                                                        | local date; exact times come from the GPX  |
+| `gpx`                              | string                                                            | defaults to `track.gpx`                  |
+| `boat`                             | string                                                            | defaults to `Polyvalk`                   |
+| `crew`                             | string[]                                                          |                                            |
+| `role`                             | `skipper` · `helm` · `crew` · `trimmer` · `student` |                                            |
+| `rating`                           | 1–5                                                              |                                            |
+| `sails`, `reef`                  | string, boolean                                                   | e.g. `Main + jib`, `true`              |
+| `tags`                             | string[]                                                          |                                            |
+| `cover`                            | image path                                                        | optional; defaults to the first photo      |
+| `captions`                         | map of file name → text                                          | optional captions for photos/videos        |
+| `youtube`                          | list of links, or `{ url, caption }`                            | optional; watch, youtu.be, shorts, `?t=` |
+| `draft`                            | boolean                                                           | hidden from production builds              |
 
 ## Boat details
 
@@ -77,13 +92,12 @@ npm run preview
    git remote add origin https://github.com/melihteke/sail.git
    git push -u origin main
    ```
-
 2. **GitHub → repo → Settings → Pages**: *Source* = **GitHub Actions**. The workflow in
    `.github/workflows/deploy.yml` builds and deploys on every push to `main`.
 3. **Cloudflare → mteke.com → DNS → Add record**:
 
-   | Type | Name | Target | Proxy |
-   | --- | --- | --- | --- |
+   | Type  | Name     | Target                  | Proxy                           |
+   | ----- | -------- | ----------------------- | ------------------------------- |
    | CNAME | `sail` | `melihteke.github.io` | **DNS only** (grey cloud) |
 
    Keep it *DNS only* so GitHub can issue the Let's Encrypt certificate. If you enable the orange

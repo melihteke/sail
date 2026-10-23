@@ -8,8 +8,8 @@ export const SITE = {
   github: "https://github.com/melihteke/sail",
   timeZone: "Europe/Amsterdam",
   homeWaters: {
-    name: "Grote Poel, Amsterdamse Bos",
-    lat: 52.298,
-    lon: 4.839,
+    name: "De Poel, Amstelveen",
+    lat: 52.2984,
+    lon: 4.8395,
   },
 } as const;

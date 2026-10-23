@@ -1,8 +1,8 @@
 ---
-title: Morning Sail on the Grote Poel
+title: Morning Sail on De Poel
 date: 2026-10-17
 gpx: track.gpx
-location: Grote Poel, Amsterdamse Bos
+location: De Poel, Amstelveen
 summary: A crisp autumn morning with a light northerly breeze, practising tacks and gybes on the Poel in the Polyvalk.
 boat: Polyvalk
 crew: []
@@ -11,13 +11,21 @@ rating: 4
 sails: Main + jib
 reef: false
 tags: [autumn, light-air, tacking-practice]
+youtube:
+  - url: https://www.youtube.com/watch?v=YTIL6oU7hag
+    caption: Everything was perfect until I tried to dock! 😅
 ---
 
-<!-- Replace this draft with your own story. Add photos to ./photos/ and list them in the frontmatter:
-photos:
-  - src: ./photos/01.jpg
-    caption: Rigging at the jetty
-cover: ./photos/01.jpg
+<!-- Replace this draft with your own story.
+Add photos/videos with: npm run add-media -- 2026-10-17 <files...>
+Optional captions (file names as created in photos/ and videos/):
+captions:
+  01-img-1234.jpg: Rigging at the jetty
+Optional YouTube videos:
+youtube:
+  - https://youtu.be/VIDEO_ID
+  - url: https://www.youtube.com/watch?v=VIDEO_ID
+    caption: Gybing in the puffs
 -->
 
 ## How it went

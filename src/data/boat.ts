@@ -1,11 +1,10 @@
 import type { ImageMetadata } from "astro";
 
 /**
- * Boat details for /boat. Fill in the personal fields (name, sail number, home port)
- * and drop your own photo in src/assets/boat/ then import it below.
+ * Boat details for /boat. Fill in the personal fields (name, sail number, home port).
+ * To use your own photo, replace src/assets/boat/polyvalk.jpg and set photoCredit to undefined.
  */
-// import boatPhoto from "@/assets/boat/polyvalk.jpg";
-const boatPhoto: ImageMetadata | undefined = undefined;
+import boatPhoto from "@/assets/boat/polyvalk.jpg";
 
 export const BOAT = {
   name: "Polyvalk",
@@ -15,8 +14,15 @@ export const BOAT = {
   designer: "E.G. van de Stadt",
   designYear: 1939,
   sailNumber: undefined as string | undefined,
-  homePort: "Grote Poel, Amsterdamse Bos",
-  photo: boatPhoto,
+  homePort: "De Poel, Amstelveen",
+  photo: boatPhoto as ImageMetadata | undefined,
+  /** Required attribution for the CC BY-SA 4.0 stock photo (Wikimedia Commons). */
+  photoCredit: {
+    text: "A Polyvalk sailing on the Zijl, Leiden. Photo: Arjuno3",
+    url: "https://commons.wikimedia.org/wiki/File:Sailing_on_the_Zijl_in_Leiden,_Netherlands-P3190020.jpg",
+    license: "CC BY-SA 4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+  } as { text: string; url: string; license: string; licenseUrl: string } | undefined,
   description:
     "The Polyvalk is the polyester descendant of the classic wooden Valk, designed by E.G. van de Stadt in 1939 for Bruynzeel and a national racing class since 1940. Today it is one of the most popular open keelboats in the Netherlands: stable, forgiving, practically unsinkable with a self-draining cockpit, and still lively enough to sail sportily. Its shallow draft makes it perfect for Dutch lakes and canals; the low bow means it is not meant for the IJsselmeer or open sea.",
   specs: [

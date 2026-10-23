@@ -1,0 +1,109 @@
+---
+import { Image } from "astro:assets";
+import type { MediaItem } from "@/lib/media";
+import type { YouTubeVideo } from "@/lib/youtube";
+
+interface Props {
+  items: MediaItem[];
+  youtube?: YouTubeVideo[];
+  title: string;
+}
+const { items, youtube = [], title } = Astro.props;
+const photoCount = items.filter((m) => m.kind === "photo").length;
+const videoCount = items.length - photoCount;
+const plural = (n: number, one: string, many: string) => (n ? `${n} ${n === 1 ? one : many}` : "");
+const parts = [plural(photoCount, "photo", "photos"), plural(videoCount, "video", "videos"), plural(youtube.length, "YouTube video", "YouTube videos")].filter(Boolean);
+const isPortrait = (item: MediaItem) => {
+  const size = item.kind === "photo" ? item.image : item.poster;
+  return !!size && size.height > size.width * 1.1;
+};
+const embedSrc = (v: YouTubeVideo) => `https://www.youtube-nocookie.com/embed/${v.id}?autoplay=1&rel=0&playsinline=1${v.start ? `&start=${v.start}` : ""}`;
+const captionClass = "pointer-events-none absolute left-2 top-2 z-10 max-w-[calc(100%-1rem)] truncate rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm";
+---
+
+<section aria-labelledby="media" class="mt-10">
+  <div class="flex items-baseline gap-3">
+    <h2 id="media" class="text-xl font-semibold tracking-tight">Photos &amp; videos</h2>
+    <span class="text-sm text-muted-foreground">{parts.join(" · ")}</span>
+  </div>
+  <!-- Row-based grid keeps shooting order left-to-right; portrait media spans two rows. -->
+  <div class="mt-4 grid grid-flow-row-dense auto-rows-[240px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      youtube.map((video) => (
+        <figure class:list={["relative overflow-hidden rounded-2xl border border-border bg-black shadow-sm", video.shorts ? "row-span-2" : "sm:col-span-2 sm:row-span-2"]}>
+          {/* Lightweight facade: the YouTube player only loads on click. Without JS the link opens YouTube. */}
+          <a
+            href={video.url}
+            target="_blank"
+            rel="noopener"
+            data-youtube={embedSrc(video)}
+            data-title={video.caption ?? title}
+            class="group block h-full"
+            aria-label={`Play YouTube video${video.caption ? `: ${video.caption}` : ""}`}
+          >
+            <img
+              src={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              class="h-full w-full object-cover opacity-90 transition group-hover:scale-[1.02] group-hover:opacity-100"
+            />
+            <span class="absolute inset-0 flex items-center justify-center" aria-hidden="true">
+              <svg viewBox="0 0 68 48" class="h-12 w-[68px] drop-shadow-lg transition group-hover:scale-110">
+                <path d="M66.5 7.7a8.5 8.5 0 0 0-6-6C55.2.3 34 .3 34 .3s-21.2 0-26.5 1.4a8.5 8.5 0 0 0-6 6C.1 13 .1 24 .1 24s0 11 1.4 16.3a8.5 8.5 0 0 0 6 6C12.8 47.7 34 47.7 34 47.7s21.2 0 26.5-1.4a8.5 8.5 0 0 0 6-6C67.9 35 67.9 24 67.9 24s0-11-1.4-16.3Z" fill="#f00"></path>
+                <path d="M45 24 27 14v20Z" fill="#fff"></path>
+              </svg>
+            </span>
+          </a>
+          {video.caption && <figcaption class={captionClass}>{video.caption}</figcaption>}
+        </figure>
+      ))
+    }
+    {
+      items.map((item) => (
+        <figure class:list={["relative overflow-hidden rounded-2xl border border-border bg-black shadow-sm", isPortrait(item) && "row-span-2"]}>
+          {item.kind === "photo" ? (
+            <a href={item.image.src} target="_blank" rel="noopener" aria-label={`Open full-size photo${item.caption ? `: ${item.caption}` : ""}`} class="block h-full">
+              <Image
+                src={item.image}
+                alt={item.caption ?? title}
+                widths={[480, 960]}
+                sizes="(min-width: 1024px) 380px, (min-width: 640px) 50vw, 100vw"
+                class="h-full w-full object-cover transition hover:scale-[1.02]"
+              />
+            </a>
+          ) : (
+            <video
+              class="h-full w-full object-contain"
+              controls
+              playsinline
+              preload="none"
+              poster={item.poster?.src}
+              aria-label={item.caption ?? `Video from ${title}`}
+            >
+              <source src={item.src} type="video/mp4" />
+            </video>
+          )}
+          {item.caption && <figcaption class={captionClass}>{item.caption}</figcaption>}
+        </figure>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLAnchorElement>("a[data-youtube]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      const iframe = document.createElement("iframe");
+      iframe.src = link.dataset.youtube!;
+      iframe.title = link.dataset.title ?? "YouTube video";
+      iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+      iframe.allowFullscreen = true;
+      iframe.referrerPolicy = "strict-origin-when-cross-origin";
+      iframe.className = "absolute inset-0 h-full w-full border-0";
+      link.parentElement?.querySelector("figcaption")?.remove();
+      link.replaceWith(iframe);
+    });
+  });
+</script>
