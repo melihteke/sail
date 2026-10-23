@@ -94,6 +94,9 @@ npm run preview
    ```
 2. **GitHub → repo → Settings → Pages**: *Source* = **GitHub Actions**. The workflow in
    `.github/workflows/deploy.yml` builds and deploys on every push to `main`.
+   Until a custom domain is set, the site is served at <https://melihteke.github.io/sail/>; the
+   workflow reads the serving path from `actions/configure-pages` (`SITE_BASE_PATH`) so links and
+   assets work there as well as on the custom domain.
 3. **Cloudflare → mteke.com → DNS → Add record**:
 
    | Type  | Name     | Target                  | Proxy                           |
@@ -103,7 +106,9 @@ npm run preview
    Keep it *DNS only* so GitHub can issue the Let's Encrypt certificate. If you enable the orange
    cloud later, set Cloudflare SSL/TLS mode to **Full (strict)**.
 4. **GitHub → repo → Settings → Pages → Custom domain**: `sail.mteke.com` (also stored in
-   `public/CNAME`). After the DNS check passes, tick **Enforce HTTPS**.
+   `public/CNAME`). After the DNS check passes, tick **Enforce HTTPS**. Then re-run the deploy
+   workflow (Actions → Deploy to GitHub Pages → *Run workflow*) so the site is rebuilt for the
+   domain root.
 5. Recommended: **GitHub → your profile Settings → Pages → Add a verified domain** → `mteke.com`
    and add the TXT record it shows in Cloudflare. This prevents subdomain takeover.
 
