@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { url } from "@/lib/url";
 ---
 
 <BaseLayout title="Lost at sea">
@@ -7,6 +8,6 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
     <p class="text-6xl">🧭</p>
     <h1 class="mt-4 text-2xl font-semibold tracking-tight">Off course</h1>
     <p class="mt-2 text-muted-foreground">This page drifted away. Let's head back to a known waypoint.</p>
-    <a href="/" class="mt-6 inline-block rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">Back to harbour</a>
+    <a href={url("/")} class="mt-6 inline-block rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">Back to harbour</a>
   </div>
 </BaseLayout>

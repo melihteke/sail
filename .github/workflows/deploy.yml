@@ -19,6 +19,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      # Tells the build where Pages serves the site: "/" with the custom domain,
+      # "/sail" on melihteke.github.io before the domain is configured.
+      - id: pages
+        uses: actions/configure-pages@v6
+      - name: Pass Pages URL to the build
+        run: |
+          echo "SITE_ORIGIN=${{ steps.pages.outputs.origin }}" >> "$GITHUB_ENV"
+          echo "SITE_BASE_PATH=${{ steps.pages.outputs.base_path }}" >> "$GITHUB_ENV"
       - uses: withastro/action@v6
         with:
           node-version: 24

@@ -1,6 +1,7 @@
 ---
 import "@/styles/global.css";
 import { SITE } from "@/config";
+import { stripBase, url } from "@/lib/url";
 
 interface Props {
   title?: string;
@@ -11,7 +12,7 @@ interface Props {
 const { title, description = SITE.description, image } = Astro.props;
 const pageTitle = title ? `${title} · ${SITE.title}` : SITE.title;
 const canonical = new URL(Astro.url.pathname, Astro.site);
-const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const path = stripBase(Astro.url.pathname).replace(/\/$/, "") || "/";
 const nav = [
   { href: "/", label: "Home" },
   { href: "/logbook", label: "Logbook" },
@@ -28,8 +29,8 @@ const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWit
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="icon" type="image/svg+xml" href={url("/favicon.svg")} />
+    <link rel="sitemap" href={url("/sitemap-index.xml")} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={SITE.title} />
     <meta property="og:title" content={pageTitle} />
@@ -50,8 +51,8 @@ const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWit
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[1000] focus:rounded-md focus:bg-background focus:px-3 focus:py-2">Skip to content</a>
     <header class="sticky top-0 z-[500] border-b border-border bg-background/85 backdrop-blur">
       <div class="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <a href="/" class="flex items-center gap-2 font-semibold tracking-tight">
-          <img src="/favicon.svg" alt="" width="26" height="26" />
+        <a href={url("/")} class="flex items-center gap-2 font-semibold tracking-tight">
+          <img src={url("/favicon.svg")} alt="" width="26" height="26" />
           <span class="hidden sm:inline">{SITE.title}</span>
           <span class="sm:hidden">{SITE.shortTitle}</span>
         </a>
@@ -59,7 +60,7 @@ const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWit
           {
             nav.map((item) => (
               <a
-                href={item.href}
+                href={url(item.href)}
                 aria-current={isActive(item.href) ? "page" : undefined}
                 class:list={[
                   "rounded-md px-3 py-1.5 transition-colors",

@@ -8,6 +8,7 @@ import { SITE } from "@/config";
 import { BOAT } from "@/data/boat";
 import { activityData, careerStats, getSails } from "@/lib/sails";
 import { formatDuration, formatKn, formatNm } from "@/lib/units";
+import { url } from "@/lib/url";
 
 const sails = await getSails();
 const career = careerStats(sails);
@@ -27,8 +28,8 @@ const latest = sails.slice(0, 6);
       Tracks, wind, notes and photos from my sails, mostly on the {SITE.homeWaters.name}. Learning the water one puff at a time.
     </p>
     <div class="relative mt-8 flex flex-wrap gap-3">
-      <a href="/logbook" class="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#0b3a5c] shadow hover:bg-sky-50">Open the logbook</a>
-      <a href="/boat" class="rounded-full border border-white/40 px-5 py-2.5 text-sm font-semibold hover:bg-white/10">Meet the boat</a>
+      <a href={url("/logbook")} class="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#0b3a5c] shadow hover:bg-sky-50">Open the logbook</a>
+      <a href={url("/boat")} class="rounded-full border border-white/40 px-5 py-2.5 text-sm font-semibold hover:bg-white/10">Meet the boat</a>
     </div>
   </section>
 
@@ -60,7 +61,7 @@ const latest = sails.slice(0, 6);
   <section aria-labelledby="latest" class="mt-12">
     <div class="flex items-end justify-between gap-4">
       <h2 id="latest" class="text-xl font-semibold tracking-tight">Latest sails</h2>
-      <a href="/logbook" class="text-sm font-medium text-primary hover:underline">All entries →</a>
+      <a href={url("/logbook")} class="text-sm font-medium text-primary hover:underline">All entries →</a>
     </div>
     <div class="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {latest.map((sail) => <SailCard sail={sail} />)}

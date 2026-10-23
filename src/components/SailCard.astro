@@ -5,6 +5,7 @@ import { Image } from "astro:assets";
 import type { Sail } from "@/lib/sails";
 import { formatLocal } from "@/lib/sails";
 import { sailCover } from "@/lib/media";
+import { url } from "@/lib/url";
 import { beaufort, compass, formatDuration, formatKn, formatNm } from "@/lib/units";
 import TrackSvg from "./TrackSvg.astro";
 
@@ -15,12 +16,12 @@ const { sail } = Astro.props;
 const { data } = sail.entry;
 const { stats, wind } = sail;
 // Explicit cover photo wins; otherwise the static route map from scripts/make-maps.mjs.
-const map = existsSync(join(process.cwd(), "public", "maps", `${sail.slug}.webp`)) ? `/maps/${sail.slug}.webp` : undefined;
+const map = existsSync(join(process.cwd(), "public", "maps", `${sail.slug}.webp`)) ? url(`/maps/${sail.slug}.webp`) : undefined;
 const cover = data.cover ?? (map ? undefined : sailCover(sail.slug));
 ---
 
 <a
-  href={`/logbook/${sail.slug}`}
+  href={url(`/logbook/${sail.slug}`)}
   class="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 >
   <div class="relative aspect-[16/9] overflow-hidden bg-sea/10">

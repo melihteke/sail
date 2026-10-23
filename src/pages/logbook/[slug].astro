@@ -10,6 +10,7 @@ import { SITE } from "@/config";
 import { sailCover, sailMedia } from "@/lib/media";
 import { formatLocal, getSails, type Sail } from "@/lib/sails";
 import { formatDuration, formatKn, formatNm } from "@/lib/units";
+import { url } from "@/lib/url";
 
 export const getStaticPaths = (async () => {
   const sails = await getSails();
@@ -43,7 +44,7 @@ const details = [
 
 <BaseLayout title={data.title} description={data.summary} image={cover?.src}>
   <nav class="text-sm text-muted-foreground" aria-label="Breadcrumb">
-    <a href="/logbook" class="hover:text-foreground">Logbook</a>{" / "}<span class="text-foreground">{data.title}</span>
+    <a href={url("/logbook")} class="hover:text-foreground">Logbook</a>{" / "}<span class="text-foreground">{data.title}</span>
   </nav>
 
   <header class="mt-4 max-w-3xl">
@@ -92,7 +93,7 @@ const details = [
           }
         </dl>
         <a
-          href={`/tracks/${sail.slug}.gpx`}
+          href={url(`/tracks/${sail.slug}.gpx`)}
           download
           class="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
         >
@@ -107,7 +108,7 @@ const details = [
   <nav class="mt-12 grid gap-4 border-t border-border pt-6 sm:grid-cols-2" aria-label="More sails">
     {
       older ? (
-        <a href={`/logbook/${older.slug}`} class="rounded-xl border border-border p-4 hover:bg-secondary">
+        <a href={url(`/logbook/${older.slug}`)} class="rounded-xl border border-border p-4 hover:bg-secondary">
           <span class="text-xs text-muted-foreground">← Previous sail</span>
           <span class="mt-1 block font-medium">{older.entry.data.title}</span>
         </a>
@@ -115,7 +116,7 @@ const details = [
     }
     {
       newer && (
-        <a href={`/logbook/${newer.slug}`} class="rounded-xl border border-border p-4 text-right hover:bg-secondary">
+        <a href={url(`/logbook/${newer.slug}`)} class="rounded-xl border border-border p-4 text-right hover:bg-secondary">
           <span class="text-xs text-muted-foreground">Next sail →</span>
           <span class="mt-1 block font-medium">{newer.entry.data.title}</span>
         </a>
