@@ -1,0 +1,48 @@
+---
+import { Image } from "astro:assets";
+import type { Sail } from "@/lib/sails";
+import { formatLocal } from "@/lib/sails";
+import { beaufort, compass, formatDuration, formatKn, formatNm } from "@/lib/units";
+import TrackSvg from "./TrackSvg.astro";
+
+interface Props {
+  sail: Sail;
+}
+const { sail } = Astro.props;
+const { data } = sail.entry;
+const { stats, wind } = sail;
+---
+
+<a
+  href={`/logbook/${sail.slug}`}
+  class="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+>
+  <div class="relative aspect-[16/9] overflow-hidden bg-sea/10">
+    {
+      data.cover ? (
+        <Image src={data.cover} alt="" widths={[400, 800]} sizes="(min-width: 768px) 400px, 100vw" class="h-full w-full object-cover transition group-hover:scale-[1.02]" />
+      ) : (
+        <TrackSvg track={stats.track} class="h-full w-full p-4 text-sea" />
+      )
+    }
+    {
+      wind && (
+        <span class="absolute right-2 top-2 rounded-full bg-background/90 px-2 py-0.5 text-[11px] font-medium shadow-sm">
+          Bft {beaufort(wind.avgKn).force} · {compass(wind.dirDeg)}
+        </span>
+      )
+    }
+  </div>
+  <div class="flex flex-1 flex-col p-4">
+    <p class="text-xs text-muted-foreground">
+      {formatLocal(stats.start, { weekday: "short", day: "numeric", month: "short", year: "numeric" })} · {data.location}
+    </p>
+    <h3 class="mt-1 font-semibold leading-snug tracking-tight group-hover:text-primary">{data.title}</h3>
+    <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{data.summary}</p>
+    <dl class="mt-auto grid grid-cols-3 gap-2 pt-4 text-xs">
+      <div><dt class="text-muted-foreground">Distance</dt><dd class="font-semibold tabular-nums">{formatNm(stats.distanceNm)}</dd></div>
+      <div><dt class="text-muted-foreground">Time</dt><dd class="font-semibold tabular-nums">{formatDuration(stats.elapsedSec)}</dd></div>
+      <div><dt class="text-muted-foreground">Max</dt><dd class="font-semibold tabular-nums">{formatKn(stats.maxSpeedKn)}</dd></div>
+    </dl>
+  </div>
+</a>

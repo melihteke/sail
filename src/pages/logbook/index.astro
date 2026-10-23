@@ -1,0 +1,41 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SailCard from "@/components/SailCard.astro";
+import { careerStats, getSails, type Sail } from "@/lib/sails";
+import { formatDuration, formatNm } from "@/lib/units";
+
+const sails = await getSails();
+const career = careerStats(sails);
+const byYear = new Map<string, Sail[]>();
+for (const sail of sails) {
+  const year = sail.localDate.slice(0, 4);
+  byYear.set(year, [...(byYear.get(year) ?? []), sail]);
+}
+---
+
+<BaseLayout title="Logbook" description="Every sail, with track, wind and notes.">
+  <header class="max-w-2xl">
+    <p class="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Logbook</p>
+    <h1 class="mt-2 text-3xl font-semibold tracking-tight">All sails</h1>
+    <p class="mt-2 text-muted-foreground">
+      {career.count} {career.count === 1 ? "sail" : "sails"} · {formatNm(career.totalNm)} · {formatDuration(career.totalSec)} on the water
+    </p>
+  </header>
+
+  {
+    [...byYear].map(([year, list]) => (
+      <section class="mt-10" aria-labelledby={`y-${year}`}>
+        <div class="flex items-baseline gap-3 border-b border-border pb-2">
+          <h2 id={`y-${year}`} class="text-xl font-semibold tracking-tight">{year}</h2>
+          <span class="text-sm text-muted-foreground">
+            {list.length} {list.length === 1 ? "sail" : "sails"} · {formatNm(list.reduce((s, x) => s + x.stats.distanceNm, 0))}
+          </span>
+        </div>
+        <div class="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {list.map((sail) => <SailCard sail={sail} />)}
+        </div>
+      </section>
+    ))
+  }
+  {sails.length === 0 && <p class="mt-10 text-muted-foreground">No sails logged yet. Fair winds!</p>}
+</BaseLayout>

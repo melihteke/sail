@@ -1,0 +1,109 @@
+---
+import "@/styles/global.css";
+import { SITE } from "@/config";
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+const { title, description = SITE.description, image } = Astro.props;
+const pageTitle = title ? `${title} · ${SITE.title}` : SITE.title;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const nav = [
+  { href: "/", label: "Home" },
+  { href: "/logbook", label: "Logbook" },
+  { href: "/boat", label: "Boat" },
+];
+const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.title} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {image && <meta property="og:image" content={new URL(image, Astro.site)} />}
+    <meta name="twitter:card" content={image ? "summary_large_image" : "summary"} />
+    <meta name="theme-color" content="#0b3a5c" />
+    <script is:inline>
+      (() => {
+        const stored = localStorage.getItem("theme");
+        const dark = stored ? stored === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.classList.toggle("dark", dark);
+      })();
+    </script>
+  </head>
+  <body class="min-h-screen font-sans">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[1000] focus:rounded-md focus:bg-background focus:px-3 focus:py-2">Skip to content</a>
+    <header class="sticky top-0 z-[500] border-b border-border bg-background/85 backdrop-blur">
+      <div class="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+        <a href="/" class="flex items-center gap-2 font-semibold tracking-tight">
+          <img src="/favicon.svg" alt="" width="26" height="26" />
+          <span class="hidden sm:inline">{SITE.title}</span>
+          <span class="sm:hidden">{SITE.shortTitle}</span>
+        </a>
+        <nav aria-label="Main" class="flex items-center gap-1 text-sm">
+          {
+            nav.map((item) => (
+              <a
+                href={item.href}
+                aria-current={isActive(item.href) ? "page" : undefined}
+                class:list={[
+                  "rounded-md px-3 py-1.5 transition-colors",
+                  isActive(item.href) ? "bg-secondary font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
+                ]}
+              >
+                {item.label}
+              </a>
+            ))
+          }
+          <button
+            id="theme-toggle"
+            type="button"
+            aria-label="Toggle dark mode"
+            class="ml-1 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
+          >
+            <svg class="h-4 w-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path></svg>
+            <svg class="hidden h-4 w-4 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+      <slot />
+    </main>
+
+    <footer class="border-t border-border">
+      <div class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <p>© {new Date().getFullYear()} {SITE.author} · Fair winds ⛵</p>
+        <p>
+          Wind data <a class="underline underline-offset-2 hover:text-foreground" href="https://open-meteo.com/">Open-Meteo</a>{" · "}Maps{" "}
+          <a class="underline underline-offset-2 hover:text-foreground" href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>{" & "}
+          <a class="underline underline-offset-2 hover:text-foreground" href="https://www.openseamap.org">OpenSeaMap</a>{" · "}
+          <a class="underline underline-offset-2 hover:text-foreground" href={SITE.github}>Source</a>
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById("theme-toggle")?.addEventListener("click", () => {
+        const dark = document.documentElement.classList.toggle("dark");
+        localStorage.setItem("theme", dark ? "dark" : "light");
+      });
+    </script>
+  </body>
+</html>

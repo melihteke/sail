@@ -1,0 +1,138 @@
+---
+import type { GetStaticPaths } from "astro";
+import { Image } from "astro:assets";
+import { render } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import StatCard from "@/components/StatCard.astro";
+import WindStrip from "@/components/WindStrip.astro";
+import SailTrack from "@/components/SailTrack";
+import { SITE } from "@/config";
+import { formatLocal, getSails, type Sail } from "@/lib/sails";
+import { formatDuration, formatKn, formatNm } from "@/lib/units";
+
+export const getStaticPaths = (async () => {
+  const sails = await getSails();
+  return sails.map((sail, i) => ({
+    params: { slug: sail.slug },
+    props: { sail, newer: sails[i - 1], older: sails[i + 1] },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  sail: Sail;
+  newer?: Sail;
+  older?: Sail;
+}
+
+const { sail, newer, older } = Astro.props;
+const { data } = sail.entry;
+const { stats, wind } = sail;
+const { Content } = await render(sail.entry);
+const date = formatLocal(stats.start, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+const times = `${formatLocal(stats.start, { hour: "2-digit", minute: "2-digit" })}–${formatLocal(stats.end, { hour: "2-digit", minute: "2-digit" })}`;
+const details = [
+  { label: "Boat", value: data.boat },
+  { label: "Role", value: data.role[0]!.toUpperCase() + data.role.slice(1) },
+  { label: "Crew", value: data.crew.length ? data.crew.join(", ") : "–" },
+  { label: "Sails", value: data.sails ? `${data.sails}${data.reef ? " (reefed)" : ""}` : data.reef ? "Reefed" : "–" },
+];
+---
+
+<BaseLayout title={data.title} description={data.summary} image={data.cover?.src}>
+  <nav class="text-sm text-muted-foreground" aria-label="Breadcrumb">
+    <a href="/logbook" class="hover:text-foreground">Logbook</a>{" / "}<span class="text-foreground">{data.title}</span>
+  </nav>
+
+  <header class="mt-4 max-w-3xl">
+    <p class="text-sm text-muted-foreground">{date} · {times} · {data.location}</p>
+    <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{data.title}</h1>
+    <p class="mt-3 text-lg text-muted-foreground">{data.summary}</p>
+    <div class="mt-4 flex flex-wrap items-center gap-2">
+      <span class="text-amber-500" aria-label={`Rated ${data.rating} out of 5`} title={`Rated ${data.rating}/5`}>
+        {"★".repeat(data.rating)}<span class="text-muted-foreground/40">{"★".repeat(5 - data.rating)}</span>
+      </span>
+      {data.tags.map((tag) => <span class="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium">#{tag}</span>)}
+    </div>
+  </header>
+
+  <section aria-label="Sail statistics" class="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
+    <StatCard label="Distance" value={formatNm(stats.distanceNm)} hint="over ground" />
+    <StatCard label="Duration" value={formatDuration(stats.elapsedSec)} hint={`${formatDuration(stats.movingSec)} moving`} />
+    <StatCard label="Avg speed" value={formatKn(stats.avgSpeedKn)} hint="while moving" />
+    <StatCard label="Max speed" value={formatKn(stats.maxSpeedKn)} hint="10 s average" />
+  </section>
+
+  <section aria-label="Track" class="mt-6">
+    <SailTrack client:only="react" track={stats.track} bounds={stats.bounds} startIso={stats.start} timeZone={SITE.timeZone} maxSpeedKn={stats.maxSpeedKn} />
+  </section>
+
+  <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+    <div class="min-w-0 space-y-6">
+      {wind ? <WindStrip wind={wind} /> : <p class="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">Wind data is not available for this sail.</p>}
+
+      <article class="prose prose-slate max-w-none rounded-2xl border border-border bg-card p-6 shadow-sm dark:prose-invert prose-headings:tracking-tight prose-a:text-primary">
+        <Content />
+      </article>
+    </div>
+
+    <aside class="space-y-4">
+      <div class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <h2 class="text-sm font-semibold">Details</h2>
+        <dl class="mt-3 space-y-2 text-sm">
+          {
+            details.map((d) => (
+              <div class="flex justify-between gap-3">
+                <dt class="text-muted-foreground">{d.label}</dt>
+                <dd class="text-right font-medium">{d.value}</dd>
+              </div>
+            ))
+          }
+        </dl>
+        <a
+          href={`/tracks/${sail.slug}.gpx`}
+          download
+          class="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+        >
+          Download GPX
+        </a>
+      </div>
+    </aside>
+  </div>
+
+  {
+    data.photos.length > 0 && (
+      <section aria-labelledby="photos" class="mt-10">
+        <h2 id="photos" class="text-xl font-semibold tracking-tight">Photos</h2>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {data.photos.map((photo) => (
+            <figure class="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+              <a href={photo.src.src} target="_blank" rel="noopener">
+                <Image src={photo.src} alt={photo.caption ?? data.title} widths={[480, 960]} sizes="(min-width: 1024px) 380px, (min-width: 640px) 50vw, 100vw" class="aspect-[4/3] w-full object-cover" />
+              </a>
+              {photo.caption && <figcaption class="px-4 py-2.5 text-sm text-muted-foreground">{photo.caption}</figcaption>}
+            </figure>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <nav class="mt-12 grid gap-4 border-t border-border pt-6 sm:grid-cols-2" aria-label="More sails">
+    {
+      older ? (
+        <a href={`/logbook/${older.slug}`} class="rounded-xl border border-border p-4 hover:bg-secondary">
+          <span class="text-xs text-muted-foreground">← Previous sail</span>
+          <span class="mt-1 block font-medium">{older.entry.data.title}</span>
+        </a>
+      ) : <span></span>
+    }
+    {
+      newer && (
+        <a href={`/logbook/${newer.slug}`} class="rounded-xl border border-border p-4 text-right hover:bg-secondary">
+          <span class="text-xs text-muted-foreground">Next sail →</span>
+          <span class="mt-1 block font-medium">{newer.entry.data.title}</span>
+        </a>
+      )
+    }
+  </nav>
+</BaseLayout>

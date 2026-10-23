@@ -1,0 +1,69 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import StatCard from "@/components/StatCard.astro";
+import SailCard from "@/components/SailCard.astro";
+import LiveWind from "@/components/LiveWind";
+import SailHeatmap from "@/components/SailHeatmap";
+import { SITE } from "@/config";
+import { BOAT } from "@/data/boat";
+import { activityData, careerStats, getSails } from "@/lib/sails";
+import { formatDuration, formatKn, formatNm } from "@/lib/units";
+
+const sails = await getSails();
+const career = careerStats(sails);
+const heatmap = activityData(sails);
+const latest = sails.slice(0, 6);
+---
+
+<BaseLayout>
+  <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0b3a5c] via-[#0f5584] to-[#1b7fb3] px-6 py-12 text-white shadow-lg sm:px-10 sm:py-16">
+    <svg class="pointer-events-none absolute inset-x-0 bottom-0 h-24 w-full text-white/10" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 60 C150 100 350 20 600 60 C850 100 1050 20 1200 60 V120 H0 Z" fill="currentColor"></path>
+      <path d="M0 85 C200 115 400 55 600 85 C800 115 1000 55 1200 85 V120 H0 Z" fill="currentColor"></path>
+    </svg>
+    <p class="text-xs font-medium uppercase tracking-[0.2em] text-sky-200">Logbook · {BOAT.model}</p>
+    <h1 class="mt-3 max-w-2xl text-3xl font-semibold tracking-tight sm:text-5xl">Every tack, gust and mile, written down.</h1>
+    <p class="mt-4 max-w-xl text-sm text-sky-100 sm:text-base">
+      Tracks, wind, notes and photos from my sails, mostly on the {SITE.homeWaters.name}. Learning the water one puff at a time.
+    </p>
+    <div class="relative mt-8 flex flex-wrap gap-3">
+      <a href="/logbook" class="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#0b3a5c] shadow hover:bg-sky-50">Open the logbook</a>
+      <a href="/boat" class="rounded-full border border-white/40 px-5 py-2.5 text-sm font-semibold hover:bg-white/10">Meet the boat</a>
+    </div>
+  </section>
+
+  <section aria-labelledby="career" class="mt-10">
+    <h2 id="career" class="sr-only">Career stats</h2>
+    <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <StatCard label="Sails logged" value={String(career.count)} hint={`${career.days} ${career.days === 1 ? "day" : "days"} on the water`} />
+      <StatCard label="Distance" value={formatNm(career.totalNm)} hint="over ground" />
+      <StatCard label="Time sailing" value={formatDuration(career.totalSec)} hint="dock to dock" />
+      <StatCard
+        label="Top speed"
+        value={career.fastest ? formatKn(career.fastest.stats.maxSpeedKn) : "–"}
+        hint={career.fastest?.entry.data.title}
+      />
+    </div>
+  </section>
+
+  <section class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+    <div class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+      <div class="mb-5">
+        <p class="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Sailing activity · last 12 months</p>
+        <h2 class="mt-1.5 text-xl font-semibold tracking-tight">Days on the water</h2>
+      </div>
+      <SailHeatmap client:visible data={heatmap} />
+    </div>
+    <LiveWind client:load lat={SITE.homeWaters.lat} lon={SITE.homeWaters.lon} place={SITE.homeWaters.name} timeZone={SITE.timeZone} />
+  </section>
+
+  <section aria-labelledby="latest" class="mt-12">
+    <div class="flex items-end justify-between gap-4">
+      <h2 id="latest" class="text-xl font-semibold tracking-tight">Latest sails</h2>
+      <a href="/logbook" class="text-sm font-medium text-primary hover:underline">All entries →</a>
+    </div>
+    <div class="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {latest.map((sail) => <SailCard sail={sail} />)}
+    </div>
+  </section>
+</BaseLayout>
