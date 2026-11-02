@@ -17,7 +17,9 @@ breaks along the way.
 2. **SQL Editor** → **New query** → paste the whole of
    [`supabase/migrations/0001_schema.sql`](../supabase/migrations/0001_schema.sql) → **Run**.
    This creates the tables, the row level security, the `media` and `gpx` storage buckets, and makes
-   `melihteke@gmail.com` the admin.
+   `melihteke@gmail.com` the admin. Then do the same with
+   [`supabase/migrations/0002_site_settings.sql`](../supabase/migrations/0002_site_settings.sql) (live wind and sea
+   locations editable from the admin).
 3. **Project Settings → API**: copy the **Project URL** and the **anon / publishable key**. Both are public by design.
    Also note the **service_role / secret key** for step 6. That one is secret: never commit or share it.
 

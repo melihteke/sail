@@ -1,4 +1,4 @@
-# ⛵ sail.mteke.com: Melih's Sailing Logbook
+# ⛵ sail.mteke.com: Melih's Sailing
 
 A sailing logbook built with **Astro + React islands + Tailwind v4 + shadcn/ui**, deployed to **GitHub Pages** at
 [https://sail.mteke.com](https://sail.mteke.com). The public site is static; **Supabase** stores the sails, boats and
@@ -17,11 +17,17 @@ media and handles the Google login of the admin panel.
   - GPX download.
 - **Home:**
   - Career stats and the activity heatmap.
-  - Live wind for De Poel and the Windy.com wind map of the Netherlands.
-  - Latest sails (route-map cards) and "Everywhere I've sailed" (all tracks on one map).
+  - **Live wind** for a place you pick in the admin (address search), a **3-day sailing forecast** with a rough
+    go/no-go for small boats, sunrise and sunset.
+  - **Sea now:** waves, sea temperature and tide (Open-Meteo Marine).
+  - The Windy.com wind map of the Netherlands and an animated **rain radar** (RainViewer).
+  - Latest sails as route-map cards.
 - **Boats** (`/boats`, `/boats/<slug>`): photo, specs, description and miles logged on each boat.
 - **Records** (`/records`): top speed, longest, windiest, most manoeuvres, totals.
-- Dark mode, sitemap, OpenGraph tags.
+- **About** (`/about`).
+- **SEO / feeds:** RSS feed of new sails (`/rss.xml`), sitemap, `robots.txt`, OpenGraph/Twitter cards (default image
+  `public/og.png`, map or cover per sail) and schema.org data (WebSite, BlogPosting, Person).
+- Dark mode, mobile menu.
 
 **Admin panel** (`/admin/`, Google login, only `melihteke@gmail.com`)
 
@@ -35,6 +41,7 @@ media and handles the Google login of the admin panel.
   - YouTube links and other links.
   - Captions, ordering and a cover pick.
 - **Boats:** add/edit boats, photo with credit, specs table, main boat.
+- **Settings:** live wind and sea locations (address autocomplete). Changes show on the site without a deploy.
 - **Deploy site:** rebuilds the static site through the `publish` edge function (about 2 minutes) and shows
   whether the latest changes are live.
 
@@ -85,6 +92,7 @@ Pushing to `main` runs the tests and deploys. The admin panel's **Deploy site** 
 
 - Wind: [Open-Meteo](https://open-meteo.com/) (historical forecast / ERA5 archive, CC BY 4.0)
 - Wind map: [Windy.com](https://www.windy.com/) embed widget (logo must stay visible and clickable; personal, non-commercial use)
+- Sea: [Open-Meteo Marine](https://open-meteo.com/en/docs/marine-weather-api) · Rain radar: [RainViewer](https://www.rainviewer.com/) · Address search: [Photon](https://photon.komoot.io/) (OpenStreetMap)
 - Maps: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, seamarks © [OpenSeaMap](https://www.openseamap.org)
 - Boat photo: [Arjuno3, Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Sailing_on_the_Zijl_in_Leiden,_Netherlands-P3190020.jpg), CC BY-SA 4.0
 - Activity heatmap component adapted from the CCgather team's shadcn `ActivityHeatmap`.

@@ -102,6 +102,19 @@ describe("visitors", () => {
   }
 });
 
+describe("site settings", () => {
+  it("everyone can read, only the admin can change them", async () => {
+    const read = await as(null, () => db.query<{ key: string }>(`select key from public.site_settings order by key`));
+    expect(read.rows.map((r) => r.key)).toEqual(["live_wind", "sea"]);
+    const strangerUpdate = await as("stranger", () => db.query(`update public.site_settings set value = '{"name":"x","lat":0,"lon":0}' where key = 'live_wind' returning key`));
+    expect(strangerUpdate.rows).toHaveLength(0);
+    expect(await attempt(() => as(null, () => db.query(`insert into public.site_settings (key, value) values ('other', '{}')`)))).toMatch(/row-level security/);
+    const adminUpdate = await as("melih", () => db.query(`update public.site_settings set value = '{"name":"Loosdrecht","lat":52.2,"lon":5.1}' where key = 'live_wind' returning key`));
+    expect(adminUpdate.rows).toHaveLength(1);
+    await db.exec(`update public.site_settings set value = '{"name": "De Poel, Amstelveen", "lat": 52.2984, "lon": 4.8395}' where key = 'live_wind'`);
+  });
+});
+
 describe("admin", () => {
   it("sees drafts and can create, edit and delete", async () => {
     const all = await as("melih", () => db.query(`select slug from public.sails`));

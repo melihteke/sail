@@ -1,8 +1,11 @@
 import * as React from "react";
-import { Gauge, RefreshCw, Thermometer, Wind } from "lucide-react";
+import { Gauge, MapPin, Pencil, RefreshCw, Thermometer, Wind, X } from "lucide-react";
 import { beaufort, compass } from "@/lib/units";
+import type { SiteSettings } from "@/lib/settings";
+import { saveSetting, useIsAdmin, useSiteSettings } from "@/lib/settings-store";
+import LocationSearch from "./LocationSearch";
 
-type Props = { lat: number; lon: number; place: string; timeZone: string };
+type Props = { settings: SiteSettings; timeZone: string };
 
 type Current = { time: string; speed: number; gust: number; dir: number; temp: number };
 type Hour = { time: string; speed: number; gust: number; dir: number };
@@ -19,10 +22,16 @@ export function WindArrow({ deg, className = "" }: { deg: number; className?: st
   );
 }
 
-export default function LiveWind({ lat, lon, place, timeZone }: Props) {
+export default function LiveWind({ settings: initial, timeZone }: Props) {
+  const settings = useSiteSettings(initial);
+  const { lat, lon, name: place } = settings.live_wind;
+  const isAdmin = useIsAdmin();
+  const [editing, setEditing] = React.useState(false);
+  const [saveError, setSaveError] = React.useState<string | null>(null);
   const [state, setState] = React.useState<State>({ status: "loading" });
 
   const load = React.useCallback(async () => {
+    setState((prev) => (prev.status === "ok" ? prev : { status: "loading" }));
     try {
       const url =
         `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
@@ -54,19 +63,55 @@ export default function LiveWind({ lat, lon, place, timeZone }: Props) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5 text-card-foreground shadow-sm">
       <div className="flex items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Live wind</p>
-          <h2 className="mt-1 text-base font-semibold tracking-tight">{place}</h2>
+          <h2 className="mt-1 flex items-center gap-1.5 text-base font-semibold tracking-tight">
+            <MapPin className="h-4 w-4 shrink-0 text-sea" aria-hidden="true" />
+            <span className="truncate">{place}</span>
+          </h2>
         </div>
-        <button
-          type="button"
-          onClick={load}
-          aria-label="Refresh wind"
-          className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <RefreshCw className="h-4 w-4" />
-        </button>
+        <div className="flex shrink-0 items-center">
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditing((e) => !e);
+                setSaveError(null);
+              }}
+              aria-label={editing ? "Cancel changing location" : "Change live wind location"}
+              title="Change location (admin)"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {editing ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={load}
+            aria-label="Refresh wind"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </button>
+        </div>
       </div>
+      {editing && (
+        <div className="mt-3">
+          <LocationSearch
+            autoFocus
+            onPick={async (p) => {
+              try {
+                await saveSetting("live_wind", p);
+                setEditing(false);
+              } catch (e) {
+                setSaveError((e as Error).message);
+              }
+            }}
+          />
+          {saveError && <p className="mt-1 text-xs text-destructive">{saveError}</p>}
+          <p className="mt-1 text-[11px] text-muted-foreground">Visitors see the new place right away; the forecast and rain radar follow it too.</p>
+        </div>
+      )}
 
       {state.status === "loading" && <div className="mt-6 h-28 animate-pulse rounded-xl bg-muted" aria-label="Loading wind" />}
       {state.status === "error" && (

@@ -1,4 +1,6 @@
 ---
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import type { GetStaticPaths } from "astro";
 import { marked } from "marked";
 import BaseLayout from "@/layouts/BaseLayout.astro";
@@ -39,9 +41,25 @@ const details = [
 const sections = (Object.keys(SECTION_TITLES) as (keyof SailSections)[])
   .filter((key) => sail.sections[key].trim())
   .map((key) => ({ key, title: SECTION_TITLES[key], html: marked.parse(sail.sections[key], { async: false }) as string }));
+const mapImage = existsSync(join(process.cwd(), "public", "maps", `${sail.slug}.webp`)) ? url(`/maps/${sail.slug}.webp`) : undefined;
+const shareImage = sail.cover?.src ?? mapImage;
+const pageUrl = new URL(url(`/logbook/${sail.slug}/`), Astro.site).toString();
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: sail.title,
+  description: sail.summary,
+  datePublished: stats.start,
+  author: { "@type": "Person", name: SITE.author, url: new URL(url("/about"), Astro.site).toString() },
+  mainEntityOfPage: pageUrl,
+  url: pageUrl,
+  ...(shareImage ? { image: new URL(shareImage, Astro.site).toString() } : {}),
+  keywords: ["sailing", ...sail.tags].join(", "),
+  contentLocation: { "@type": "Place", name: sail.location, geo: { "@type": "GeoCoordinates", latitude: stats.startPoint.lat, longitude: stats.startPoint.lon } },
+};
 ---
 
-<BaseLayout title={sail.title} description={sail.summary} image={sail.cover?.src}>
+<BaseLayout title={sail.title} description={sail.summary} image={shareImage} ogType="article" publishedTime={stats.start} jsonLd={jsonLd}>
   <nav class="text-sm text-muted-foreground" aria-label="Breadcrumb">
     <a href={url("/logbook")} class="hover:text-foreground">Logbook</a>{" / "}<span class="text-foreground">{sail.title}</span>
   </nav>
