@@ -1,13 +1,14 @@
 ---
 import type { GetStaticPaths } from "astro";
-import { render } from "astro:content";
+import { marked } from "marked";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import StatCard from "@/components/StatCard.astro";
 import WindStrip from "@/components/WindStrip.astro";
+import AnalysisCard from "@/components/AnalysisCard.astro";
 import MediaGallery from "@/components/MediaGallery.astro";
 import SailTrack from "@/components/SailTrack";
 import { SITE } from "@/config";
-import { sailCover, sailMedia } from "@/lib/media";
+import { SECTION_TITLES, type SailSections } from "@/lib/sections";
 import { formatLocal, getSails, type Sail } from "@/lib/sails";
 import { formatDuration, formatKn, formatNm } from "@/lib/units";
 import { url } from "@/lib/url";
@@ -27,35 +28,33 @@ interface Props {
 }
 
 const { sail, newer, older } = Astro.props;
-const { data } = sail.entry;
-const { stats, wind } = sail;
-const { Content } = await render(sail.entry);
-const media = sailMedia(sail.slug, data.captions);
-const cover = sailCover(sail.slug, data.cover);
+const { stats, wind, analysis } = sail;
 const date = formatLocal(stats.start, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 const times = `${formatLocal(stats.start, { hour: "2-digit", minute: "2-digit" })}–${formatLocal(stats.end, { hour: "2-digit", minute: "2-digit" })}`;
 const details = [
-  { label: "Boat", value: data.boat },
-  { label: "Role", value: data.role[0]!.toUpperCase() + data.role.slice(1) },
-  { label: "Crew", value: data.crew.length ? data.crew.join(", ") : "–" },
-  { label: "Sails", value: data.sails ? `${data.sails}${data.reef ? " (reefed)" : ""}` : data.reef ? "Reefed" : "–" },
+  { label: "Role", value: sail.role[0]!.toUpperCase() + sail.role.slice(1) },
+  { label: "Crew", value: sail.crew.length ? sail.crew.join(", ") : "–" },
+  { label: "Sails", value: sail.sailsUsed ? `${sail.sailsUsed}${sail.reef ? " (reefed)" : ""}` : sail.reef ? "Reefed" : "–" },
 ];
+const sections = (Object.keys(SECTION_TITLES) as (keyof SailSections)[])
+  .filter((key) => sail.sections[key].trim())
+  .map((key) => ({ key, title: SECTION_TITLES[key], html: marked.parse(sail.sections[key], { async: false }) as string }));
 ---
 
-<BaseLayout title={data.title} description={data.summary} image={cover?.src}>
+<BaseLayout title={sail.title} description={sail.summary} image={sail.cover?.src}>
   <nav class="text-sm text-muted-foreground" aria-label="Breadcrumb">
-    <a href={url("/logbook")} class="hover:text-foreground">Logbook</a>{" / "}<span class="text-foreground">{data.title}</span>
+    <a href={url("/logbook")} class="hover:text-foreground">Logbook</a>{" / "}<span class="text-foreground">{sail.title}</span>
   </nav>
 
   <header class="mt-4 max-w-3xl">
-    <p class="text-sm text-muted-foreground">{date} · {times} · {data.location}</p>
-    <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{data.title}</h1>
-    <p class="mt-3 text-lg text-muted-foreground">{data.summary}</p>
+    <p class="text-sm text-muted-foreground">{date} · {times} · {sail.location}</p>
+    <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{sail.title}</h1>
+    <p class="mt-3 text-lg text-muted-foreground">{sail.summary}</p>
     <div class="mt-4 flex flex-wrap items-center gap-2">
-      <span class="text-amber-500" aria-label={`Rated ${data.rating} out of 5`} title={`Rated ${data.rating}/5`}>
-        {"★".repeat(data.rating)}<span class="text-muted-foreground/40">{"★".repeat(5 - data.rating)}</span>
+      <span class="text-amber-500" aria-label={`Rated ${sail.rating} out of 5`} title={`Rated ${sail.rating}/5`}>
+        {"★".repeat(sail.rating)}<span class="text-muted-foreground/40">{"★".repeat(5 - sail.rating)}</span>
       </span>
-      {data.tags.map((tag) => <span class="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium">#{tag}</span>)}
+      {sail.tags.map((tag) => <span class="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium">#{tag}</span>)}
     </div>
   </header>
 
@@ -66,23 +65,49 @@ const details = [
     <StatCard label="Max speed" value={formatKn(stats.maxSpeedKn)} hint="10 s average" />
   </section>
 
-  <section aria-label="Track" class="mt-6">
-    <SailTrack client:only="react" track={stats.track} bounds={stats.bounds} startIso={stats.start} timeZone={SITE.timeZone} maxSpeedKn={stats.maxSpeedKn} />
+  <section aria-label="Track and replay" class="mt-6">
+    <SailTrack
+      client:only="react"
+      track={stats.track}
+      bounds={stats.bounds}
+      startIso={stats.start}
+      timeZone={SITE.timeZone}
+      maxSpeedKn={stats.maxSpeedKn}
+      windHours={wind?.hours ?? []}
+      twa={analysis?.twa ?? []}
+      maneuvers={analysis?.maneuvers ?? []}
+    />
   </section>
 
   <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
     <div class="min-w-0 space-y-6">
       {wind ? <WindStrip wind={wind} /> : <p class="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">Wind data is not available for this sail.</p>}
 
-      <article class="prose prose-slate max-w-none rounded-2xl border border-border bg-card p-6 shadow-sm dark:prose-invert prose-headings:tracking-tight prose-a:text-primary">
-        <Content />
-      </article>
+      {
+        sections.length > 0 && (
+          <article class="prose prose-slate max-w-none rounded-2xl border border-border bg-card p-6 shadow-sm dark:prose-invert prose-headings:tracking-tight prose-a:text-primary">
+            {sections.map((s) => (
+              <section aria-labelledby={`section-${s.key}`}>
+                <h2 id={`section-${s.key}`}>{s.title}</h2>
+                <Fragment set:html={s.html} />
+              </section>
+            ))}
+          </article>
+        )
+      }
     </div>
 
     <aside class="space-y-4">
+      {analysis && <AnalysisCard analysis={analysis} />}
       <div class="rounded-2xl border border-border bg-card p-5 shadow-sm">
         <h2 class="text-sm font-semibold">Details</h2>
         <dl class="mt-3 space-y-2 text-sm">
+          <div class="flex justify-between gap-3">
+            <dt class="text-muted-foreground">Boat</dt>
+            <dd class="text-right font-medium">
+              {sail.boat ? <a class="text-primary hover:underline" href={url(`/boats/${sail.boat.slug}`)}>{sail.boat.name}</a> : "–"}
+            </dd>
+          </div>
           {
             details.map((d) => (
               <div class="flex justify-between gap-3">
@@ -103,14 +128,14 @@ const details = [
     </aside>
   </div>
 
-  {(media.length > 0 || data.youtube.length > 0) && <MediaGallery items={media} youtube={data.youtube} title={data.title} />}
+  {sail.media.length > 0 && <MediaGallery items={sail.media} title={sail.title} />}
 
   <nav class="mt-12 grid gap-4 border-t border-border pt-6 sm:grid-cols-2" aria-label="More sails">
     {
       older ? (
         <a href={url(`/logbook/${older.slug}`)} class="rounded-xl border border-border p-4 hover:bg-secondary">
           <span class="text-xs text-muted-foreground">← Previous sail</span>
-          <span class="mt-1 block font-medium">{older.entry.data.title}</span>
+          <span class="mt-1 block font-medium">{older.title}</span>
         </a>
       ) : <span></span>
     }
@@ -118,7 +143,7 @@ const details = [
       newer && (
         <a href={url(`/logbook/${newer.slug}`)} class="rounded-xl border border-border p-4 text-right hover:bg-secondary">
           <span class="text-xs text-muted-foreground">Next sail →</span>
-          <span class="mt-1 block font-medium">{newer.entry.data.title}</span>
+          <span class="mt-1 block font-medium">{newer.title}</span>
         </a>
       )
     }

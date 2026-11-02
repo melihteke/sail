@@ -5,16 +5,24 @@ import SailCard from "@/components/SailCard.astro";
 import LiveWind from "@/components/LiveWind";
 import SailHeatmap from "@/components/SailHeatmap";
 import WindyMap from "@/components/WindyMap.astro";
+import AllTracksMap from "@/components/AllTracksMap";
 import { SITE } from "@/config";
-import { BOAT } from "@/data/boat";
-import { activityData, careerStats, getSails } from "@/lib/sails";
+import { activityData, careerStats, formatLocal, getLogbook } from "@/lib/sails";
 import { formatDuration, formatKn, formatNm } from "@/lib/units";
 import { url } from "@/lib/url";
 
-const sails = await getSails();
+const { sails, boats } = await getLogbook();
 const career = careerStats(sails);
 const heatmap = activityData(sails);
 const latest = sails.slice(0, 6);
+const mainBoat = boats.find((b) => b.isDefault) ?? boats[0];
+const allTracks = sails.map((s) => ({
+  slug: s.slug,
+  title: s.title,
+  date: formatLocal(s.stats.start, { day: "numeric", month: "short", year: "numeric" }),
+  href: url(`/logbook/${s.slug}`),
+  points: s.stats.track.filter((_, i, arr) => i % 3 === 0 || i === arr.length - 1).map((p) => [p[0], p[1]] as [number, number]),
+}));
 ---
 
 <BaseLayout>
@@ -23,14 +31,14 @@ const latest = sails.slice(0, 6);
       <path d="M0 60 C150 100 350 20 600 60 C850 100 1050 20 1200 60 V120 H0 Z" fill="currentColor"></path>
       <path d="M0 85 C200 115 400 55 600 85 C800 115 1000 55 1200 85 V120 H0 Z" fill="currentColor"></path>
     </svg>
-    <p class="text-xs font-medium uppercase tracking-[0.2em] text-sky-200">Logbook · {BOAT.model}</p>
+    <p class="text-xs font-medium uppercase tracking-[0.2em] text-sky-200">Logbook{mainBoat?.model ? ` · ${mainBoat.model}` : ""}</p>
     <h1 class="mt-3 max-w-2xl text-3xl font-semibold tracking-tight sm:text-5xl">Every tack, gust and mile, written down.</h1>
     <p class="mt-4 max-w-xl text-sm text-sky-100 sm:text-base">
       Tracks, wind, notes and photos from my sails, mostly on {SITE.homeWaters.name}. Learning the water one puff at a time.
     </p>
     <div class="relative mt-8 flex flex-wrap gap-3">
       <a href={url("/logbook")} class="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#0b3a5c] shadow hover:bg-sky-50">Open the logbook</a>
-      <a href={url("/boat")} class="rounded-full border border-white/40 px-5 py-2.5 text-sm font-semibold hover:bg-white/10">Meet the boat</a>
+      <a href={url("/boats")} class="rounded-full border border-white/40 px-5 py-2.5 text-sm font-semibold hover:bg-white/10">Meet the boat{boats.length > 1 ? "s" : ""}</a>
     </div>
   </section>
 
@@ -43,7 +51,7 @@ const latest = sails.slice(0, 6);
       <StatCard
         label="Top speed"
         value={career.fastest ? formatKn(career.fastest.stats.maxSpeedKn) : "–"}
-        hint={career.fastest?.entry.data.title}
+        hint={career.fastest?.title}
       />
     </div>
   </section>
@@ -70,4 +78,21 @@ const latest = sails.slice(0, 6);
       {latest.map((sail) => <SailCard sail={sail} />)}
     </div>
   </section>
+
+  {
+    allTracks.length > 0 && (
+      <section aria-labelledby="everywhere" class="mt-12 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+        <div class="flex flex-wrap items-end justify-between gap-2 px-5 pt-5">
+          <div>
+            <p class="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">All tracks</p>
+            <h2 id="everywhere" class="mt-1.5 text-xl font-semibold tracking-tight">Everywhere I've sailed</h2>
+          </div>
+          <a href={url("/records")} class="text-sm font-medium text-primary hover:underline">Records →</a>
+        </div>
+        <div class="mt-4">
+          <AllTracksMap client:only="react" tracks={allTracks} />
+        </div>
+      </section>
+    )
+  }
 </BaseLayout>

@@ -1,0 +1,122 @@
+---
+import type { GetStaticPaths } from "astro";
+import { marked } from "marked";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import StatCard from "@/components/StatCard.astro";
+import SailCard from "@/components/SailCard.astro";
+import BoatPhoto from "@/components/BoatPhoto.astro";
+import { careerStats, getLogbook, type BoatView, type Sail } from "@/lib/sails";
+import { formatDuration, formatKn, formatNm } from "@/lib/units";
+import { url } from "@/lib/url";
+
+export const getStaticPaths = (async () => {
+  const { sails, boats } = await getLogbook();
+  return boats.map((boat) => ({ params: { slug: boat.slug }, props: { boat, sails: sails.filter((s) => s.boat?.id === boat.id) } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  boat: BoatView;
+  sails: Sail[];
+}
+const { boat, sails } = Astro.props;
+const stats = careerStats(sails);
+const description = marked.parse(boat.description, { async: false }) as string;
+const design = boat.designer ? `Design ${boat.designer}${boat.designYear ? ` (${boat.designYear})` : ""}` : "";
+const facts = [
+  { label: "Sail number", value: boat.sailNumber ?? "–" },
+  { label: "Home water", value: boat.homeWater ?? "–" },
+];
+---
+
+<BaseLayout title={boat.name} description={`${boat.model ?? boat.name}: specifications, story and miles logged.`} image={boat.photo?.src}>
+  <nav class="text-sm text-muted-foreground" aria-label="Breadcrumb">
+    <a href={url("/boats")} class="hover:text-foreground">Boats</a>{" / "}<span class="text-foreground">{boat.name}</span>
+  </nav>
+
+  <div class="mt-4 grid items-start gap-8 lg:grid-cols-2">
+    <figure class="overflow-hidden rounded-3xl border border-border bg-gradient-to-b from-sky-100 to-sky-50 shadow-sm dark:from-sky-950 dark:to-slate-900">
+      <BoatPhoto boat={boat} eager />
+      {
+        boat.photo && boat.photoCredit && (
+          <figcaption class="bg-card px-4 py-2 text-[11px] text-muted-foreground">
+            {boat.photoCredit.url ? <a class="underline underline-offset-2 hover:text-foreground" href={boat.photoCredit.url}>{boat.photoCredit.text}</a> : boat.photoCredit.text}
+            {boat.photoCredit.license && " · "}
+            {boat.photoCredit.license && boat.photoCredit.licenseUrl && (
+              <a class="underline underline-offset-2 hover:text-foreground" href={boat.photoCredit.licenseUrl} rel="license">{boat.photoCredit.license}</a>
+            )}
+            {boat.photoCredit.license && !boat.photoCredit.licenseUrl && boat.photoCredit.license}
+          </figcaption>
+        )
+      }
+    </figure>
+
+    <div>
+      <p class="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">{boat.isDefault ? "Main boat" : "Boat"}</p>
+      <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{boat.name}</h1>
+      {boat.model && boat.model !== boat.name && <p class="mt-1 text-lg">{boat.model}</p>}
+      {
+        (design || boat.builder) && (
+          <p class="mt-1 text-muted-foreground">
+            {design}
+            {design && boat.builder && " · "}
+            {boat.builder && "Built by "}
+            {boat.builder && boat.builderUrl && <a class="underline underline-offset-2 hover:text-foreground" href={boat.builderUrl}>{boat.builder}</a>}
+            {boat.builder && !boat.builderUrl && boat.builder}
+          </p>
+        )
+      }
+      <div class="prose prose-slate mt-5 max-w-none leading-relaxed dark:prose-invert prose-a:text-primary" set:html={description} />
+      <dl class="mt-6 grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+        {
+          facts.map((f) => (
+            <div class="flex justify-between gap-2 border-b border-border py-2">
+              <dt class="text-muted-foreground">{f.label}</dt>
+              <dd class="text-right font-medium">{f.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+
+  <section class="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4" aria-label="Sailed on this boat">
+    <StatCard label="Sails" value={String(stats.count)} hint={`${stats.days} ${stats.days === 1 ? "day" : "days"} on the water`} />
+    <StatCard label="Distance" value={formatNm(stats.totalNm)} hint="logged on this boat" />
+    <StatCard label="Time aboard" value={formatDuration(stats.totalSec)} />
+    <StatCard label="Top speed" value={stats.fastest ? formatKn(stats.fastest.stats.maxSpeedKn) : "–"} hint={stats.fastest?.title} />
+  </section>
+
+  {
+    boat.specs.length > 0 && (
+      <section aria-labelledby="specs" class="mt-10">
+        <h2 id="specs" class="text-xl font-semibold tracking-tight">Specifications</h2>
+        <div class="mt-4 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <table class="w-full text-sm">
+            <tbody>
+              {boat.specs.map((spec) => (
+                <tr class="border-b border-border last:border-0">
+                  <th scope="row" class="w-1/2 px-5 py-3 text-left font-medium text-muted-foreground">{spec.label}</th>
+                  <td class="px-5 py-3">
+                    <span class="font-semibold tabular-nums">{spec.value}</span>
+                    {spec.hint && <span class="ml-2 text-xs text-muted-foreground">{spec.hint}</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    sails.length > 0 && (
+      <section aria-labelledby="boat-sails" class="mt-12">
+        <h2 id="boat-sails" class="text-xl font-semibold tracking-tight">Sails on {boat.name}</h2>
+        <div class="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {sails.map((sail) => <SailCard sail={sail} />)}
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>

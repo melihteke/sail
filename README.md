@@ -1,130 +1,98 @@
 # ⛵ sail.mteke.com: Melih's Sailing Logbook
 
-A static sailing logbook built with **Astro + React islands + Tailwind v4 + shadcn/ui**, deployed to
-**GitHub Pages** at [https://sail.mteke.com](https://sail.mteke.com).
+A sailing logbook built with **Astro + React islands + Tailwind v4 + shadcn/ui**, deployed to **GitHub Pages** at
+[https://sail.mteke.com](https://sail.mteke.com). The public site is static; **Supabase** stores the sails, boats and
+media and handles the Google login of the admin panel.
 
-- **Logbook:** one page per sail with a speed-coloured track (OpenStreetMap + OpenSeaMap seamarks),
-  a speed-over-ground chart linked to the map, distance/time/avg/max SOG, notes, photos and videos.
-- **Wind:** the real hourly wind during each sail (Open-Meteo, cached in `src/data/wind-cache.json`)
-  plus a **live wind** widget and an animated **Windy.com wind map** of the Netherlands on the home page.
-- **Activity heatmap** of nautical miles per day (calendar / weekdays / months views).
-- **Boat page** with Polyvalk Classic specs.
-- Career stats, dark mode, GPX download, sitemap.
+**Public site**
 
-## Add a sail
+- **Logbook:** one page per sail.
+  - Speed-coloured track on OpenStreetMap + OpenSeaMap.
+  - **Strava-style replay:** play/pause, 1×–60×, and a live readout of speed, course, wind, point of sail and tack.
+  - Speed chart, linked to the map.
+  - Hourly wind during the sail (Open-Meteo).
+  - Tack/gybe count and time on each point of sail.
+  - Story: *How it went · What I practised · Learnings · Notes*.
+  - Gallery of photos, videos, YouTube videos and links.
+  - GPX download.
+- **Home:**
+  - Career stats and the activity heatmap.
+  - Live wind for De Poel and the Windy.com wind map of the Netherlands.
+  - Latest sails (route-map cards) and "Everywhere I've sailed" (all tracks on one map).
+- **Boats** (`/boats`, `/boats/<slug>`): photo, specs, description and miles logged on each boat.
+- **Records** (`/records`): top speed, longest, windiest, most manoeuvres, totals.
+- Dark mode, sitemap, OpenGraph tags.
 
-Step-by-step guide (Turkish): [ADDING-A-SAIL.md](ADDING-A-SAIL.md)
+**Admin panel** (`/admin/`, Google login, only `melihteke@gmail.com`)
 
-1. Export the GPX (e.g. Strava → activity → ⋯ → *Export GPX*).
-2. Scaffold the entry:
+- **New sail:** drop a GPX file (Upwind, Strava, Garmin…).
+  - Stats, map, wind and the tack/gybe analysis are worked out in the browser.
+  - Title, date, location and boat are suggested.
+- **Editor:** basics, the four story sections (Markdown with preview), boat picker, autosave, publish/unpublish.
+- **Media:**
+  - Photos: iPhone HEIC/JPG/PNG are converted to JPG, resized, and EXIF/GPS is stripped.
+  - Short videos: up to 50 MB, with a poster frame.
+  - YouTube links and other links.
+  - Captions, ordering and a cover pick.
+- **Boats:** add/edit boats, photo with credit, specs table, main boat.
+- **Deploy site:** rebuilds the static site through the `publish` edge function (about 2 minutes) and shows
+  whether the latest changes are live.
 
-   ```powershell
-   npm run new-sail -- "C:\path\to\Morning_Sail.gpx" "Windy afternoon on the Poel"
-   ```
+## Set up
 
-   This creates `src/content/sails/<date>-<slug>/` with `index.md` and `track.gpx`.
-3. Edit `index.md`: summary, crew, role, rating, sails/reef, tags and the story. Set
-   **`draft: false`** to publish (drafts are visible in `npm run dev` only).
-4. Photos & videos: straight from iCloud (HEIC/MOV) or WhatsApp (JPG/MP4). Drop them in `inbox/`
-   and run:
+See **[docs/SETUP.md](docs/SETUP.md)**: Supabase project and SQL, Google login, the deploy edge function, GitHub
+variables, and importing the existing Markdown logbook. Without the Supabase variables the site still builds
+from the legacy Markdown content in `src/content/sails`.
 
-   ```powershell
-   npm run add-media -- <date-or-part-of-sail-name>   # or pass file paths after the sail name
-   ```
+Adding a sail day to day (Turkish): **[ADDING-A-SAIL.md](ADDING-A-SAIL.md)**.
 
-   Photos become JPG (max 2400 px, EXIF/GPS stripped) in `photos/`; videos become H.264 MP4
-   (max 1280 px, ≤ 30 fps, HDR tone-mapped, metadata stripped, with a poster) in `videos/`. Files are
-   numbered in shooting order and shown automatically. Options: `--mute`, `--max-seconds N`.
-   Optional captions:
+## Project layout
 
-   ```yaml
-   captions:
-     01-img-4821.jpg: Leaving the jetty
-   youtube:
-     - https://youtu.be/VIDEO_ID
-   ```
-
-   All media is optional. YouTube links render as click-to-load `youtube-nocookie` embeds
-   (Shorts in portrait).
-5. Run `npm run build` once locally so the wind for the new sail is cached, then commit and push.
-   GitHub Actions deploys automatically.
-
-### Frontmatter reference
-
-| Field                                | Type                                                              | Notes                                      |
-| ------------------------------------ | ----------------------------------------------------------------- | ------------------------------------------ |
-| `title`, `summary`, `location` | string                                                            | required                                   |
-| `date`                             | YYYY-MM-DD                                                        | local date; exact times come from the GPX  |
-| `gpx`                              | string                                                            | defaults to `track.gpx`                  |
-| `boat`                             | string                                                            | defaults to `Polyvalk`                   |
-| `crew`                             | string[]                                                          |                                            |
-| `role`                             | `skipper` · `helm` · `crew` · `trimmer` · `student` |                                            |
-| `rating`                           | 1–5                                                              |                                            |
-| `sails`, `reef`                  | string, boolean                                                   | e.g. `Main + jib`, `true`              |
-| `tags`                             | string[]                                                          |                                            |
-| `cover`                            | image path                                                        | optional; defaults to the first photo      |
-| `captions`                         | map of file name → text                                          | optional captions for photos/videos        |
-| `youtube`                          | list of links, or `{ url, caption }`                            | optional; watch, youtu.be, shorts, `?t=` |
-| `draft`                            | boolean                                                           | hidden from production builds              |
-
-## Boat details
-
-Edit [`src/data/boat.ts`](src/data/boat.ts): sail number, home water, description and specs. To show
-your own photo, save it as `src/assets/boat/polyvalk.jpg` and uncomment the import at the top of the file.
-
-Site-wide settings (title, home water coordinates for live wind, time zone) are in
-[`src/config.ts`](src/config.ts).
+```
+supabase/migrations/0001_schema.sql  tables, row level security, storage buckets, admin list
+supabase/functions/publish/          edge function: admin check → GitHub workflow_dispatch
+supabase/tests/rls.test.ts           runs the migration in PGlite and tests the security rules
+src/lib/sails.ts                     build-time data layer (Supabase, or the Markdown fallback)
+src/lib/gpx.ts · analysis.ts · wind.ts   GPX stats, tack/gybe + point-of-sail analysis, Open-Meteo wind
+src/lib/admin-api.ts · media-process.ts  admin CRUD, uploads, in-browser photo/video processing
+src/components/admin/                admin panel (React)
+src/components/SailTrack.tsx         track map, replay and speed chart
+scripts/make-maps.ts                 route-map thumbnails for the cards (runs before every build)
+scripts/migrate-to-supabase.ts       one-off import of the Markdown logbook
+```
 
 ## Develop
 
 ```powershell
+Copy-Item .env.example .env   # PUBLIC_SUPABASE_URL + PUBLIC_SUPABASE_ANON_KEY (optional)
 npm install
-npm run dev      # http://localhost:4321
-npm run build    # astro check + static build into dist/
-npm run preview
+npm run dev      # http://localhost:4321 (admin: /admin/)
+npm test         # vitest: RLS rules (PGlite), analysis, parsers
+npm run build    # route maps + astro check + static build into dist/
 ```
 
-## Deploy: GitHub Pages + Cloudflare (one-time setup)
+Pushing to `main` runs the tests and deploys. The admin panel's **Deploy site** button runs the same workflow.
 
-1. **Create the repo** `melihteke/sail` on GitHub (empty, no README) and push:
+## Hosting: GitHub Pages + Cloudflare
 
-   ```powershell
-   git remote add origin https://github.com/melihteke/sail.git
-   git push -u origin main
-   ```
-2. **GitHub → repo → Settings → Pages**: *Source* = **GitHub Actions**. The workflow in
-   `.github/workflows/deploy.yml` builds and deploys on every push to `main`.
-   Until a custom domain is set, the site is served at <https://melihteke.github.io/sail/>; the
-   workflow reads the serving path from `actions/configure-pages` (`SITE_BASE_PATH`) so links and
-   assets work there as well as on the custom domain.
-3. **Cloudflare → mteke.com → DNS → Add record**:
-
-   | Type  | Name     | Target                  | Proxy                           |
-   | ----- | -------- | ----------------------- | ------------------------------- |
-   | CNAME | `sail` | `melihteke.github.io` | **DNS only** (grey cloud) |
-
-   Keep it *DNS only* so GitHub can issue the Let's Encrypt certificate. If you enable the orange
-   cloud later, set Cloudflare SSL/TLS mode to **Full (strict)**.
-4. **GitHub → repo → Settings → Pages → Custom domain**: `sail.mteke.com` (also stored in
-   `public/CNAME`). After the DNS check passes, tick **Enforce HTTPS**. Then re-run the deploy
-   workflow (Actions → Deploy to GitHub Pages → *Run workflow*) so the site is rebuilt for the
-   domain root.
-5. Recommended: **GitHub → your profile Settings → Pages → Add a verified domain** → `mteke.com`
-   and add the TXT record it shows in Cloudflare. This prevents subdomain takeover.
+- GitHub → repo → **Settings → Pages**: *Source* = **GitHub Actions**, custom domain `sail.mteke.com`
+  (also in `public/CNAME`), **Enforce HTTPS**.
+- Cloudflare DNS: `CNAME sail → melihteke.github.io`, **DNS only** (grey cloud).
+- The workflow reads the serving path from `actions/configure-pages`, so the build also works on
+  `melihteke.github.io/sail/`. CSS is inlined into every page, so a cached page never points at an old stylesheet.
 
 ## Data sources & credits
 
 - Wind: [Open-Meteo](https://open-meteo.com/) (historical forecast / ERA5 archive, CC BY 4.0)
 - Wind map: [Windy.com](https://www.windy.com/) embed widget (logo must stay visible and clickable; personal, non-commercial use)
 - Maps: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, seamarks © [OpenSeaMap](https://www.openseamap.org)
+- Boat photo: [Arjuno3, Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Sailing_on_the_Zijl_in_Leiden,_Netherlands-P3190020.jpg), CC BY-SA 4.0
 - Activity heatmap component adapted from the CCgather team's shadcn `ActivityHeatmap`.
 
-## Roadmap (v2 ideas)
+## Ideas for later
 
-- "Everywhere I've sailed": all tracks on one map
-- Wind rose of sailed conditions and points-of-sail breakdown
-- Tack/gybe detection and VMG / upwind performance per sail
-- Learnings section: knots, manoeuvres, theory and skill progression
-- RSS feed and auto-generated OpenGraph map cards
+- Wind rose of sailed conditions; VMG / upwind performance per sail
+- RSS feed and a yearly "year in review" page
+- Export the replay as a video (MP4/GIF)
 - Geotagged photos pinned on the route; privacy trim of track start/end
 - Water level and current (Rijkswaterstaat) for coastal sails

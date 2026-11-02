@@ -1,23 +1,32 @@
 ---
-import { Image } from "astro:assets";
-import type { MediaItem } from "@/lib/media";
+import type { MediaView } from "@/lib/sails";
 import type { YouTubeVideo } from "@/lib/youtube";
 
 interface Props {
-  items: MediaItem[];
-  youtube?: YouTubeVideo[];
+  items: MediaView[];
   title: string;
 }
-const { items, youtube = [], title } = Astro.props;
-const photoCount = items.filter((m) => m.kind === "photo").length;
-const videoCount = items.length - photoCount;
+const { items, title } = Astro.props;
+const count = (kind: MediaView["kind"]) => items.filter((m) => m.kind === kind).length;
 const plural = (n: number, one: string, many: string) => (n ? `${n} ${n === 1 ? one : many}` : "");
-const parts = [plural(photoCount, "photo", "photos"), plural(videoCount, "video", "videos"), plural(youtube.length, "YouTube video", "YouTube videos")].filter(Boolean);
-const isPortrait = (item: MediaItem) => {
-  const size = item.kind === "photo" ? item.image : item.poster;
-  return !!size && size.height > size.width * 1.1;
-};
+const parts = [
+  plural(count("photo"), "photo", "photos"),
+  plural(count("video"), "video", "videos"),
+  plural(count("youtube"), "YouTube video", "YouTube videos"),
+  plural(count("link"), "link", "links"),
+].filter(Boolean);
+const isPortrait = (item: MediaView) =>
+  (item.kind === "photo" || item.kind === "video") && !!item.width && !!item.height && item.height > item.width * 1.1;
+const span = (item: MediaView) =>
+  item.kind === "youtube" ? (item.video.shorts ? "row-span-2" : "sm:col-span-2 sm:row-span-2") : isPortrait(item) ? "row-span-2" : "";
 const embedSrc = (v: YouTubeVideo) => `https://www.youtube-nocookie.com/embed/${v.id}?autoplay=1&rel=0&playsinline=1${v.start ? `&start=${v.start}` : ""}`;
+const host = (href: string) => {
+  try {
+    return new URL(href).hostname.replace(/^www\./, "");
+  } catch {
+    return href;
+  }
+};
 const captionClass = "pointer-events-none absolute left-2 top-2 z-10 max-w-[calc(100%-1rem)] truncate rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm";
 ---
 
@@ -26,65 +35,51 @@ const captionClass = "pointer-events-none absolute left-2 top-2 z-10 max-w-[calc
     <h2 id="media" class="text-xl font-semibold tracking-tight">Photos &amp; videos</h2>
     <span class="text-sm text-muted-foreground">{parts.join(" · ")}</span>
   </div>
-  <!-- Row-based grid keeps shooting order left-to-right; portrait media spans two rows. -->
+  <!-- Row-based grid keeps the chosen order left-to-right; portrait media spans two rows. -->
   <div class="mt-4 grid grid-flow-row-dense auto-rows-[240px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
     {
-      youtube.map((video) => (
-        <figure class:list={["relative overflow-hidden rounded-2xl border border-border bg-black shadow-sm", video.shorts ? "row-span-2" : "sm:col-span-2 sm:row-span-2"]}>
-          {/* Lightweight facade: the YouTube player only loads on click. Without JS the link opens YouTube. */}
-          <a
-            href={video.url}
-            target="_blank"
-            rel="noopener"
-            data-youtube={embedSrc(video)}
-            data-title={video.caption ?? title}
-            class="group block h-full"
-            aria-label={`Play YouTube video${video.caption ? `: ${video.caption}` : ""}`}
-          >
-            <img
-              src={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              class="h-full w-full object-cover opacity-90 transition group-hover:scale-[1.02] group-hover:opacity-100"
-            />
-            <span class="absolute inset-0 flex items-center justify-center" aria-hidden="true">
-              <svg viewBox="0 0 68 48" class="h-12 w-[68px] drop-shadow-lg transition group-hover:scale-110">
-                <path d="M66.5 7.7a8.5 8.5 0 0 0-6-6C55.2.3 34 .3 34 .3s-21.2 0-26.5 1.4a8.5 8.5 0 0 0-6 6C.1 13 .1 24 .1 24s0 11 1.4 16.3a8.5 8.5 0 0 0 6 6C12.8 47.7 34 47.7 34 47.7s21.2 0 26.5-1.4a8.5 8.5 0 0 0 6-6C67.9 35 67.9 24 67.9 24s0-11-1.4-16.3Z" fill="#f00"></path>
-                <path d="M45 24 27 14v20Z" fill="#fff"></path>
-              </svg>
-            </span>
-          </a>
-          {video.caption && <figcaption class={captionClass}>{video.caption}</figcaption>}
-        </figure>
-      ))
-    }
-    {
       items.map((item) => (
-        <figure class:list={["relative overflow-hidden rounded-2xl border border-border bg-black shadow-sm", isPortrait(item) && "row-span-2"]}>
-          {item.kind === "photo" ? (
-            <a href={item.image.src} target="_blank" rel="noopener" aria-label={`Open full-size photo${item.caption ? `: ${item.caption}` : ""}`} class="block h-full">
-              <Image
-                src={item.image}
-                alt={item.caption ?? title}
-                widths={[480, 960]}
-                sizes="(min-width: 1024px) 380px, (min-width: 640px) 50vw, 100vw"
-                class="h-full w-full object-cover transition hover:scale-[1.02]"
-              />
+        <figure class:list={["relative overflow-hidden rounded-2xl border border-border bg-black shadow-sm", span(item)]}>
+          {item.kind === "photo" && (
+            <a href={item.src} target="_blank" rel="noopener" aria-label={`Open full-size photo${item.caption ? `: ${item.caption}` : ""}`} class="block h-full">
+              <img src={item.thumb} alt={item.caption ?? title} width={item.width} height={item.height} loading="lazy" decoding="async" class="h-full w-full object-cover transition hover:scale-[1.02]" />
             </a>
-          ) : (
-            <video
-              class="h-full w-full object-contain"
-              controls
-              playsinline
-              preload="none"
-              poster={item.poster?.src}
-              aria-label={item.caption ?? `Video from ${title}`}
-            >
-              <source src={item.src} type="video/mp4" />
+          )}
+          {item.kind === "video" && (
+            <video class="h-full w-full object-contain" controls playsinline preload="none" poster={item.poster} aria-label={item.caption ?? `Video from ${title}`}>
+              <source src={item.src} />
             </video>
           )}
-          {item.caption && <figcaption class={captionClass}>{item.caption}</figcaption>}
+          {item.kind === "youtube" && (
+            /* Lightweight facade: the YouTube player only loads on click. Without JS the link opens YouTube. */
+            <a
+              href={item.video.url}
+              target="_blank"
+              rel="noopener"
+              data-youtube={embedSrc(item.video)}
+              data-title={item.caption ?? title}
+              class="group block h-full"
+              aria-label={`Play YouTube video${item.caption ? `: ${item.caption}` : ""}`}
+            >
+              <img src={`https://i.ytimg.com/vi/${item.video.id}/hqdefault.jpg`} alt="" loading="lazy" decoding="async" class="h-full w-full object-cover opacity-90 transition group-hover:scale-[1.02] group-hover:opacity-100" />
+              <span class="absolute inset-0 flex items-center justify-center" aria-hidden="true">
+                <svg viewBox="0 0 68 48" class="h-12 w-[68px] drop-shadow-lg transition group-hover:scale-110">
+                  <path d="M66.5 7.7a8.5 8.5 0 0 0-6-6C55.2.3 34 .3 34 .3s-21.2 0-26.5 1.4a8.5 8.5 0 0 0-6 6C.1 13 .1 24 .1 24s0 11 1.4 16.3a8.5 8.5 0 0 0 6 6C12.8 47.7 34 47.7 34 47.7s21.2 0 26.5-1.4a8.5 8.5 0 0 0 6-6C67.9 35 67.9 24 67.9 24s0-11-1.4-16.3Z" fill="#f00"></path>
+                  <path d="M45 24 27 14v20Z" fill="#fff"></path>
+                </svg>
+              </span>
+            </a>
+          )}
+          {item.kind === "link" && (
+            <a href={item.url} target="_blank" rel="noopener" class="flex h-full flex-col justify-end bg-gradient-to-br from-[#0b3a5c] to-[#1b7fb3] p-5 text-white hover:from-[#0f5584]">
+              <svg viewBox="0 0 24 24" class="mb-auto h-7 w-7 opacity-80" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"></path>
+              </svg>
+              <span class="text-lg font-semibold leading-snug">{item.caption ?? host(item.url)}</span>
+              <span class="mt-1 truncate text-xs text-sky-100">{host(item.url)} ↗</span>
+            </a>
+          )}
+          {item.caption && item.kind !== "link" && <figcaption class={captionClass}>{item.caption}</figcaption>}
         </figure>
       ))
     }

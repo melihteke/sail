@@ -1,94 +1,17 @@
 ---
-import { Image } from "astro:assets";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import StatCard from "@/components/StatCard.astro";
-import { BOAT } from "@/data/boat";
-import { careerStats, getSails } from "@/lib/sails";
-import { formatDuration, formatNm } from "@/lib/units";
+import { getBoats } from "@/lib/sails";
+import { url } from "@/lib/url";
 
-const career = careerStats(await getSails());
+// Old address of the single boat page; send visitors to the main boat.
+const boats = await getBoats();
+const main = boats.find((b) => b.isDefault) ?? boats[0];
+const target = url(main ? `/boats/${main.slug}` : "/boats");
 ---
 
-<BaseLayout title="The boat" description={`${BOAT.model}: specifications and story.`}>
-  <div class="grid items-start gap-8 lg:grid-cols-2">
-    <figure class="overflow-hidden rounded-3xl border border-border bg-gradient-to-b from-sky-100 to-sky-50 shadow-sm dark:from-sky-950 dark:to-slate-900">
-      {
-        BOAT.photo ? (
-          <Image src={BOAT.photo} alt={`A ${BOAT.model} under sail`} widths={[640, 1200]} sizes="(min-width: 1024px) 560px, 100vw" class="aspect-[4/3] w-full object-cover" />
-        ) : (
-          <svg viewBox="0 0 400 300" class="aspect-[4/3] w-full" role="img" aria-label="Illustration of a Polyvalk sailboat">
-            <circle cx="320" cy="60" r="26" fill="#fbbf24" opacity="0.85" />
-            <line x1="200" y1="38" x2="200" y2="205" stroke="#334155" stroke-width="4" stroke-linecap="round" />
-            <path d="M204 44 L204 196 L300 196 Z" fill="#f8fafc" stroke="#94a3b8" stroke-width="2" />
-            <path d="M196 70 L196 196 L120 196 Z" fill="#e0f2fe" stroke="#94a3b8" stroke-width="2" />
-            <line x1="204" y1="196" x2="306" y2="196" stroke="#334155" stroke-width="4" stroke-linecap="round" />
-            <path d="M96 206 L318 206 L298 236 L122 236 Z" fill="#0b3a5c" />
-            <path d="M100 212 L314 212" stroke="#f59e0b" stroke-width="3" />
-            <path d="M0 246 q25 -10 50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0 V300 H0 Z" fill="#38bdf8" opacity="0.55" />
-            <path d="M0 262 q25 -10 50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0 V300 H0 Z" fill="#0284c7" opacity="0.6" />
-          </svg>
-        )
-      }
-      {
-        BOAT.photo && BOAT.photoCredit && (
-          <figcaption class="bg-card px-4 py-2 text-[11px] text-muted-foreground">
-            <a class="underline underline-offset-2 hover:text-foreground" href={BOAT.photoCredit.url}>{BOAT.photoCredit.text}</a>{" · "}
-            <a class="underline underline-offset-2 hover:text-foreground" href={BOAT.photoCredit.licenseUrl} rel="license">{BOAT.photoCredit.license}</a>
-          </figcaption>
-        )
-      }
-    </figure>
-
-    <div>
-      <p class="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">The boat</p>
-      <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{BOAT.model}</h1>
-      <p class="mt-1 text-muted-foreground">
-        Design {BOAT.designer} ({BOAT.designYear}) · Built by <a class="underline underline-offset-2 hover:text-foreground" href={BOAT.builderUrl}>{BOAT.builder}</a>
-      </p>
-      <p class="mt-5 leading-relaxed">{BOAT.description}</p>
-      <dl class="mt-6 grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
-        <div class="flex justify-between gap-2 border-b border-border py-2"><dt class="text-muted-foreground">Sail number</dt><dd class="font-medium">{BOAT.sailNumber ?? "–"}</dd></div>
-        <div class="flex justify-between gap-2 border-b border-border py-2"><dt class="text-muted-foreground">Home water</dt><dd class="text-right font-medium">{BOAT.homePort}</dd></div>
-      </dl>
-    </div>
-  </div>
-
-  <section class="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4" aria-label="Sailed on this boat">
-    <StatCard label="Length" value="6.50 m" hint="overall" />
-    <StatCard label="Sail area" value="16 m²" hint="main + jib" />
-    <StatCard label="Sailed" value={formatNm(career.totalNm)} hint={`${career.count} logged sails`} />
-    <StatCard label="Time aboard" value={formatDuration(career.totalSec)} />
-  </section>
-
-  <section aria-labelledby="specs" class="mt-10">
-    <h2 id="specs" class="text-xl font-semibold tracking-tight">Specifications</h2>
-    <div class="mt-4 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-      <table class="w-full text-sm">
-        <tbody>
-          {
-            BOAT.specs.map((spec) => (
-              <tr class="border-b border-border last:border-0">
-                <th scope="row" class="w-1/2 px-5 py-3 text-left font-medium text-muted-foreground">{spec.label}</th>
-                <td class="px-5 py-3">
-                  <span class="font-semibold tabular-nums">{spec.value}</span>
-                  {spec.hint && <span class="ml-2 text-xs text-muted-foreground">{spec.hint}</span>}
-                </td>
-              </tr>
-            ))
-          }
-        </tbody>
-      </table>
-    </div>
-    <p class="mt-3 text-xs text-muted-foreground">
-      Class figures; individual boats vary by build year and fit-out. Sources:{" "}
-      {
-        BOAT.sources.map((source, i) => (
-          <>
-            {i > 0 && ", "}
-            <a class="underline underline-offset-2 hover:text-foreground" href={source.url}>{source.label}</a>
-          </>
-        ))
-      }.
-    </p>
-  </section>
+<BaseLayout title="The boat">
+  <meta http-equiv="refresh" content={`0; url=${target}`} slot="head" />
+  <p class="py-16 text-center text-muted-foreground">
+    This page has moved to <a class="text-primary underline" href={target}>{target}</a>.
+  </p>
 </BaseLayout>

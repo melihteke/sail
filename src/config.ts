@@ -13,3 +13,18 @@ export const SITE = {
     lon: 4.8395,
   },
 } as const;
+
+/**
+ * Supabase project (public URL + anon key; both are safe to ship, row level security protects the data).
+ * Without them the site builds from the legacy markdown content in src/content/sails.
+ */
+export const SUPABASE = {
+  url: (import.meta.env.PUBLIC_SUPABASE_URL as string | undefined) ?? "",
+  anonKey: (import.meta.env.PUBLIC_SUPABASE_ANON_KEY as string | undefined) ?? "",
+};
+
+/** GitHub repo + workflow the admin "Deploy" button runs (through the `publish` edge function). */
+export const DEPLOY = {
+  repo: "melihteke/sail",
+  workflow: "deploy.yml",
+};

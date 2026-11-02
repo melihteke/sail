@@ -13,7 +13,10 @@ const base = process.env.SITE_BASE_PATH || "/";
 export default defineConfig({
   site,
   base,
-  integrations: [react(), sitemap()],
+  // GitHub Pages caches HTML for 10 minutes while every deploy renames the hashed CSS file, so a cached page
+  // would point at a CSS file that no longer exists ("raw HTML"). Inlining the CSS keeps page and styles together.
+  build: { inlineStylesheets: "always" },
+  integrations: [react(), sitemap({ filter: (page) => !/\/admin\b/.test(page) })],
   vite: {
     plugins: [tailwindcss()],
   },

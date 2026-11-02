@@ -1,0 +1,29 @@
+---
+import type { BoatView } from "@/lib/sails";
+
+interface Props {
+  boat: BoatView;
+  class?: string;
+  eager?: boolean;
+}
+const { boat, class: className = "aspect-[4/3] w-full object-cover", eager = false } = Astro.props;
+---
+
+{
+  boat.photo ? (
+    <img src={boat.photo.src} alt={`${boat.name}${boat.model ? `, a ${boat.model}` : ""}`} width={boat.photo.width} height={boat.photo.height} loading={eager ? "eager" : "lazy"} decoding="async" class={className} />
+  ) : (
+    <svg viewBox="0 0 400 300" class={className} role="img" aria-label={`Illustration of ${boat.name}`}>
+      <rect width="400" height="300" fill="#e0f2fe" />
+      <circle cx="320" cy="60" r="26" fill="#fbbf24" opacity="0.85" />
+      <line x1="200" y1="38" x2="200" y2="205" stroke="#334155" stroke-width="4" stroke-linecap="round" />
+      <path d="M204 44 L204 196 L300 196 Z" fill="#f8fafc" stroke="#94a3b8" stroke-width="2" />
+      <path d="M196 70 L196 196 L120 196 Z" fill="#e0f2fe" stroke="#94a3b8" stroke-width="2" />
+      <line x1="204" y1="196" x2="306" y2="196" stroke="#334155" stroke-width="4" stroke-linecap="round" />
+      <path d="M96 206 L318 206 L298 236 L122 236 Z" fill="#0b3a5c" />
+      <path d="M100 212 L314 212" stroke="#f59e0b" stroke-width="3" />
+      <path d="M0 246 q25 -10 50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0 V300 H0 Z" fill="#38bdf8" opacity="0.55" />
+      <path d="M0 262 q25 -10 50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0 V300 H0 Z" fill="#0284c7" opacity="0.6" />
+    </svg>
+  )
+}

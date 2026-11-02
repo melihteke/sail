@@ -1,0 +1,43 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import BoatPhoto from "@/components/BoatPhoto.astro";
+import { careerStats, getLogbook } from "@/lib/sails";
+import { formatDuration, formatNm } from "@/lib/units";
+import { url } from "@/lib/url";
+
+const { sails, boats } = await getLogbook();
+const cards = boats.map((boat) => ({ boat, stats: careerStats(sails.filter((s) => s.boat?.id === boat.id)) }));
+---
+
+<BaseLayout title="Boats" description="The boats I sail, with specifications and miles logged on each.">
+  <header class="max-w-2xl">
+    <p class="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Fleet</p>
+    <h1 class="mt-2 text-3xl font-semibold tracking-tight">Boats</h1>
+    <p class="mt-2 text-muted-foreground">Every boat in the logbook and how far I've sailed on it.</p>
+  </header>
+
+  <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      cards.map(({ boat, stats }) => (
+        <a
+          href={url(`/boats/${boat.slug}`)}
+          class="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <div class="overflow-hidden">
+            <BoatPhoto boat={boat} class="aspect-[4/3] w-full object-cover transition group-hover:scale-[1.02]" />
+          </div>
+          <div class="flex flex-1 flex-col p-4">
+            <p class="text-xs text-muted-foreground">{boat.model ?? "Boat"}{boat.isDefault ? " · Main boat" : ""}</p>
+            <h2 class="mt-1 font-semibold tracking-tight group-hover:text-primary">{boat.name}</h2>
+            <dl class="mt-auto grid grid-cols-3 gap-2 pt-4 text-xs">
+              <div><dt class="text-muted-foreground">Sails</dt><dd class="font-semibold tabular-nums">{stats.count}</dd></div>
+              <div><dt class="text-muted-foreground">Distance</dt><dd class="font-semibold tabular-nums">{formatNm(stats.totalNm)}</dd></div>
+              <div><dt class="text-muted-foreground">Time</dt><dd class="font-semibold tabular-nums">{formatDuration(stats.totalSec)}</dd></div>
+            </dl>
+          </div>
+        </a>
+      ))
+    }
+  </div>
+  {boats.length === 0 && <p class="mt-10 text-muted-foreground">No boats yet.</p>}
+</BaseLayout>

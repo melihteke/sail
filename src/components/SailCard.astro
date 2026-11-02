@@ -1,10 +1,8 @@
 ---
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { Image } from "astro:assets";
 import type { Sail } from "@/lib/sails";
 import { formatLocal } from "@/lib/sails";
-import { sailCover } from "@/lib/media";
 import { url } from "@/lib/url";
 import { beaufort, compass, formatDuration, formatKn, formatNm } from "@/lib/units";
 import TrackSvg from "./TrackSvg.astro";
@@ -13,11 +11,10 @@ interface Props {
   sail: Sail;
 }
 const { sail } = Astro.props;
-const { data } = sail.entry;
 const { stats, wind } = sail;
-// Explicit cover photo wins; otherwise the static route map from scripts/make-maps.mjs.
+// A cover picked on purpose wins; otherwise the static route map from scripts/make-maps.ts.
 const map = existsSync(join(process.cwd(), "public", "maps", `${sail.slug}.webp`)) ? url(`/maps/${sail.slug}.webp`) : undefined;
-const cover = data.cover ?? (map ? undefined : sailCover(sail.slug));
+const cover = sail.explicitCover;
 ---
 
 <a
@@ -27,11 +24,11 @@ const cover = data.cover ?? (map ? undefined : sailCover(sail.slug));
   <div class="relative aspect-[16/9] overflow-hidden bg-sea/10">
     {
       cover ? (
-        <Image src={cover} alt="" widths={[400, 800]} sizes="(min-width: 768px) 400px, 100vw" class="h-full w-full object-cover transition group-hover:scale-[1.02]" />
+        <img src={cover.src} alt="" width={cover.width} height={cover.height} loading="lazy" decoding="async" class="h-full w-full object-cover transition group-hover:scale-[1.02]" />
       ) : map ? (
         <img
           src={map}
-          alt={`Route map of ${data.title}`}
+          alt={`Route map of ${sail.title}`}
           width="960"
           height="540"
           loading="lazy"
@@ -49,13 +46,20 @@ const cover = data.cover ?? (map ? undefined : sailCover(sail.slug));
         </span>
       )
     }
+    {
+      sail.media.length > 0 && (
+        <span class="absolute bottom-2 right-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
+          {sail.media.length} media
+        </span>
+      )
+    }
   </div>
   <div class="flex flex-1 flex-col p-4">
     <p class="text-xs text-muted-foreground">
-      {formatLocal(stats.start, { weekday: "short", day: "numeric", month: "short", year: "numeric" })} · {data.location}
+      {formatLocal(stats.start, { weekday: "short", day: "numeric", month: "short", year: "numeric" })} · {sail.location}
     </p>
-    <h3 class="mt-1 font-semibold leading-snug tracking-tight group-hover:text-primary">{data.title}</h3>
-    <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{data.summary}</p>
+    <h3 class="mt-1 font-semibold leading-snug tracking-tight group-hover:text-primary">{sail.title}</h3>
+    <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{sail.summary}</p>
     <dl class="mt-auto grid grid-cols-3 gap-2 pt-4 text-xs">
       <div><dt class="text-muted-foreground">Distance</dt><dd class="font-semibold tabular-nums">{formatNm(stats.distanceNm)}</dd></div>
       <div><dt class="text-muted-foreground">Time</dt><dd class="font-semibold tabular-nums">{formatDuration(stats.elapsedSec)}</dd></div>

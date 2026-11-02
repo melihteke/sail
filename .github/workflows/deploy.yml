@@ -3,6 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # Also run from the admin panel's "Deploy site" button (Supabase `publish` edge function).
   workflow_dispatch:
 
 permissions:
@@ -15,8 +16,25 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      # Public by design (row level security protects the data). Set them under
+      # Settings → Secrets and variables → Actions → Variables. Without them the site builds from Markdown.
+      PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
+      PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
     steps:
       - uses: actions/checkout@v7
       # Tells the build where Pages serves the site: "/" with the custom domain,
@@ -27,6 +45,12 @@ jobs:
         run: |
           echo "SITE_ORIGIN=${{ steps.pages.outputs.origin }}" >> "$GITHUB_ENV"
           echo "SITE_BASE_PATH=${{ steps.pages.outputs.base_path }}" >> "$GITHUB_ENV"
+      # Route-map thumbnails are rendered from OSM tiles; keep them between runs so only new sails are drawn.
+      - uses: actions/cache@v6
+        with:
+          path: public/maps
+          key: route-maps-${{ github.run_id }}
+          restore-keys: route-maps-
       - uses: withastro/action@v6
         with:
           node-version: 24

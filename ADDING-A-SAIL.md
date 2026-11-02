@@ -1,169 +1,61 @@
 # Yeni seyir logu ekleme
 
-## 1. GPX'i indir
+Seyirler artık **admin panelinden** ekleniyor: <https://sail.mteke.com/admin/>
+(İlk kurulum için [docs/SETUP.md](docs/SETUP.md).)
 
-Strava → aktivite → `⋯` → **Export GPX**. Diğer uygulamalar (Navionics, Garmin vb.) da olur, yeter
-ki GPX'te zaman damgalı track noktaları bulunsun.
+## 1. GPX'i al
 
-## 2. Seyir klasörünü oluştur
+Upwind, Strava, Garmin, Navionics gibi uygulamalardan seyri **GPX** olarak export et (Strava: aktivite → `⋯` →
+**Export GPX**). Zaman damgalı track noktaları olan her GPX olur.
 
-Workspace klasöründe:
+## 2. Giriş yap ve "New sail"
 
-```powershell
-npm run new-sail -- "C:\Users\melihteke\Downloads\Afternoon_Sail.gpx" "Windy afternoon on the Poel"
-```
+1. <https://sail.mteke.com/admin/> → **Sign in with Google** (melihteke@gmail.com).
+2. **New sail** → GPX dosyasını kutuya sürükle (ya da tıklayıp seç).
+3. Birkaç saniye içinde önizleme gelir: harita, mesafe, süre, hız, o saatlerin rüzgarı, tack/jibe sayısı ve
+   en çok hangi seyir yönünde gittiğin. Başlık, tarih, konum ve tekne otomatik önerilir; istersen değiştir.
+4. **Create draft & continue** → seyir taslak olarak kaydedilir ve editör açılır.
 
-Başlık verilmezse GPX'teki aktivite adı kullanılır. Tarih GPX'ten alınır (Amsterdam saati).
-Komut şunu oluşturur:
+## 3. Bilgileri ve hikâyeyi doldur
 
-```text
-src/content/sails/2026-10-25-windy-afternoon-on-the-poel/
-  index.md     ← notlar ve bilgiler
-  track.gpx    ← GPX'in kopyası
-```
+- **Basics:** başlık, tarih, konum, **tekne** (listeden seç), rolün, tek cümlelik özet, crew, yelkenler, etiketler,
+  puan (yıldız), rif.
+- **Story:** dört ayrı alan: **How it went**, **What I practised**, **Learnings**, **Notes**. Markdown destekli
+  (`**kalın**`, `- liste`, `[link](https://…)`); **Preview** ile nasıl görüneceğine bak. Boş bıraktığın alan sitede
+  görünmez.
+- Her şey **otomatik kaydedilir** (sağ üstte "All changes saved").
 
-## 3. Fotoğraf, video ve YouTube ekle (isteğe bağlı)
+## 4. Medya (hepsi isteğe bağlı)
 
-Üçü de **opsiyonel**: istersen hiçbirini, istersen birini ya da hepsini ekle. Hiç medya yoksa seyir
-sayfasında galeri bölümü görünmez.
+- **Foto / video:** kutuya sürükle. iPhone **HEIC**, JPG, PNG fotoğraflar otomatik JPG'ye çevrilir, küçültülür ve
+  **konum (GPS) bilgisi silinir**. Videolar **50 MB**'a kadar; **MP4** her tarayıcıda oynar (iPhone `.mov` bazı
+  tarayıcılarda oynamayabilir, panel uyarır). Uzun videolar için YouTube'u kullan.
+- **YouTube:** linki yapıştır (`youtu.be/…`, `watch?v=…`, Shorts; `?t=90` başlangıç saniyesi). Video YouTube'da
+  **Public** ya da **Unlisted** olmalı.
+- **Link:** örneğin Google Photos albümü.
+- Her öğeye altyazı yazabilir, oklarla sıralayabilir, ★ ile **kapak** seçebilirsin. Kapak seçmezsen kartlarda rota
+  haritası görünür.
 
-### 3a. Fotoğraf ve video
+## 5. Yayınla
 
-Telefondan geldiği gibi bırak; dönüştürmeyi script yapar.
+- **Publish** → seyir yayınlanır ve site otomatik yeniden build edilir; **~2 dakika** sonra
+  <https://sail.mteke.com> adresinde görünür.
+- Yayındaki bir seyri sonradan düzenlersen üstteki çubukta "N changes not live yet" yazar; **Deploy site** ile
+  canlıya al.
+- **Unpublish** seyri siteden kaldırır (taslak olarak kalır). **Delete sail** her şeyi (track ve medya dahil) siler.
 
-| Kaynak | Fotoğraf | Video |
-| --- | --- | --- |
-| iCloud (iPhone) | `.HEIC`, `.JPG` | `.MOV` (HEVC, HDR olabilir) |
-| WhatsApp | `.jpg` | `.mp4` |
-| Diğer | `.png`, `.webp`, `.avif` | `.m4v`, `.3gp`, `.webm`, `.mkv`, `.avi` |
+## Tekne eklemek
 
-**a) Inbox ile (önerilen):** dosyaları workspace'teki `inbox/` klasörüne at (yoksa oluştur), sonra:
-
-```powershell
-npm run add-media -- 2026-10-25
-```
-
-Seyir adının bir parçası yeterli (`2026-10-25`, `windy-afternoon` gibi). İşlenen orijinaller
-`inbox/processed/<seyir>/` klasörüne taşınır. `inbox/` git'e girmez.
-
-**b) Dosyaları doğrudan vererek:**
-
-```powershell
-npm run add-media -- 2026-10-25 "C:\Users\melihteke\Downloads\IMG_4821.MOV" "C:\Users\melihteke\Downloads\IMG-20261025-WA0003.jpg"
-```
-
-Script ne yapar:
-
-- **Fotoğraf:** HEIC dahil hepsini JPG'ye çevirir, uzun kenarı en fazla 2400 px yapar, yönünü düzeltir
-  ve **EXIF/GPS bilgilerini siler** → `photos/`
-- **Video:** her tarayıcıda oynayan **H.264 MP4**'e çevirir. Uzun kenar en fazla 1280 px (720p),
-  kare hızı en fazla 30 fps olur; iPhone **HDR** videoların renkleri düzeltilir (SDR), dikey
-  videolar dik kalır, konum metadatası silinir ve bir kapak görseli (poster) üretilir → `videos/`
-- Dosyaları **çekim zamanına göre** sıralar ve numaralar (`01-…`, `02-…`). Sırasıyla EXIF tarihine,
-  video oluşturma tarihine, WhatsApp dosya adındaki tarihe ve en son dosya tarihine bakar. Böylece
-  iCloud ve WhatsApp dosyaları doğru sırada karışık durur.
-
-Seçenekler:
-
-- `--mute`: videoların sesini kaldırır (rüzgar uğultusu için)
-- `--max-seconds 30`: videoları ilk 30 saniyeyle sınırlar
-
-Video ipuçları:
-
-- Kısa tut (≈ 1 dakikaya kadar). 720p'de 1 dakika ≈ 5–10 MB. Sonuç 50 MB'ı geçerse uyarı verir;
-  GitHub'ın 100 MB sınırına yaklaşırsa dosyayı oluşturmaz.
-- iCloud'dan indirirken **"Unmodified Original"** (değiştirilmemiş orijinal) de, **"Most
-  Compatible"** de olur. WhatsApp'ın kendi sıkıştırması kaliteyi düşürür; mümkünse iCloud'dan al.
-
-### 3b. YouTube linki
-
-Dosya gerekmez; `index.md`'ye linki yazman yeterli (adım 4'teki `youtube:` alanı). Desteklenen
-biçimler:
-
-```text
-https://www.youtube.com/watch?v=VIDEO_ID
-https://youtu.be/VIDEO_ID
-https://youtu.be/VIDEO_ID?t=1m30s       ← belirtilen saniyeden başlar
-https://www.youtube.com/shorts/VIDEO_ID ← dikey gösterilir
-```
-
-- YouTube videoları galerinin başında büyük kare olarak görünür.
-- Sayfa açılınca sadece küçük resim yüklenir; oynatıcı tıklanınca açılır. Bu, sayfayı hızlı tutar ve
-  gizlilik için `youtube-nocookie.com` kullanır.
-- Video YouTube'da **Public** ya da **Unlisted** (liste dışı) olmalı; **Private** videolar oynamaz.
-  Kişisel seyir videoları için Unlisted iyi bir seçenek.
-- Link hatalıysa `npm run build` hangi satırda sorun olduğunu söyler.
-
-## 4. `index.md`'yi doldur
-
-```yaml
----
-title: "Windy afternoon on the Poel"
-date: 2026-10-25
-gpx: track.gpx
-location: De Poel, Amstelveen
-summary: Tek cümlelik özet (kartlarda görünür).
-boat: Polyvalk
-crew: [Ayşe, Can]
-role: helm          # skipper | helm | crew | trimmer | student
-rating: 4           # 1-5 yıldız
-sails: Main + jib
-reef: true
-tags: [gusty, reefing]
-# cover: ./photos/03-img_4822.jpg   # boşsa ilk fotoğraf kapak olur
-captions:            # isteğe bağlı; dosya adları photos/ ve videos/ içindeki gibi
-  01-img-20261025-wa0001.jpg: Rifli çıkış
-  04-img_4821.mp4: Rüzgarda kavança
-youtube:             # isteğe bağlı; sadece link ya da link + altyazı
-  - https://youtu.be/VIDEO_ID
-  - url: https://www.youtube.com/watch?v=VIDEO_ID&t=1m30s
-    caption: Düzenlenmiş seyir videosu
-draft: false        # yayınlamak için false yap
----
-
-## How it went
-
-## What I practised
-
-## Learnings
-```
-
-- `photos/` ve `videos/` klasörlerindeki her şey **otomatik** galeriye eklenir; listelemen gerekmez.
-  Bir medyayı kaldırmak için dosyasını sil (videoda `.mp4` ile aynı adlı `.jpg` posteri de).
-- `draft: true` kaldığı sürece seyir yalnızca lokalde (`npm run dev`) görünür, canlı sitede çıkmaz.
-- Mesafe, süre, hız, harita ve rüzgar **otomatik** hesaplanır; elle girilmez.
-
-## 5. Lokalde kontrol et
-
-```powershell
-npm run dev
-```
-
-<http://localhost:4321/logbook> adresinde yeni seyri kontrol et. Kapatmak için terminalde `Ctrl + C`.
-
-İstersen yayından önce tam build ile hata kontrolü yap:
-
-```powershell
-npm run build
-```
-
-## 6. Yayınla
-
-```powershell
-git add -A
-git commit -m "Log: windy afternoon on the Poel"
-git push
-```
-
-GitHub Actions siteyi build edip birkaç dakika içinde <https://sail.mteke.com> adresine yayınlar.
-Durumu repo → **Actions** sekmesinden izleyebilirsin. Ana sayfadaki istatistikler ve heatmap de
-otomatik güncellenir.
+Admin → **Boats** → **New boat**: ad, model, açıklama, fotoğraf (başkasının fotoğrafıysa kredi/lisans alanlarını
+doldur), özellik tablosu. "Main boat" işaretli tekne yeni seyirlerde otomatik seçilir. Teknenin sitedeki sayfası:
+`/boats/<slug>`; orada o teknede yaptığın toplam mil ve seyirler listelenir.
 
 ## Notlar
 
-- **Rüzgar verisi:** seyirden 3 gün sonra Open-Meteo verisi kesinleşir. O tarihten sonra lokalde
-  `npm run build` çalıştırırsan veri `src/data/wind-cache.json` dosyasına kaydedilir; bu dosyayı da
-  commit et. Yapmazsan sorun olmaz, GitHub her build'de veriyi yeniden çeker.
-- **Seyri gizlemek:** `draft: true` yapıp push et.
-- **Seyri silmek:** seyir klasörünü sil, ardından commit ve push et.
-- **Başka bir göl veya teknede:** `location` ve `boat` alanlarını değiştirmen yeterli.
+- **Rüzgar** seyir anında Open-Meteo'dan çekilir. Seyirden hemen sonra (aynı gün) eklersen veri henüz kesinleşmemiş
+  olabilir; birkaç gün sonra editördeki **Refresh wind** ile güncelle.
+- **Tack/jibe ve seyir yönleri** GPS rotası ile saatlik model rüzgarından hesaplanan **tahminlerdir**.
+- Supabase ücretsiz planı 7 gün hiç kullanılmazsa uyur: site çalışmaya devam eder, sadece admin paneli için
+  Supabase dashboard'dan **Restore** demen gerekir.
+- Track'i değiştirmek için editördeki **Track** bölümüne yeni GPX bırak (istatistikler, rüzgar ve analiz yeniden
+  hesaplanır).

@@ -1,0 +1,62 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import StatCard from "@/components/StatCard.astro";
+import { careerStats, formatLocal, getSails, type Sail } from "@/lib/sails";
+import { formatDuration, formatKn, formatNm } from "@/lib/units";
+import { url } from "@/lib/url";
+
+const sails = await getSails();
+const career = careerStats(sails);
+const date = (s: Sail) => formatLocal(s.stats.start, { day: "numeric", month: "short", year: "numeric" });
+const records = [
+  { label: "Top speed", sail: career.fastest, value: (s: Sail) => formatKn(s.stats.maxSpeedKn), note: "10-second average speed over ground" },
+  { label: "Longest distance", sail: career.longest, value: (s: Sail) => formatNm(s.stats.distanceNm), note: "distance over ground" },
+  { label: "Longest time out", sail: career.longestTime, value: (s: Sail) => formatDuration(s.stats.elapsedSec), note: "dock to dock" },
+  { label: "Windiest day", sail: career.windiest, value: (s: Sail) => (s.wind ? `${s.wind.maxGustKn.toFixed(0)} kn gusts` : "–"), note: "strongest modelled gust" },
+  {
+    label: "Most manoeuvres",
+    sail: career.busiest,
+    value: (s: Sail) => (s.analysis ? `${s.analysis.tacks + s.analysis.gybes}` : "–"),
+    note: "tacks + gybes",
+  },
+  {
+    label: "Fastest average",
+    sail: sails.reduce<Sail | null>((best, s) => (!best || s.stats.avgSpeedKn > best.stats.avgSpeedKn ? s : best), null),
+    value: (s: Sail) => formatKn(s.stats.avgSpeedKn),
+    note: "average speed while moving",
+  },
+].filter((r) => r.sail);
+---
+
+<BaseLayout title="Records" description="Personal bests from the logbook: fastest, longest and windiest sails.">
+  <header class="max-w-2xl">
+    <p class="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Personal bests</p>
+    <h1 class="mt-2 text-3xl font-semibold tracking-tight">Records</h1>
+    <p class="mt-2 text-muted-foreground">The best of {career.count} logged {career.count === 1 ? "sail" : "sails"}.</p>
+  </header>
+
+  <section class="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4" aria-label="Totals">
+    <StatCard label="Distance" value={formatNm(career.totalNm)} hint="all sails" />
+    <StatCard label="Time sailing" value={formatDuration(career.totalSec)} hint={`${career.days} days on the water`} />
+    <StatCard label="Tacks" value={String(career.tacks)} hint="estimated" />
+    <StatCard label="Gybes" value={String(career.gybes)} hint="estimated" />
+  </section>
+
+  <section aria-label="Records" class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      records.map((r) => (
+        <a
+          href={url(`/logbook/${r.sail!.slug}`)}
+          class="group rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{r.label}</p>
+          <p class="mt-1 text-3xl font-semibold tabular-nums tracking-tight">{r.value(r.sail!)}</p>
+          <p class="mt-0.5 text-xs text-muted-foreground">{r.note}</p>
+          <p class="mt-4 text-sm font-medium group-hover:text-primary">{r.sail!.title}</p>
+          <p class="text-xs text-muted-foreground">{date(r.sail!)} · {r.sail!.location}</p>
+        </a>
+      ))
+    }
+  </section>
+  {sails.length === 0 && <p class="mt-10 text-muted-foreground">No sails logged yet.</p>}
+</BaseLayout>

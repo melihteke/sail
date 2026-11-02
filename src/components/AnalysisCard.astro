@@ -1,0 +1,53 @@
+---
+import type { SailAnalysis } from "@/lib/analysis";
+import { POINT_OF_SAIL_LABEL, type PointOfSail } from "@/lib/analysis";
+
+interface Props {
+  analysis: SailAnalysis;
+}
+const { analysis } = Astro.props;
+const order: PointOfSail[] = ["upwind", "reach", "broadReach", "downwind"];
+const total = order.reduce((s, k) => s + analysis.pointsOfSail[k], 0) || 1;
+const colors: Record<PointOfSail, string> = {
+  upwind: "var(--chart-1)",
+  reach: "var(--chart-2)",
+  broadReach: "var(--chart-3)",
+  downwind: "var(--chart-4)",
+};
+---
+
+<div class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+  <div class="flex flex-wrap items-baseline justify-between gap-2">
+    <h2 class="text-base font-semibold tracking-tight">Manoeuvres &amp; points of sail</h2>
+    <p class="text-xs text-muted-foreground">Estimated from GPS course and hourly wind</p>
+  </div>
+  <div class="mt-4 grid grid-cols-2 gap-3">
+    <div class="rounded-xl bg-secondary p-3">
+      <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Tacks</p>
+      <p class="mt-0.5 text-2xl font-semibold tabular-nums">{analysis.tacks}</p>
+    </div>
+    <div class="rounded-xl bg-secondary p-3">
+      <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Gybes</p>
+      <p class="mt-0.5 text-2xl font-semibold tabular-nums">{analysis.gybes}</p>
+    </div>
+  </div>
+  <div class="mt-5 flex h-3 overflow-hidden rounded-full bg-muted" role="img" aria-label="Share of time on each point of sail">
+    {order.map((k) => <span style={`width:${(analysis.pointsOfSail[k] / total) * 100}%;background:${colors[k]}`}></span>)}
+  </div>
+  <dl class="mt-4 grid gap-2 text-sm">
+    {
+      order.map((k) => (
+        <div class="flex items-center justify-between gap-3">
+          <dt class="flex items-center gap-2 whitespace-nowrap">
+            <span class="h-2.5 w-2.5 shrink-0 rounded-full" style={`background:${colors[k]}`}></span>
+            {POINT_OF_SAIL_LABEL[k]}
+          </dt>
+          <dd class="text-right tabular-nums text-muted-foreground">
+            <span class="font-medium text-foreground">{Math.round((analysis.pointsOfSail[k] / total) * 100)}%</span>
+            {analysis.speedByPointOfSail[k] > 0 && ` · ${analysis.speedByPointOfSail[k].toFixed(1)} kn`}
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+</div>
