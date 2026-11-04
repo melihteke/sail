@@ -110,12 +110,13 @@ function Passage({ level }: { level: ChartLevel }) {
     : { water: '#cfe8f5', land: '#f1e2b4', landStroke: '#b08d57', shoal: '#9fd0ea', shoalStroke: '#5a9cc2', zone: 'rgba(250,204,21,0.18)', route: '#0b3a5c' }
 
   return (
-    <div className="flex flex-col lg:h-[calc(100vh-7.25rem)] lg:flex-row">
-      <div className="flex-1 overflow-auto bg-slate-200 p-2 dark:bg-navy-950">
+    <div className="flex flex-col lg:flex-row lg:items-start">
+      {/* Chart box hugs the SVG so no empty band shows below it inside the site's content width. */}
+      <div className="flex-1 self-stretch rounded-l-lg bg-slate-200 p-2 lg:sticky lg:top-16 lg:self-start dark:bg-navy-950">
         <svg
           ref={svgRef}
           viewBox={`0 0 ${level.width} ${level.height}`}
-          className={`mx-auto block h-auto max-h-full w-full max-w-[1100px] rounded-lg shadow ${done ? '' : 'cursor-crosshair'}`}
+          className={`mx-auto block h-auto w-full max-w-[1100px] rounded-lg shadow lg:max-h-[calc(100vh-6rem)] ${done ? '' : 'cursor-crosshair'}`}
           onClick={onChartClick}
           role="application"
           aria-label={t(`level.${level.id}.title` as MessageKey)}
@@ -264,7 +265,7 @@ function Passage({ level }: { level: ChartLevel }) {
         </svg>
       </div>
 
-      <aside className="w-full overflow-y-auto border-l border-slate-200 bg-white p-4 lg:w-[24rem] dark:border-white/10 dark:bg-navy-950">
+      <aside className="w-full self-stretch overflow-y-auto border-l border-slate-200 bg-white p-4 lg:w-[24rem] dark:border-white/10 dark:bg-navy-950">
         <Link to="/nautical-marks?tab=passage" className="text-sm text-sea-500 hover:underline">
           ← {t('ps.levels')}
         </Link>
