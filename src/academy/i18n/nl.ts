@@ -822,4 +822,5 @@ export const nl: Messages = {
   'np.preset.lelystad-hoorn': 'Lelystad → Hoorn (Markermeer)',
   'np.preset.bodrum-kos': 'Bodrum → Kos (Egeïsche Zee)',
   'np.preset.fenerbahce-buyukada': 'Fenerbahçe → Büyükada (Zee van Marmara)',
+  'np.preset.ijmuiden-london': 'IJmuiden → Londen (Noordzee & Theems)',
 }

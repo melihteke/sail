@@ -820,6 +820,7 @@ export const en = {
   'np.preset.lelystad-hoorn': 'Lelystad → Hoorn (Markermeer)',
   'np.preset.bodrum-kos': 'Bodrum → Kos (Aegean)',
   'np.preset.fenerbahce-buyukada': 'Fenerbahçe → Büyükada (Sea of Marmara)',
+  'np.preset.ijmuiden-london': 'IJmuiden → London (North Sea & Thames)',
 }
 
 export type MessageKey = keyof typeof en

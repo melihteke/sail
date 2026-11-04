@@ -53,4 +53,17 @@ export const presets: NavPreset[] = [
       { id: 'safe', at: ll(40.885, 29.122) },
     ],
   },
+  {
+    // North Sea crossing: IJmuiden (Seaport Marina) to St Katharine Docks, up the Thames.
+    id: 'ijmuiden-london',
+    start: ll(52.462, 4.585),
+    end: ll(51.5068, -0.0717),
+    env: { windFromDeg: 30, windSpeedKn: 15, currentSetDeg: 210, currentSpeedKn: 1 },
+    marks: [
+      { id: 'safe', at: ll(52.47, 4.39) },
+      { id: 'special', at: ll(52.15, 3.3) },
+      { id: 'north', at: ll(51.8, 1.66) },
+      { id: 'safe', at: ll(51.55, 1.25) },
+    ],
+  },
 ]
