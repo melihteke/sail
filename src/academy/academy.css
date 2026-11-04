@@ -1,0 +1,37 @@
+.academy .leaflet-container {
+  background: #aad3df;
+}
+
+.dark .academy .leaflet-tile-pane {
+  filter: none;
+}
+
+.sg-divicon {
+  background: transparent;
+  border: none;
+}
+
+@keyframes sg-flutter {
+  0%,
+  100% {
+    transform: translateY(0) skewY(0deg);
+  }
+  25% {
+    transform: translateY(-2px) skewY(-6deg);
+  }
+  75% {
+    transform: translateY(2px) skewY(6deg);
+  }
+}
+
+.sg-flutter {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: sg-flutter 0.35s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sg-flutter {
+    animation: none;
+  }
+}

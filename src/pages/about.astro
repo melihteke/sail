@@ -23,25 +23,25 @@ const jsonLd = {
 
 <BaseLayout title="About me" description="Melih Teke: network engineer and sailor for 2.5 years. Why this site exists." jsonLd={jsonLd}>
   <article class="mx-auto max-w-2xl">
-    <p class="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">About me</p>
-    <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Hi, I'm Melih.</h1>
+    <p class="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground" data-i18n="about.kicker">About me</p>
+    <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl" data-i18n="about.title">Hi, I'm Melih.</h1>
     <div class="prose prose-slate mt-6 max-w-none dark:prose-invert prose-a:text-primary">
-      <p>
+      <p data-i18n="about.p1">
         I'm a network engineer by trade and a sailor by passion. I've been sailing for about two and a half years, mostly
         small keelboats on Dutch lakes.
       </p>
-      <p>
+      <p data-i18n="about.p2">
         I built this site to keep a proper log of every sail and to collect what I learn about sailing, wind and
         seamanship in one place. Writing down how each sail went, what I practised and what went wrong is how I get better
         on the water.
       </p>
-      <p>The goal is simple: become a more confident, more competent sailor, one sail at a time.</p>
+      <p data-i18n="about.p3">The goal is simple: become a more confident, more competent sailor, one sail at a time.</p>
     </div>
 
     <section class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3" aria-label="So far">
-      <StatCard label="Sails logged" value={String(career.count)} />
-      <StatCard label="Distance" value={formatNm(career.totalNm)} />
-      <StatCard label="Time sailing" value={formatDuration(career.totalSec)} />
+      <StatCard i18n="stat.sails" label="Sails logged" value={String(career.count)} />
+      <StatCard i18n="stat.distance" label="Distance" value={formatNm(career.totalNm)} />
+      <StatCard i18n="stat.time" label="Time sailing" value={formatDuration(career.totalSec)} />
     </section>
 
     <p class="mt-8 text-sm text-muted-foreground">

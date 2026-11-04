@@ -1,0 +1,27 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import AcademyApp from "@/academy/AcademyApp";
+import { SITE } from "@/config";
+import { url } from "@/lib/url";
+
+const description =
+  "Sailing Academy: free interactive sailing training modules for route and passage planning, buoys and lights, the collision rules (COLREG), man overboard, sail trim and the sextant.";
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  name: "Sailing Academy",
+  description,
+  url: new URL(url("/academy/"), Astro.site).toString(),
+  inLanguage: ["en", "nl", "tr"],
+  isAccessibleForFree: true,
+  learningResourceType: "Interactive resource",
+  teaches: ["Route planning", "Passage planning", "IALA buoyage", "Navigation lights", "COLREG", "Man overboard recovery", "Sail trim", "Celestial navigation"],
+  author: { "@type": "Person", name: SITE.author },
+};
+---
+
+<BaseLayout title="Sailing Academy" description={description} jsonLd={jsonLd}>
+
+  <AcademyApp client:only="react" />
+  <noscript><p class="mt-6 text-muted-foreground">The Sailing Academy needs JavaScript.</p></noscript>
+</BaseLayout>

@@ -1,0 +1,57 @@
+---
+import { LANGS } from "@/lib/lang";
+
+interface Props {
+  /** Unique prefix so SVG clip-path ids don't clash when the switcher is rendered twice */
+  id: string;
+  class?: string;
+}
+const { id, class: className } = Astro.props;
+---
+
+<div role="group" aria-label="Language" data-i18n-aria="ui.language" class:list={["flex items-center gap-1", className]}>
+  {
+    LANGS.map((l) => (
+      <button
+        type="button"
+        data-lang={l.code}
+        aria-pressed={l.code === "en" ? "true" : "false"}
+        title={l.label}
+        aria-label={l.label}
+        class="flex h-7 w-8 items-center justify-center rounded-md opacity-60 ring-white/70 transition hover:bg-white/10 hover:opacity-100 aria-pressed:opacity-100 aria-pressed:ring-1"
+      >
+        {l.code === "en" && (
+          <svg viewBox="0 0 60 30" class="h-3.5 w-5 rounded-[2px]" aria-hidden="true">
+            <clipPath id={`${id}-uk-s`}><path d="M0,0 v30 h60 v-30 z" /></clipPath>
+            <clipPath id={`${id}-uk-t`}><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z" /></clipPath>
+            <g clip-path={`url(#${id}-uk-s)`}>
+              <path d="M0,0 v30 h60 v-30 z" fill="#012169" />
+              <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6" />
+              <path d="M0,0 L60,30 M60,0 L0,30" clip-path={`url(#${id}-uk-t)`} stroke="#C8102E" stroke-width="4" />
+              <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10" />
+              <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6" />
+            </g>
+          </svg>
+        )}
+        {l.code === "nl" && (
+          <svg viewBox="0 0 9 6" class="h-3.5 w-5 rounded-[2px]" aria-hidden="true">
+            <rect width="9" height="6" fill="#21468B" />
+            <rect width="9" height="4" fill="#fff" />
+            <rect width="9" height="2" fill="#AE1C28" />
+          </svg>
+        )}
+        {l.code === "tr" && (
+          <svg viewBox="0 0 30 20" class="h-3.5 w-5 rounded-[2px]" aria-hidden="true">
+            <rect width="30" height="20" fill="#E30A17" />
+            <circle cx="10.6" cy="10" r="5" fill="#fff" />
+            <circle cx="11.85" cy="10" r="4" fill="#E30A17" />
+            <polygon
+              fill="#fff"
+              points="14.10,10.00 15.83,9.44 15.83,7.62 16.90,9.09 18.62,8.53 17.55,10.00 18.62,11.47 16.90,10.91 15.83,12.38 15.83,10.56"
+            />
+          </svg>
+        )}
+      </button>
+    ))
+  }
+</div>

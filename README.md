@@ -25,6 +25,13 @@ media and handles the Google login of the admin panel.
 - **Boats** (`/boats`, `/boats/<slug>`): photo, specs, description and miles logged on each boat.
 - **Records** (`/records`): top speed, longest, windiest, most manoeuvres, totals.
 - **About** (`/about`).
+- **Sailing Academy** (`/academy/`): public, interactive training modules (route & passage planning, buoys and lights,
+  COLREG, man overboard, sail trim, sextant; "Race" coming soon). Source in `src/academy` (ported from the
+  sail-games project), mounted as one React island with hash routes.
+- **Languages:** English (default), Dutch and Turkish via the flag switcher. Site chrome uses `data-i18n` keys from
+  `src/i18n/site.ts`; the academy has full dictionaries in `src/academy/i18n`. Choice is kept in `localStorage.lang`.
+- **Copy deterrent:** right-click, copy and text selection are blocked on public pages (not on `/admin`). It's
+  client-side only, so it discourages casual copying but can't fully prevent it.
 - **SEO / feeds:** RSS feed of new sails (`/rss.xml`), sitemap, `robots.txt`, OpenGraph/Twitter cards (default image
   `public/og.png`, map or cover per sail) and schema.org data (WebSite, BlogPosting, Person).
 - Dark mode, mobile menu.

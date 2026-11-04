@@ -2,6 +2,7 @@
 import "@/styles/global.css";
 import { SITE } from "@/config";
 import { stripBase, url } from "@/lib/url";
+import LangSwitcher from "@/components/LangSwitcher.astro";
 
 interface Props {
   title?: string;
@@ -23,16 +24,17 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL(image ?? url("/og.png"), Astro.site);
 const path = stripBase(Astro.url.pathname).replace(/\/$/, "") || "/";
 const nav = [
-  { href: "/", label: "Home" },
-  { href: "/logbook", label: "Logbook" },
-  { href: "/boats", label: "Boats" },
-  { href: "/records", label: "Records" },
-  { href: "/about", label: "About" },
+  { href: "/", label: "Home", key: "nav.home" },
+  { href: "/logbook", label: "Logbook", key: "nav.logbook" },
+  { href: "/boats", label: "Boats", key: "nav.boats" },
+  { href: "/records", label: "Records", key: "nav.records" },
+  { href: "/academy", label: "Sailing Academy", key: "nav.academy" },
+  { href: "/about", label: "About", key: "nav.about" },
 ];
 const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
 const linkClass = (href: string) => [
-  "rounded-md px-3 py-1.5 transition-colors",
-  isActive(href) ? "bg-secondary font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
+  "whitespace-nowrap rounded-md px-2.5 py-1.5 transition-colors",
+  isActive(href) ? "bg-white/15 font-medium text-white" : "text-sky-100/80 hover:bg-white/10 hover:text-white",
 ];
 ---
 
@@ -69,22 +71,25 @@ const linkClass = (href: string) => [
         const stored = localStorage.getItem("theme");
         const dark = stored ? stored === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
         document.documentElement.classList.toggle("dark", dark);
+        const lang = localStorage.getItem("lang");
+        if (lang === "nl" || lang === "tr") document.documentElement.lang = lang;
+        if (!/\/admin(\/|$)/.test(location.pathname)) document.documentElement.classList.add("no-copy");
       })();
     </script>
   </head>
   <body class="min-h-screen font-sans">
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[1000] focus:rounded-md focus:bg-background focus:px-3 focus:py-2">Skip to content</a>
-    <header class="sticky top-0 z-[500] border-b border-border bg-background/85 backdrop-blur">
+    <header class="sticky top-0 z-[500] bg-navy-900 text-white shadow-md">
       <div class="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <a href={url("/")} class="flex items-center gap-2 font-semibold tracking-tight">
+        <a href={url("/")} class="flex shrink-0 items-center gap-2 font-semibold tracking-tight">
           <img src={url("/favicon.svg")} alt="" width="26" height="26" />
           <span>{SITE.title}</span>
         </a>
 
-        <nav aria-label="Main" class="hidden items-center gap-1 text-sm md:flex">
+        <nav aria-label="Main" class="hidden items-center gap-0.5 text-sm lg:flex">
           {
             nav.map((item) => (
-              <a href={url(item.href)} aria-current={isActive(item.href) ? "page" : undefined} class:list={linkClass(item.href)}>
+              <a href={url(item.href)} aria-current={isActive(item.href) ? "page" : undefined} class:list={linkClass(item.href)} data-i18n={item.key}>
                 {item.label}
               </a>
             ))
@@ -93,27 +98,29 @@ const linkClass = (href: string) => [
             href={url("/admin/")}
             rel="nofollow"
             aria-current={isActive("/admin") ? "page" : undefined}
-            class="ml-1 rounded-md border border-border px-3 py-1.5 font-medium text-foreground transition-colors hover:bg-secondary"
+            class="ml-1 rounded-md border border-white/30 px-2.5 py-1.5 font-medium text-white transition-colors hover:bg-white/10"
+            data-i18n="nav.admin"
           >
             Admin
           </a>
+          <LangSwitcher id="lang-d" class="ml-2" />
           <button
             data-theme-toggle
             type="button"
             aria-label="Toggle dark mode"
-            class="ml-1 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
+            class="ml-1 flex h-8 w-8 items-center justify-center rounded-md text-sky-100 hover:bg-white/10 hover:text-white"
           >
             <svg class="h-4 w-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path></svg>
             <svg class="hidden h-4 w-4 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
           </button>
         </nav>
 
-        <div class="flex items-center gap-1 md:hidden">
+        <div class="flex items-center gap-1 lg:hidden">
           <button
             data-theme-toggle
             type="button"
             aria-label="Toggle dark mode"
-            class="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground"
+            class="flex h-9 w-9 items-center justify-center rounded-md text-sky-100 hover:bg-white/10 hover:text-white"
           >
             <svg class="h-4 w-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path></svg>
             <svg class="hidden h-4 w-4 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
@@ -124,22 +131,23 @@ const linkClass = (href: string) => [
             aria-label="Open menu"
             aria-expanded="false"
             aria-controls="mobile-menu"
-            class="flex h-9 w-9 items-center justify-center rounded-md text-foreground hover:bg-secondary"
+            class="flex h-9 w-9 items-center justify-center rounded-md text-white hover:bg-white/10"
           >
             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
           </button>
         </div>
       </div>
-      <nav id="mobile-menu" aria-label="Main" hidden class="border-t border-border bg-background px-4 py-3 md:hidden">
+      <nav id="mobile-menu" aria-label="Main" hidden class="border-t border-white/10 bg-navy-900 px-4 py-3 lg:hidden">
         <div class="grid gap-1 text-sm">
           {
             nav.map((item) => (
-              <a href={url(item.href)} aria-current={isActive(item.href) ? "page" : undefined} class:list={linkClass(item.href)}>
+              <a href={url(item.href)} aria-current={isActive(item.href) ? "page" : undefined} class:list={linkClass(item.href)} data-i18n={item.key}>
                 {item.label}
               </a>
             ))
           }
-          <a href={url("/admin/")} rel="nofollow" class="mt-1 rounded-md border border-border px-3 py-1.5 font-medium">Admin</a>
+          <a href={url("/admin/")} rel="nofollow" class="mt-1 rounded-md border border-white/30 px-3 py-1.5 font-medium" data-i18n="nav.admin">Admin</a>
+          <LangSwitcher id="lang-m" class="mt-2" />
         </div>
       </nav>
     </header>
@@ -151,20 +159,23 @@ const linkClass = (href: string) => [
     <footer class="border-t border-border">
       <div class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-start sm:justify-between sm:px-6">
         <p>
-          © {new Date().getFullYear()} {SITE.author} · Fair winds ⛵{" · "}
+          © {new Date().getFullYear()} {SITE.author} · <span data-i18n="footer.fair">Fair winds ⛵</span>{" · "}
           <a class="underline underline-offset-2 hover:text-foreground" href={url("/rss.xml")}>RSS</a>
         </p>
         <p class="sm:max-w-[70%] sm:text-right">
-          Weather &amp; sea <a class="underline underline-offset-2 hover:text-foreground" href="https://open-meteo.com/">Open-Meteo</a>{" · "}Radar{" "}
+          <span data-i18n="footer.weather">Weather &amp; sea</span> <a class="underline underline-offset-2 hover:text-foreground" href="https://open-meteo.com/">Open-Meteo</a>{" · "}Radar{" "}
           <a class="underline underline-offset-2 hover:text-foreground" href="https://www.rainviewer.com/">RainViewer</a>{" · "}Maps{" "}
           <a class="underline underline-offset-2 hover:text-foreground" href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>{" & "}
           <a class="underline underline-offset-2 hover:text-foreground" href="https://www.openseamap.org">OpenSeaMap</a>{" · "}
-          <a class="underline underline-offset-2 hover:text-foreground" href={SITE.github}>Source</a>
+          <a class="underline underline-offset-2 hover:text-foreground" href={SITE.github} data-i18n="footer.source">Source</a>
         </p>
       </div>
     </footer>
 
     <script>
+      import { SITE_STRINGS, type SiteKey } from "@/i18n/site";
+      import { getLang, isLang, onLangChange, setLang, type Lang } from "@/lib/lang";
+
       document.querySelectorAll("[data-theme-toggle]").forEach((button) =>
         button.addEventListener("click", () => {
           const dark = document.documentElement.classList.toggle("dark");
@@ -179,6 +190,47 @@ const linkClass = (href: string) => [
         toggle.setAttribute("aria-expanded", String(open));
         toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
       });
-    </script>
+
+      const applyLang = (lang: Lang) => {
+        const dict = SITE_STRINGS[lang];
+        document.documentElement.lang = lang;
+        document.querySelectorAll<HTMLElement>("[data-i18n]").forEach((el) => {
+          const text = dict[el.dataset.i18n as SiteKey];
+          if (text) el.textContent = text;
+        });
+        document.querySelectorAll<HTMLElement>("[data-i18n-aria]").forEach((el) => {
+          const text = dict[el.dataset.i18nAria as SiteKey];
+          if (text) el.setAttribute("aria-label", text);
+        });
+        document.querySelectorAll("[data-lang]").forEach((b) =>
+          b.setAttribute("aria-pressed", String(b.getAttribute("data-lang") === lang)),
+        );
+      };
+      if (getLang() !== "en") applyLang(getLang());
+      onLangChange(applyLang);
+      document.querySelectorAll<HTMLElement>("[data-lang]").forEach((b) =>
+        b.addEventListener("click", () => {
+          const lang = b.dataset.lang;
+          if (isLang(lang)) setLang(lang);
+        }),
+      );
+
+      // Copy deterrent for public pages: GitHub Pages can't enforce this server-side, so it only discourages casual copying.
+      if (document.documentElement.classList.contains("no-copy")) {
+        const editable = (t: EventTarget | null) =>
+          t instanceof Element && !!t.closest("input, textarea, select, [contenteditable='true']");
+        for (const type of ["contextmenu", "copy", "cut", "dragstart", "selectstart"]) {
+          document.addEventListener(type, (e) => {
+            if (editable(e.target)) return;
+            // Interactive drag-and-drop (academy planners) stays usable.
+            if (type === "dragstart" && e.target instanceof Element && e.target.closest("[draggable='true']")) return;
+            e.preventDefault();
+          });
+        }
+        document.addEventListener("keydown", (e) => {
+          if (!(e.ctrlKey || e.metaKey) || editable(e.target)) return;
+          if (["c", "x", "s", "u", "a", "p"].includes(e.key.toLowerCase())) e.preventDefault();
+        });
+      }    </script>
   </body>
 </html>

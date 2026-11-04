@@ -35,32 +35,33 @@ const jsonLd = {
       <path d="M0 60 C150 100 350 20 600 60 C850 100 1050 20 1200 60 V120 H0 Z" fill="currentColor"></path>
       <path d="M0 85 C200 115 400 55 600 85 C800 115 1000 55 1200 85 V120 H0 Z" fill="currentColor"></path>
     </svg>
-    <p class="text-xs font-medium uppercase tracking-[0.2em] text-sky-200">Sail · Learn · Log</p>
-    <h1 class="mt-3 max-w-3xl text-3xl font-semibold tracking-tight sm:text-5xl">Learning the wind, one sail at a time.</h1>
-    <p class="mt-4 max-w-xl text-sm text-sky-100 sm:text-base">
+    <p class="text-xs font-medium uppercase tracking-[0.2em] text-sky-200" data-i18n="home.kicker">Sail · Learn · Log</p>
+    <h1 class="mt-3 max-w-3xl text-3xl font-semibold tracking-tight sm:text-5xl" data-i18n="home.title">Learning the wind, one sail at a time.</h1>
+    <p class="mt-4 max-w-xl text-sm text-sky-100 sm:text-base" data-i18n="home.lead">
       Every sail with its track, wind and lessons learned, plus live conditions before heading out.
     </p>
     <div class="relative mt-8 flex flex-wrap gap-3">
-      <a href={url("/logbook")} class="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#0b3a5c] shadow hover:bg-sky-50">Open the logbook</a>
-      <a href={url("/boats")} class="rounded-full border border-white/40 px-5 py-2.5 text-sm font-semibold hover:bg-white/10">Meet the boat{boats.length > 1 ? "s" : ""}</a>
+      <a href={url("/logbook")} class="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#0b3a5c] shadow hover:bg-sky-50" data-i18n="home.openLogbook">Open the logbook</a>
+      <a href={url("/boats")} class="rounded-full border border-white/40 px-5 py-2.5 text-sm font-semibold hover:bg-white/10" data-i18n={boats.length > 1 ? "home.meetBoats" : "home.meetBoat"}>Meet the boat{boats.length > 1 ? "s" : ""}</a>
+      <a href={url("/academy/")} class="rounded-full border border-white/40 px-5 py-2.5 text-sm font-semibold hover:bg-white/10" data-i18n="home.academy">Sailing Academy</a>
     </div>
   </section>
 
   <section aria-labelledby="career" class="mt-10">
     <h2 id="career" class="sr-only">Career stats</h2>
     <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
-      <StatCard label="Sails logged" value={String(career.count)} hint={`${career.days} ${career.days === 1 ? "day" : "days"} on the water`} />
-      <StatCard label="Distance" value={formatNm(career.totalNm)} hint="over ground" />
-      <StatCard label="Time sailing" value={formatDuration(career.totalSec)} hint="dock to dock" />
-      <StatCard label="Top speed" value={career.fastest ? formatKn(career.fastest.stats.maxSpeedKn) : "–"} hint={career.fastest?.title} />
+      <StatCard i18n="stat.sails" label="Sails logged" value={String(career.count)} hint={`${career.days} ${career.days === 1 ? "day" : "days"} on the water`} />
+      <StatCard i18n="stat.distance" label="Distance" value={formatNm(career.totalNm)} hint="over ground" />
+      <StatCard i18n="stat.time" label="Time sailing" value={formatDuration(career.totalSec)} hint="dock to dock" />
+      <StatCard i18n="stat.top" label="Top speed" value={career.fastest ? formatKn(career.fastest.stats.maxSpeedKn) : "–"} hint={career.fastest?.title} />
     </div>
   </section>
 
   <section class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
     <div class="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <div class="mb-5">
-        <p class="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Sailing activity · last 12 months</p>
-        <h2 class="mt-1.5 text-xl font-semibold tracking-tight">Days on the water</h2>
+        <p class="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground" data-i18n="home.activityKicker">Sailing activity · last 12 months</p>
+        <h2 class="mt-1.5 text-xl font-semibold tracking-tight" data-i18n="home.daysOnWater">Days on the water</h2>
       </div>
       <SailHeatmap client:visible data={heatmap} />
     </div>
@@ -78,12 +79,12 @@ const jsonLd = {
 
   <section aria-labelledby="latest" class="mt-12">
     <div class="flex items-end justify-between gap-4">
-      <h2 id="latest" class="text-xl font-semibold tracking-tight">Latest sails</h2>
-      <a href={url("/logbook")} class="text-sm font-medium text-primary hover:underline">All entries →</a>
+      <h2 id="latest" class="text-xl font-semibold tracking-tight" data-i18n="home.latest">Latest sails</h2>
+      <a href={url("/logbook")} class="text-sm font-medium text-primary hover:underline" data-i18n="home.allEntries">All entries →</a>
     </div>
     <div class="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {latest.map((sail) => <SailCard sail={sail} />)}
     </div>
-    {sails.length === 0 && <p class="mt-5 text-muted-foreground">No sails logged yet. Fair winds!</p>}
+    {sails.length === 0 && <p class="mt-5 text-muted-foreground" data-i18n="home.noSails">No sails logged yet. Fair winds!</p>}
   </section>
 </BaseLayout>
