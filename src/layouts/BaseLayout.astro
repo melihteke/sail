@@ -116,6 +116,7 @@ const linkClass = (href: string) => [
         </nav>
 
         <div class="flex items-center gap-1 lg:hidden">
+          <LangSwitcher id="lang-m" />
           <button
             data-theme-toggle
             type="button"
@@ -147,7 +148,6 @@ const linkClass = (href: string) => [
             ))
           }
           <a href={url("/admin/")} rel="nofollow" class="mt-1 rounded-md border border-white/30 px-3 py-1.5 font-medium" data-i18n="nav.admin">Admin</a>
-          <LangSwitcher id="lang-m" class="mt-2" />
         </div>
       </nav>
     </header>
@@ -166,8 +166,7 @@ const linkClass = (href: string) => [
           <span data-i18n="footer.weather">Weather &amp; sea</span> <a class="underline underline-offset-2 hover:text-foreground" href="https://open-meteo.com/">Open-Meteo</a>{" · "}Radar{" "}
           <a class="underline underline-offset-2 hover:text-foreground" href="https://www.rainviewer.com/">RainViewer</a>{" · "}Maps{" "}
           <a class="underline underline-offset-2 hover:text-foreground" href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>{" & "}
-          <a class="underline underline-offset-2 hover:text-foreground" href="https://www.openseamap.org">OpenSeaMap</a>{" · "}
-          <a class="underline underline-offset-2 hover:text-foreground" href={SITE.github} data-i18n="footer.source">Source</a>
+          <a class="underline underline-offset-2 hover:text-foreground" href="https://www.openseamap.org">OpenSeaMap</a>
         </p>
       </div>
     </footer>
@@ -212,8 +211,35 @@ const linkClass = (href: string) => [
         b.addEventListener("click", () => {
           const lang = b.dataset.lang;
           if (isLang(lang)) setLang(lang);
+          closeLangMenus();
         }),
       );
+
+      // Language dropdown: one flag button opens the list; outside click or Escape closes it.
+      const langMenus = [...document.querySelectorAll<HTMLElement>("[data-lang-menu]")];
+      const closeLangMenus = (except?: HTMLElement) =>
+        langMenus.forEach((m) => {
+          if (m === except) return;
+          m.querySelector<HTMLElement>("[data-lang-list]")!.hidden = true;
+          m.querySelector("[data-lang-toggle]")!.setAttribute("aria-expanded", "false");
+        });
+      langMenus.forEach((m) => {
+        const toggle = m.querySelector<HTMLElement>("[data-lang-toggle]")!;
+        const list = m.querySelector<HTMLElement>("[data-lang-list]")!;
+        toggle.addEventListener("click", () => {
+          const open = list.hidden;
+          closeLangMenus(m);
+          list.hidden = !open;
+          toggle.setAttribute("aria-expanded", String(open));
+          if (open) list.querySelector<HTMLElement>("[aria-pressed='true']")?.focus();
+        });
+      });
+      document.addEventListener("click", (e) => {
+        if (!(e.target instanceof Element) || !e.target.closest("[data-lang-menu]")) closeLangMenus();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeLangMenus();
+      });
 
       // Copy deterrent for public pages: GitHub Pages can't enforce this server-side, so it only discourages casual copying.
       if (document.documentElement.classList.contains("no-copy")) {

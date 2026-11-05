@@ -16,7 +16,7 @@ const jsonLd = {
     jobTitle: "Network Engineer",
     knowsAbout: ["Sailing", "Network engineering"],
     url: new URL(url("/about"), Astro.site).toString(),
-    sameAs: ["https://github.com/melihteke", "https://www.mteke.com"],
+    sameAs: ["https://www.mteke.com"],
   },
 };
 ---
@@ -45,8 +45,7 @@ const jsonLd = {
     </section>
 
     <p class="mt-8 text-sm text-muted-foreground">
-      More about my work at <a class="text-primary hover:underline" href="https://www.mteke.com">mteke.com</a>{" · "}Code on{" "}
-      <a class="text-primary hover:underline" href="https://github.com/melihteke">GitHub</a>{" · "}New sails by{" "}
+      More about my work at <a class="text-primary hover:underline" href="https://www.mteke.com">mteke.com</a>{" · "}New sails by{" "}
       <a class="text-primary hover:underline" href={url("/rss.xml")}>RSS</a>.
     </p>
   </article>

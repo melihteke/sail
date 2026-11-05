@@ -45,6 +45,19 @@ export const rowScenarios: RowScenario[] = [
   { id: 'power-vs-fishing', own: 'power', other: 'fishing', windFromDeg: 0, bearing: 320, distance: 0.6, otherHeading: 100, answer: 'giveWay', rule: '18(a)(iii)' },
   { id: 'fishing-vs-power', own: 'fishing', other: 'power', windFromDeg: 0, bearing: 50, distance: 0.6, otherHeading: 260, answer: 'standOn', rule: '18(a)(iii)' },
   { id: 'power-overtaking-tanker', own: 'power', other: 'tanker', windFromDeg: 0, bearing: 0, distance: 0.55, otherHeading: 0, answer: 'giveWay', rule: '13' },
+  { id: 'sail-starboard-windward', own: 'sail', other: 'sail', windFromDeg: 45, bearing: 290, distance: 0.45, otherHeading: 10, answer: 'giveWay', rule: '12(a)(ii)' },
+  { id: 'sail-starboard-leeward', own: 'sail', other: 'sail', windFromDeg: 45, bearing: 65, distance: 0.45, otherHeading: 350, answer: 'standOn', rule: '12(a)(ii)' },
+  { id: 'sail-port-vs-starboard-portbow', own: 'sail', other: 'sail', windFromDeg: 300, bearing: 330, distance: 0.6, otherHeading: 240, answer: 'giveWay', rule: '12(a)(i)' },
+  { id: 'sail-vs-cbd', own: 'sail', other: 'cbd', windFromDeg: 90, bearing: 20, distance: 0.65, otherHeading: 260, answer: 'giveWay', rule: '18(d)(i)' },
+  { id: 'sail-overtaken-by-power', own: 'sail', other: 'power', windFromDeg: 90, bearing: 185, distance: 0.45, otherHeading: 5, answer: 'standOn', rule: '13' },
+  { id: 'power-vs-sail-portbow', own: 'power', other: 'sail', windFromDeg: 0, bearing: 320, distance: 0.6, otherHeading: 80, answer: 'giveWay', rule: '18(a)(iv)' },
+  { id: 'power-vs-nuc', own: 'power', other: 'nuc', windFromDeg: 0, bearing: 330, distance: 0.6, otherHeading: 90, answer: 'giveWay', rule: '18(a)(i)' },
+  { id: 'power-vs-ram', own: 'power', other: 'ram', windFromDeg: 0, bearing: 40, distance: 0.62, otherHeading: 270, answer: 'giveWay', rule: '18(a)(ii)' },
+  { id: 'power-overtaking-sail', own: 'power', other: 'sail', windFromDeg: 90, bearing: 10, distance: 0.4, otherHeading: 0, answer: 'giveWay', rule: '13' },
+  { id: 'power-vs-motorsail', own: 'power', other: 'motorsail', windFromDeg: 0, bearing: 45, distance: 0.62, otherHeading: 280, answer: 'giveWay', rule: '3(c), 15' },
+  { id: 'motorsail-vs-power', own: 'motorsail', other: 'power', windFromDeg: 0, bearing: 315, distance: 0.62, otherHeading: 100, answer: 'standOn', rule: '15, 17' },
+  { id: 'fishing-vs-sail', own: 'fishing', other: 'sail', windFromDeg: 60, bearing: 40, distance: 0.6, otherHeading: 280, answer: 'standOn', rule: '18(b)(iii)' },
+  { id: 'nuc-vs-power', own: 'nuc', other: 'power', windFromDeg: 0, bearing: 30, distance: 0.6, otherHeading: 250, answer: 'standOn', rule: '18(a)(i)' },
 ]
 
 /** Navigation lights as seen by the observer. x: -1..1 left/right, y: 0 (low) .. 1 (high). */
@@ -72,6 +85,12 @@ export const lightPictures: LightPicture[] = [
   { id: 'pilot', lights: [{ x: 0, y: 0.9, c: 'white' }, { x: 0, y: 0.75, c: 'red' }, { x: 0, y: 0.25, c: 'red' }] },
   { id: 'tug-astern', lights: [{ x: 0, y: 0.55, c: 'yellow' }, { x: 0, y: 0.38, c: 'white' }] },
   { id: 'aground', lights: [{ x: 0, y: 0.9, c: 'red' }, { x: 0, y: 0.75, c: 'red' }, { x: -0.3, y: 0.55, c: 'white' }, { x: 0.3, y: 0.45, c: 'white' }] },
+  { id: 'sail-starboard', lights: [{ x: 0, y: 0.25, c: 'green' }] },
+  { id: 'nuc-way', lights: [{ x: 0, y: 0.9, c: 'red' }, { x: 0, y: 0.75, c: 'red' }, { x: 0, y: 0.25, c: 'green' }] },
+  { id: 'anchor-large', lights: [{ x: -0.35, y: 0.75, c: 'white' }, { x: 0.35, y: 0.5, c: 'white' }] },
+  { id: 'tow-short', lights: [{ x: 0, y: 0.9, c: 'white' }, { x: 0, y: 0.75, c: 'white' }, { x: 0, y: 0.25, c: 'green' }] },
+  { id: 'tow-long', lights: [{ x: 0, y: 0.95, c: 'white' }, { x: 0, y: 0.82, c: 'white' }, { x: 0, y: 0.69, c: 'white' }, { x: 0, y: 0.25, c: 'red' }] },
+  { id: 'mine', lights: [{ x: 0, y: 0.95, c: 'green' }, { x: -0.3, y: 0.8, c: 'green' }, { x: 0.3, y: 0.8, c: 'green' }, { x: 0, y: 0.65, c: 'white' }, { x: 0.2, y: 0.25, c: 'red' }, { x: -0.2, y: 0.25, c: 'green' }] },
 ]
 
 export type Shape = 'ball' | 'diamond' | 'cylinder' | 'coneDown' | 'coneUp'
@@ -109,4 +128,7 @@ export const soundSignals: SoundSignal[] = [
   { id: 'overtakeStarboard', pattern: '--.' },
   { id: 'overtakePort', pattern: '--..' },
   { id: 'agree', pattern: '-.-.' },
+  { id: 'towedFog', pattern: '-...' },
+  { id: 'pilotFog', pattern: '....' },
+  { id: 'anchorWarn', pattern: '.-.' },
 ]

@@ -1,3 +1,4 @@
+import { colregEn } from './colreg/en'
 import { celestialEn } from './celestial/en'
 export const en = {
   'app.name': 'Sailing Academy',
@@ -823,6 +824,7 @@ export const en = {
   'np.preset.fenerbahce-buyukada': 'Fenerbahçe → Büyükada (Sea of Marmara)',
   'np.preset.ijmuiden-london': 'IJmuiden → London (North Sea & Thames)',
   ...celestialEn,
+  ...colregEn,
 }
 
 export type MessageKey = keyof typeof en

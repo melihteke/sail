@@ -11,8 +11,7 @@ export default function SailHeatmap({ data, days = 365 }: Props) {
       color="var(--sea)"
       unit="nm"
       formatValue={(value) => (Number.isInteger(value) ? String(value) : value.toFixed(1))}
-      autoPlay
-      interval={3200}
+      defaultView="calendar"
     />
   );
 }

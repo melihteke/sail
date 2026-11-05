@@ -5,7 +5,6 @@ export const SITE = {
     "Melih Teke's sailing site: a logbook of every sail with track, wind and lessons learned, the boats, live wind, forecasts and sea conditions.",
   author: "Melih Teke",
   url: "https://sail.mteke.com",
-  github: "https://github.com/melihteke/sail",
   timeZone: "Europe/Amsterdam",
   homeWaters: {
     name: "De Poel, Amstelveen",

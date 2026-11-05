@@ -110,6 +110,16 @@
   }
 }
 
+/* Language switcher: only the flag of the current language is shown (html[lang] is set before paint). */
+.lang-flag {
+  display: none;
+}
+html:not([lang="nl"]):not([lang="tr"]) .lang-flag[data-flag="en"],
+html[lang="nl"] .lang-flag[data-flag="nl"],
+html[lang="tr"] .lang-flag[data-flag="tr"] {
+  display: inline-flex;
+}
+
 /* Copy deterrent on public pages (see BaseLayout). Form fields stay selectable. */
 html.no-copy body {
   -webkit-user-select: none;

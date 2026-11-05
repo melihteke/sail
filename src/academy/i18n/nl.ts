@@ -1,3 +1,4 @@
+import { colregNl } from './colreg/nl'
 import { celestialNl } from './celestial/nl'
 import type { Messages } from './en'
 
@@ -825,4 +826,5 @@ export const nl: Messages = {
   'np.preset.fenerbahce-buyukada': 'Fenerbahçe → Büyükada (Zee van Marmara)',
   'np.preset.ijmuiden-london': 'IJmuiden → Londen (Noordzee & Theems)',
   ...celestialNl,
+  ...colregNl,
 }

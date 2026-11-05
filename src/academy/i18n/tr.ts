@@ -1,3 +1,4 @@
+import { colregTr } from './colreg/tr'
 import { celestialTr } from './celestial/tr'
 import type { Messages } from './en'
 
@@ -825,4 +826,5 @@ export const tr: Messages = {
   'np.preset.fenerbahce-buyukada': 'Fenerbahçe → Büyükada (Marmara)',
   'np.preset.ijmuiden-london': 'IJmuiden → Londra (Kuzey Denizi & Thames)',
   ...celestialTr,
+  ...colregTr,
 }
