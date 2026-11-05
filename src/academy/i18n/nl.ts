@@ -1,3 +1,4 @@
+import { celestialNl } from './celestial/nl'
 import type { Messages } from './en'
 
 export const nl: Messages = {
@@ -712,10 +713,10 @@ export const nl: Messages = {
   'trim.setup.easeFirst': 'Direct grootschoot vieren of overloop naar lij, na de vlaag weer aanhalen',
   'trim.setup.downwind': 'Vieren tot de giek bij de want staat, uithaler en cunningham los, neerhouder aan tegen het omhoogkomen',
 
-  'game.sextant.title': 'Sextant',
-  'game.sextant.desc': 'Hoe een sextant werkt, hoe je een zonshoogte schiet en hoe je ’s middags je breedte vindt. Met oefeningen in de kijker.',
-  'sx.intro': 'Een sextant meet de hoek tussen een hemellichaam en de kim. Met de middagzon geeft die hoek je breedte, zonder elektronica.',
-  'sx.tab.learn': 'Onderdelen & methode',
+  'game.sextant.title': 'Sextant & astronavigatie',
+  'game.sextant.desc': 'Begin hier: hoe de zon je vertelt waar je bent, stap voor stap uitgelegd. Onderdelen van de sextant, echte foto’s, een 3D-model en oefenen met de kijker.',
+  'sx.intro': 'Bepaal je positie met de zon, een sextant, een horloge en een boek. Begin met het idee en doe daarna stap voor stap een complete middagbreedte, tot op de kaart.',
+  'sx.tab.learn': 'Onderdelen & foto’s',
   'sx.tab.demo': 'Demo',
   'sx.tab.bring': 'Zon op de kim zetten',
   'sx.tab.read': 'Schaal aflezen',
@@ -823,4 +824,5 @@ export const nl: Messages = {
   'np.preset.bodrum-kos': 'Bodrum → Kos (Egeïsche Zee)',
   'np.preset.fenerbahce-buyukada': 'Fenerbahçe → Büyükada (Zee van Marmara)',
   'np.preset.ijmuiden-london': 'IJmuiden → Londen (Noordzee & Theems)',
+  ...celestialNl,
 }

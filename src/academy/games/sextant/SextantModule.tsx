@@ -1,16 +1,38 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import type { MessageKey } from '../../i18n/en'
 import { useI18n, type Translate } from '../../i18n'
+import { AlmanacGuide } from './AlmanacGuide'
+import { Glossary } from './Glossary'
+import { NoonFix } from './NoonFix'
+import { OtherMethods } from './OtherMethods'
 import { formatDegMin, noonLatitude, reduceSunLL, sextantFor, toDegMin } from './sextantModel'
+import { StartHere } from './StartHere'
+import { ArmControls, Telescope, useRock } from './telescope'
 
-const TABS = ['learn', 'demo', 'bring', 'read', 'noon'] as const
+const Sextant3D = lazy(() => import('./Sextant3D'))
+
+const GROUPS = [
+  { id: 'understand', tabs: ['start', '3d', 'learn', 'almanac', 'glossary'] },
+  { id: 'doIt', tabs: ['fix'] },
+  { id: 'practise', tabs: ['demo', 'bring', 'read', 'noon'] },
+  { id: 'more', tabs: ['methods'] },
+] as const
+const TABS = GROUPS.flatMap((g) => g.tabs)
 type Tab = (typeof TABS)[number]
 
 export function SextantModule() {
   const { t } = useI18n()
   const [search, setSearch] = useSearchParams()
   const req = search.get('tab')
-  const tab: Tab = (TABS as readonly string[]).includes(req ?? '') ? (req as Tab) : 'learn'
+  const tab: Tab = (TABS as readonly string[]).includes(req ?? '') ? (req as Tab) : 'start'
+  const goTo = (k: string) => {
+    setSearch({ tab: k }, { replace: false })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+  useEffect(() => {
+    document.getElementById('sx-tabs')?.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest', inline: 'center' })
+  }, [tab])
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <Link to="/" className="text-sm text-sea-500 hover:underline">
@@ -18,31 +40,93 @@ export function SextantModule() {
       </Link>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-navy-900 dark:text-white">{t('game.sextant.title')}</h1>
       <p className="mt-2 text-slate-600 dark:text-slate-300">{t('sx.intro')}</p>
-      <div className="mt-6 flex flex-wrap gap-1 rounded-lg bg-slate-100 p-1 dark:bg-white/5" role="tablist">
-        {TABS.map((k) => (
-          <button
-            key={k}
-            type="button"
-            role="tab"
-            aria-selected={tab === k}
-            onClick={() => setSearch({ tab: k }, { replace: true })}
-            className={`rounded-md px-4 py-1.5 text-sm font-medium ${tab === k ? 'bg-white shadow dark:bg-navy-700' : 'text-slate-500 dark:text-slate-400'}`}
-          >
-            {t(`sx.tab.${k}`)}
-          </button>
+      <div id="sx-tabs" className="mt-6 flex flex-wrap gap-x-4 gap-y-2 rounded-lg bg-slate-100 p-2 dark:bg-white/5" role="tablist">
+        {GROUPS.map((g) => (
+          <div key={g.id} className="flex flex-wrap items-center gap-1">
+            <span className="px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">{t(`cn.group.${g.id}` as MessageKey)}</span>
+            {g.tabs.map((k) => (
+              <button
+                key={k}
+                type="button"
+                role="tab"
+                aria-selected={tab === k}
+                onClick={() => setSearch({ tab: k }, { replace: true })}
+                className={`rounded-md px-3 py-1.5 text-sm font-medium ${tab === k ? 'bg-white shadow dark:bg-navy-700' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'}`}
+              >
+                {t(`sx.tab.${k}` as MessageKey)}
+              </button>
+            ))}
+          </div>
         ))}
       </div>
       <div className="mt-6">
+        {tab === 'start' && <StartHere t={t} goTo={goTo} />}
+        {tab === '3d' && (
+          <Suspense fallback={<p className="p-8 text-center text-sm text-slate-500">…</p>}>
+            <Sextant3D />
+          </Suspense>
+        )}
         {tab === 'learn' && <Learn t={t} />}
+        {tab === 'almanac' && <AlmanacGuide t={t} />}
+        {tab === 'glossary' && <Glossary t={t} />}
+        {tab === 'fix' && <NoonFix />}
         {tab === 'demo' && <Demo t={t} />}
         {tab === 'bring' && <BringDown t={t} />}
         {tab === 'read' && <ReadScale t={t} />}
         {tab === 'noon' && <Noon t={t} />}
+        {tab === 'methods' && <OtherMethods t={t} goTo={goTo} />}
       </div>
     </div>
   )
 }
 
+/* ---------- Photos ---------- */
+
+const PHOTOS = [
+  { src: 'sextant-museum.jpg', k: 'museum', author: 'Rama', license: 'CC BY-SA 3.0 FR', page: 'https://commons.wikimedia.org/wiki/File:Sextant-MnM_11_NA_20-IMG_5964-white.jpg' },
+  { src: 'sextant-kelvin-hughes.jpg', k: 'kelvin', author: 'The wub', license: 'CC BY-SA 4.0', page: 'https://commons.wikimedia.org/wiki/File:Kelvin_Hughes_sextant_from_1951_at_Redbridge_Museum.jpg' },
+  { src: 'sextant-ussr.jpg', k: 'ussr', author: 'Ctac', license: 'CC BY-SA 4.0', page: 'https://commons.wikimedia.org/wiki/File:Sextant_USSR_1951.jpg' },
+  { src: 'sextant-student.jpg', k: 'student', author: 'Alfred T. Palmer', license: 'Public domain', page: 'https://commons.wikimedia.org/wiki/File:Learning_how_to_determine_latitude_by_using_a_sextant_is_Senta_Osoling1a35363v.jpg' },
+] as const
+
+const asset = (file: string) => `${import.meta.env.BASE_URL.replace(/\/$/, '')}/academy/sextant/${file}`
+
+function Photos({ t }: { t: Translate }) {
+  return (
+    <section className="space-y-3">
+      <h2 className="font-semibold">{t('cn.photos.title')}</h2>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <figure className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900/60">
+          <video src={asset('sextant-swing.mp4')} poster={asset('sextant-swing-poster.jpg')} autoPlay loop muted playsInline className="aspect-[2/1] w-full object-cover" />
+          <figcaption className="p-3 text-xs">
+            <p className="font-medium text-slate-700 dark:text-slate-200">{t('cn.photos.swing')}</p>
+            <p className="mt-1 text-slate-500">
+              Joaquim Alves Gaspar ·{' '}
+              <a className="underline" href="https://commons.wikimedia.org/wiki/File:Using_sextant_swing.gif" target="_blank" rel="noreferrer">
+                CC BY-SA 2.5
+              </a>
+            </p>
+          </figcaption>
+        </figure>
+        {PHOTOS.map((p) => (
+          <figure key={p.src} className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900/60">
+            <img src={asset(p.src)} alt={t(`cn.photos.${p.k}` as MessageKey)} loading="lazy" className="aspect-[4/3] w-full bg-white object-contain" />
+            <figcaption className="p-3 text-xs">
+              <p className="font-medium text-slate-700 dark:text-slate-200">{t(`cn.photos.${p.k}` as MessageKey)}</p>
+              <p className="mt-1 text-slate-500">
+                {p.author} ·{' '}
+                <a className="underline" href={p.page} target="_blank" rel="noreferrer">
+                  {p.license}
+                </a>{' '}
+                · Wikimedia Commons
+              </p>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  )
+}
 /* ---------- Learn ---------- */
 
 const PARTS = [
@@ -121,96 +205,8 @@ function Learn({ t }: { t: Translate }) {
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{t('sx.noonText')}</p>
         <pre className="mt-3 overflow-x-auto rounded-lg bg-slate-100 p-3 text-xs dark:bg-white/5">{t('sx.noonFormula')}</pre>
       </section>
+      <Photos t={t} />
       <p className="text-xs text-slate-500 dark:text-slate-400">{t('sx.disclaimer')}</p>
-    </div>
-  )
-}
-
-/* ---------- Telescope view ---------- */
-
-const PX_PER_MIN = 2
-const VIEW = 300
-
-/** View through the telescope: horizon in the middle, reflected sun placed by the reading error. */
-function Telescope({ errMin, rock, t }: { errMin: number; rock: number; t: Translate }) {
-  const swing = Math.sin(rock) * 70
-  const lift = (1 - Math.cos(rock)) * 18
-  const cy = VIEW / 2 - (errMin + 16) * PX_PER_MIN - lift
-  const cx = VIEW / 2 + swing
-  const visible = Math.abs(errMin) < 75
-  return (
-    <svg viewBox={`0 0 ${VIEW} ${VIEW}`} className="h-72 w-72" role="img" aria-label={t('sx.view')}>
-      <defs>
-        <clipPath id="sx-clip">
-          <circle cx={VIEW / 2} cy={VIEW / 2} r={VIEW / 2 - 4} />
-        </clipPath>
-        <linearGradient id="sx-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#7dd3fc" />
-          <stop offset="0.5" stopColor="#bae6fd" />
-          <stop offset="0.5" stopColor="#1e3a8a" />
-          <stop offset="1" stopColor="#0b3a5c" />
-        </linearGradient>
-      </defs>
-      <g clipPath="url(#sx-clip)">
-        <rect width={VIEW} height={VIEW} fill="url(#sx-sky)" />
-        <rect x={VIEW / 2} width={VIEW / 2} height={VIEW} fill="#0f172a" opacity="0.12" />
-        {visible && (
-          <g>
-            <circle cx={cx} cy={cy} r={16 * PX_PER_MIN} fill="#fb923c" opacity="0.95" />
-            <circle cx={cx} cy={cy} r={16 * PX_PER_MIN + 6} fill="#fdba74" opacity="0.25" />
-          </g>
-        )}
-        <line x1="0" y1={VIEW / 2} x2={VIEW} y2={VIEW / 2} stroke="#e2e8f0" strokeWidth="1" opacity="0.6" />
-      </g>
-      <circle cx={VIEW / 2} cy={VIEW / 2} r={VIEW / 2 - 4} fill="none" stroke="#0f172a" strokeWidth="8" />
-      {!visible && (
-        <text x={VIEW / 2} y={VIEW / 2 - 20} textAnchor="middle" fontSize="13" fill="#fff">
-          {errMin > 0 ? t('sx.sunAbove') : t('sx.sunBelow')}
-        </text>
-      )}
-    </svg>
-  )
-}
-
-function useRock(active: boolean): number {
-  const [phase, setPhase] = useState(0)
-  useEffect(() => {
-    if (!active) return
-    let raf = 0
-    const t0 = performance.now()
-    const tick = (now: number) => {
-      setPhase(Math.sin(((now - t0) / 1000) * 2.2) * 1.1)
-      raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => {
-      cancelAnimationFrame(raf)
-      setPhase(0)
-    }
-  }, [active])
-  return phase
-}
-
-function ArmControls({ deg, min, setDeg, setMin, t }: { deg: number; min: number; setDeg: (v: number) => void; setMin: (v: number) => void; t: Translate }) {
-  return (
-    <div className="space-y-3">
-      <label className="block text-sm">
-        <span className="flex justify-between">
-          <span>{t('sx.indexArm')}</span>
-          <span className="font-mono">{deg}°</span>
-        </span>
-        <input type="range" min={0} max={90} value={deg} onChange={(e) => setDeg(Number(e.target.value))} className="w-full accent-sea-500" />
-      </label>
-      <label className="block text-sm">
-        <span className="flex justify-between">
-          <span>{t('sx.drum')}</span>
-          <span className="font-mono">{min.toFixed(1)}′</span>
-        </span>
-        <input type="range" min={0} max={59.9} step={0.1} value={min} onChange={(e) => setMin(Number(e.target.value))} className="w-full accent-sea-500" />
-      </label>
-      <p className="font-mono text-lg">
-        {t('sx.reading')}: {deg}° {min.toFixed(1)}′
-      </p>
     </div>
   )
 }

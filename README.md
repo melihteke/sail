@@ -26,8 +26,12 @@ media and handles the Google login of the admin panel.
 - **Records** (`/records`): top speed, longest, windiest, most manoeuvres, totals.
 - **About** (`/about`).
 - **Sailing Academy** (`/academy/`): public, interactive training modules (route & passage planning, buoys and lights,
-  COLREG, man overboard, sail trim, sextant; "Race" coming soon). Source in `src/academy` (ported from the
+  COLREG, man overboard, sail trim; "Race" coming soon). Source in `src/academy` (ported from the
   sail-games project), mounted as one React island with hash routes.
+  - **Sextant & celestial navigation** (`#/sextant`): a plain-language "start here", a 3D sextant (three.js, loaded
+    only on that tab), a guided noon sight from index error to a fix on the map, an almanac guide, terms & units,
+    other methods with an intercept calculator, and photo credits (Wikimedia Commons, files in
+    `public/academy/sextant`). Sun almanac values are computed in `src/academy/games/sextant/almanac.ts`.
 - **Languages:** English (default), Dutch and Turkish via the flag switcher. Site chrome uses `data-i18n` keys from
   `src/i18n/site.ts`; the academy has full dictionaries in `src/academy/i18n`. Choice is kept in `localStorage.lang`.
 - **Copy deterrent:** right-click, copy and text selection are blocked on public pages (not on `/admin`). It's

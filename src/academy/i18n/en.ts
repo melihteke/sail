@@ -1,3 +1,4 @@
+import { celestialEn } from './celestial/en'
 export const en = {
   'app.name': 'Sailing Academy',
   'app.tagline': 'Learn to think like a skipper, one module at a time.',
@@ -710,10 +711,10 @@ export const en = {
   'trim.setup.easeFirst': 'Ease the mainsheet or drop the traveller at once, sheet in again after the gust',
   'trim.setup.downwind': 'Ease until the boom is near the shroud, ease outhaul and cunningham, vang on to stop the boom lifting',
 
-  'game.sextant.title': 'Sextant',
-  'game.sextant.desc': 'How a sextant works, how to take a sun sight and how to find your latitude at noon. With practice in the telescope view.',
-  'sx.intro': 'A sextant measures the angle between a celestial body and the horizon. With the sun at noon that angle gives your latitude, no electronics needed.',
-  'sx.tab.learn': 'Parts & method',
+  'game.sextant.title': 'Sextant & Celestial Navigation',
+  'game.sextant.desc': 'Start here: how the sun tells you where you are, explained step by step. Parts of the sextant, real photos, a 3D model and telescope practice.',
+  'sx.intro': 'Find your position with the sun, a sextant, a watch and a book. Start with the idea, then do a full noon sight step by step, all the way to the chart.',
+  'sx.tab.learn': 'Parts & photos',
   'sx.tab.demo': 'Demo',
   'sx.tab.bring': 'Bring the sun down',
   'sx.tab.read': 'Read the scale',
@@ -821,6 +822,7 @@ export const en = {
   'np.preset.bodrum-kos': 'Bodrum → Kos (Aegean)',
   'np.preset.fenerbahce-buyukada': 'Fenerbahçe → Büyükada (Sea of Marmara)',
   'np.preset.ijmuiden-london': 'IJmuiden → London (North Sea & Thames)',
+  ...celestialEn,
 }
 
 export type MessageKey = keyof typeof en

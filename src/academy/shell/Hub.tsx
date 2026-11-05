@@ -39,7 +39,16 @@ const sections: Section[] = [
       { id: 'race', path: '', icon: '🏁', comingSoon: true },
     ],
   },
-  { id: 'celestial', modules: [{ id: 'sextant', path: '/sextant', icon: '🌞' }] },
+  {
+    id: 'celestial',
+    modules: [
+      { id: 'sextant', path: '/sextant', icon: '🌞' },
+      { id: 'celestialFix', path: '/sextant?tab=fix', icon: '📍' },
+      { id: 'sextant3d', path: '/sextant?tab=3d', icon: '🔭' },
+      { id: 'almanac', path: '/sextant?tab=almanac', icon: '📖' },
+      { id: 'celestialMethods', path: '/sextant?tab=methods', icon: '✨' },
+    ],
+  },
 ]
 
 export function Hub() {

@@ -29,13 +29,13 @@ export interface Reduction {
  * Sextant altitude of the sun's lower limb → observed altitude.
  * @param indexErrorMin positive when the error is "on the arc" (reading too high).
  */
-export function reduceSunLL(hs: number, indexErrorMin: number, heightM: number): Reduction {
+export function reduceSunLL(hs: number, indexErrorMin: number, heightM: number, sdMin = SUN_SD_MIN): Reduction {
   const icMin = -indexErrorMin
   const d = dipMin(heightM)
   const ha = hs + (icMin - d) / 60
   const refr = refractionMin(ha)
-  const ho = ha + (SUN_SD_MIN - refr) / 60
-  return { hs, icMin, dipMin: d, ha, refrMin: refr, sdMin: SUN_SD_MIN, ho }
+  const ho = ha + (sdMin - refr) / 60
+  return { hs, icMin, dipMin: d, ha, refrMin: refr, sdMin, ho }
 }
 
 /** Latitude from a noon sight. Declination north positive. */
@@ -45,9 +45,9 @@ export function noonLatitude(ho: number, dec: number, sunBearing: 'S' | 'N'): nu
 }
 
 /** Inverse of reduceSunLL: the sextant reading that gives altitude `ho`. */
-export function sextantFor(ho: number, indexErrorMin: number, heightM: number): number {
+export function sextantFor(ho: number, indexErrorMin: number, heightM: number, sdMin = SUN_SD_MIN): number {
   let ha = ho
-  for (let i = 0; i < 20; i++) ha = ho - (SUN_SD_MIN - refractionMin(ha)) / 60
+  for (let i = 0; i < 20; i++) ha = ho - (sdMin - refractionMin(ha)) / 60
   return ha + (dipMin(heightM) + indexErrorMin) / 60
 }
 

@@ -23,6 +23,7 @@
     "@supabase/supabase-js": "^2.118.0",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
+    "@types/three": "^0.186.0",
     "astro": "^7.4.0",
     "clsx": "^2.1.1",
     "fast-xml-parser": "^5.11.2",
@@ -37,6 +38,7 @@
     "recharts": "^3.10.1",
     "tailwind-merge": "^3.7.0",
     "tailwindcss": "^4.3.3",
+    "three": "^0.186.1",
     "typescript": "^6.0.3"
   },
   "devDependencies": {

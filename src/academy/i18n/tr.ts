@@ -1,3 +1,4 @@
+import { celestialTr } from './celestial/tr'
 import type { Messages } from './en'
 
 export const tr: Messages = {
@@ -712,10 +713,10 @@ export const tr: Messages = {
   'trim.setup.easeFirst': 'Hemen grandi iskotasını kaçır ya da traveller’ı indir, refüzeden sonra tekrar cek',
   'trim.setup.downwind': 'Bumba çarmıha yaklaşana kadar kaçır, mapa ve cunningham gevşek, bumba kalkmasın diye vang',
 
-  'game.sextant.title': 'Sekstant',
-  'game.sextant.desc': 'Sekstant nasıl çalışır, güneş yüksekliği nasıl ölçülür ve öğle vakti enlem nasıl bulunur. Dürbün görüntüsünde alıştırmalarla.',
-  'sx.intro': 'Sekstant bir gök cismi ile ufuk arasındaki açıyı ölçer. Öğle güneşiyle bu açı, elektronik olmadan enlemini verir.',
-  'sx.tab.learn': 'Parçalar ve yöntem',
+  'game.sextant.title': 'Sekstant ve Göksel Seyir',
+  'game.sextant.desc': 'Buradan başla: güneş sana nerede olduğunu nasıl söyler, adım adım. Sekstantın parçaları, gerçek fotoğraflar, 3D model ve dürbün pratiği.',
+  'sx.intro': 'Mevkini güneş, bir sekstant, bir saat ve bir kitapla bul. Önce fikri öğren, sonra haritaya kadar eksiksiz bir öğle rasadını adım adım yap.',
+  'sx.tab.learn': 'Parçalar ve fotoğraflar',
   'sx.tab.demo': 'Demo',
   'sx.tab.bring': 'Güneşi indir',
   'sx.tab.read': 'Skalayı oku',
@@ -823,4 +824,5 @@ export const tr: Messages = {
   'np.preset.bodrum-kos': 'Bodrum → İstanköy (Ege)',
   'np.preset.fenerbahce-buyukada': 'Fenerbahçe → Büyükada (Marmara)',
   'np.preset.ijmuiden-london': 'IJmuiden → Londra (Kuzey Denizi & Thames)',
+  ...celestialTr,
 }
