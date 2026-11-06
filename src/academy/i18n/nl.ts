@@ -1,3 +1,4 @@
+import { raceNl } from './race/nl'
 import { colregNl } from './colreg/nl'
 import { celestialNl } from './celestial/nl'
 import type { Messages } from './en'
@@ -17,7 +18,6 @@ export const nl: Messages = {
   'academy.disclaimer':
     'Let op: niet alles hier is per se correct. Dit zijn dingen die ik heb verzameld tijdens mijn eigen zeilstudie. Controleer altijd officiële bronnen voordat je erop vertrouwt op het water.',
   'game.race.title': 'Wedstrijdzeilen',
-  'game.race.desc': 'Startprocedures, boeirondingen en wedstrijdtactiek. Later kun je inloggen, een recordpoging doen en op het klassement komen.',
 
   'hub.title': 'Zeilacademie',
   'hub.intro':
@@ -827,4 +827,5 @@ export const nl: Messages = {
   'np.preset.ijmuiden-london': 'IJmuiden → Londen (Noordzee & Theems)',
   ...celestialNl,
   ...colregNl,
+  ...raceNl,
 }

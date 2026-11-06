@@ -19,7 +19,10 @@ breaks along the way.
    This creates the tables, the row level security, the `media` and `gpx` storage buckets, and makes
    `melihteke@gmail.com` the admin. Then do the same with
    [`supabase/migrations/0002_site_settings.sql`](../supabase/migrations/0002_site_settings.sql) (live wind and sea
-   locations editable from the admin).
+   locations editable from the admin), then
+   [`supabase/migrations/0003_race.sql`](../supabase/migrations/0003_race.sql) and
+   [`supabase/migrations/0004_race_courses.sql`](../supabase/migrations/0004_race_courses.sql) (the academy race:
+   courses, scoreboards and the server-side race check). All of them are safe to run again.
 3. **Project Settings → API**: copy the **Project URL** and the **anon / publishable key**. Both are public by design.
    Also note the **service_role / secret key** for step 6. That one is secret: never commit or share it.
 

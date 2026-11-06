@@ -26,8 +26,15 @@ media and handles the Google login of the admin panel.
 - **Records** (`/records`): top speed, longest, windiest, most manoeuvres, totals.
 - **About** (`/about`).
 - **Sailing Academy** (`/academy/`): public, interactive training modules (route & passage planning, buoys and lights,
-  COLREG, man overboard, sail trim; "Race" coming soon). Source in `src/academy` (ported from the
+  COLREG, man overboard, sail trim, race). Source in `src/academy` (ported from the
   sail-games project), mounted as one React island with hash routes.
+  - **Race** (`#/race`): a windward-leeward course (committee boat, pin, 1, offset 1a, gate 4S/4P, finish) on real
+    lakes, raced against the clock with shifting wind and puffs. Anonymous players enter a name; the browser sends
+    only the helm commands and `race_submit` re-sails the race in Postgres (`supabase/migrations/0003_race.sql`,
+    the twin of `src/academy/games/race/sim.ts`) before it goes on the course's top-30 scoreboard. Courses are built
+    from OpenStreetMap water polygons by `npx tsx scripts/make-race-courses.ts` (writes `courses.json` and
+    `0004_race_courses.sql`). The admin **Races** tab opens/closes courses, picks the current one, deletes entries and
+    adds scores.
   - **Sextant & celestial navigation** (`#/sextant`): a plain-language "start here", a 3D sextant (three.js, loaded
     only on that tab), a guided noon sight from index error to a fix on the map, an almanac guide, terms & units,
     other methods with an intercept calculator, and photo credits (Wikimedia Commons, files in

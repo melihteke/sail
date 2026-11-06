@@ -20,6 +20,7 @@ const ColregModule = load(() => import("./games/colreg/ColregModule"), "ColregMo
 const MobModule = load(() => import("./games/mob/MobModule"), "MobModule");
 const TrimModule = load(() => import("./games/trim/TrimModule"), "TrimModule");
 const SextantModule = load(() => import("./games/sextant/SextantModule"), "SextantModule");
+const RaceModule = load(() => import("./games/race/RaceModule"), "RaceModule");
 
 function AcademyLayout() {
   const { t } = useI18n();
@@ -53,6 +54,7 @@ export default function AcademyApp() {
             <Route path="man-overboard" element={<MobModule />} />
             <Route path="sail-trim" element={<TrimModule />} />
             <Route path="sextant" element={<SextantModule />} />
+            <Route path="race" element={<RaceModule />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

@@ -1,3 +1,4 @@
+import { raceEn } from './race/en'
 import { colregEn } from './colreg/en'
 import { celestialEn } from './celestial/en'
 export const en = {
@@ -15,7 +16,6 @@ export const en = {
   'academy.disclaimer':
     'Note: not everything here may be correct. These are things I collected from my own sailing studies. Always check official sources before you rely on them on the water.',
   'game.race.title': 'Race',
-  'game.race.desc': 'Start sequences, mark roundings and racing tactics. Later you will be able to sign in, set a record attempt and climb the leaderboard.',
 
   'hub.title': 'Sailing Academy',
   'hub.intro':
@@ -825,6 +825,7 @@ export const en = {
   'np.preset.ijmuiden-london': 'IJmuiden → London (North Sea & Thames)',
   ...celestialEn,
   ...colregEn,
+  ...raceEn,
 }
 
 export type MessageKey = keyof typeof en

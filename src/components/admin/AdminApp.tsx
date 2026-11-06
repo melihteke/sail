@@ -10,12 +10,14 @@ import SailEditor from "./SailEditor";
 import BoatList from "./BoatList";
 import BoatEditor from "./BoatEditor";
 import SettingsPage from "./SettingsPage";
+import RacePage from "./RacePage";
 
-type Route = { page: "sails" } | { page: "sail-new" } | { page: "sail"; id: string } | { page: "boats" } | { page: "boat"; id: string | null } | { page: "settings" };
+type Route = { page: "sails" } | { page: "sail-new" } | { page: "sail"; id: string } | { page: "boats" } | { page: "boat"; id: string | null } | { page: "settings" } | { page: "races" };
 
 function parseRoute(hash: string): Route {
   const parts = hash.replace(/^#\/?/, "").split("/").filter(Boolean);
   if (parts[0] === "settings") return { page: "settings" };
+  if (parts[0] === "races") return { page: "races" };
   if (parts[0] === "sails" && parts[1] === "new") return { page: "sail-new" };
   if (parts[0] === "sails" && parts[1]) return { page: "sail", id: parts[1] };
   if (parts[0] === "boats" && parts[1]) return { page: "boat", id: parts[1] === "new" ? null : parts[1] };
@@ -181,7 +183,7 @@ export default function AdminApp() {
     );
   }
 
-  const tab = route.page === "settings" ? "settings" : route.page.startsWith("boat") ? "boats" : "sails";
+  const tab = route.page === "settings" || route.page === "races" ? route.page : route.page.startsWith("boat") ? "boats" : "sails";
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -191,6 +193,9 @@ export default function AdminApp() {
           </a>
           <a href="#/boats" className={`rounded-md px-3 py-1.5 ${tab === "boats" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
             Boats
+          </a>
+          <a href="#/races" className={`rounded-md px-3 py-1.5 ${tab === "races" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+            Races
           </a>
           <a href="#/settings" className={`rounded-md px-3 py-1.5 ${tab === "settings" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
             Settings
@@ -214,6 +219,7 @@ export default function AdminApp() {
         {route.page === "boats" && <BoatList />}
         {route.page === "boat" && <BoatEditor key={route.id ?? "new"} id={route.id} />}
         {route.page === "settings" && <SettingsPage />}
+        {route.page === "races" && <RacePage />}
       </DeployBar>
     </div>
   );

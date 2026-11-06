@@ -36,7 +36,7 @@ const sections: Section[] = [
     modules: [
       { id: 'mob', path: '/man-overboard', icon: '🆘' },
       { id: 'trim', path: '/sail-trim', icon: '⛵' },
-      { id: 'race', path: '', icon: '🏁', comingSoon: true },
+      { id: 'race', path: '/race', icon: '🏁' },
     ],
   },
   {

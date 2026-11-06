@@ -1,3 +1,4 @@
+import { raceTr } from './race/tr'
 import { colregTr } from './colreg/tr'
 import { celestialTr } from './celestial/tr'
 import type { Messages } from './en'
@@ -17,7 +18,6 @@ export const tr: Messages = {
   'academy.disclaimer':
     'Not: Buradaki her şey doğru olmayabilir. Bunlar kendi yelken çalışmalarımda öğrendiklerimi derlediğim notlardır. Suda güvenmeden önce mutlaka resmi kaynakları kontrol edin.',
   'game.race.title': 'Yarış',
-  'game.race.desc': 'Start prosedürleri, şamandıra dönüşleri ve yarış taktikleri. İleride giriş yapıp rekor denemesi yapabilecek ve sıralamaya girebileceksiniz.',
 
   'hub.title': 'Yelken Akademisi',
   'hub.intro':
@@ -827,4 +827,5 @@ export const tr: Messages = {
   'np.preset.ijmuiden-london': 'IJmuiden → Londra (Kuzey Denizi & Thames)',
   ...celestialTr,
   ...colregTr,
+  ...raceTr,
 }

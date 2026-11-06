@@ -35,3 +35,10 @@
     animation: none;
   }
 }
+
+@keyframes rc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
