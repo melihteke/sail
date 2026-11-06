@@ -77,7 +77,7 @@ const jsonLd = {
     <SeaConditions client:visible settings={settings} timeZone={SITE.timeZone} />
   </section>
 
-  <WindyMap />
+  <WindyMap place={settings.wind_map} />
 
   <RainRadar client:only="react" settings={settings} timeZone={SITE.timeZone} />
 

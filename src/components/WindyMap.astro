@@ -1,58 +1,41 @@
 ---
+import type { Place } from "@/lib/settings";
+
 interface Props {
-  lat?: number;
-  lon?: number;
-  zoom?: number;
+  place: Place;
 }
 
-// Centred on the Netherlands: zoom 8 frames the whole country plus the coast on desktop;
-// narrow screens fall back to zoom 7 so the country still fits (Windy only takes whole zooms).
-const { lat = 52.2, lon = 5.2, zoom = 8 } = Astro.props;
-const embed = (z: number) => {
-  const params = new URLSearchParams({
-    type: "map",
-    location: "coordinates",
-    lat: String(lat),
-    lon: String(lon),
-    zoom: String(z),
-    level: "surface",
-    overlay: "wind",
-    product: "ecmwf",
-    calendar: "now",
-    pressure: "",
-    menu: "",
-    message: "true",
-    marker: "",
-    metricWind: "kt",
-    metricTemp: "°C",
-    radarRange: "-1",
-  });
-  return `https://embed.windy.com/embed.html?${params}`;
-};
-const src = embed(zoom);
-const srcMobile = embed(zoom - 1);
+// Centre, zoom and title come from the admin settings ("Live wind map"). The build bakes in the
+// value known at build time; the script below swaps in the live value so changes show without a deploy.
+// Narrow screens use one zoom level less so the area still fits (Windy only takes whole zooms).
+const { place } = Astro.props;
+const zoom = place.zoom ?? 8;
 ---
 
 <section aria-labelledby="windy-map" class="mt-6 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
   <div class="flex flex-wrap items-end justify-between gap-2 px-5 pt-5">
     <div>
       <p class="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Live wind map</p>
-      <h2 id="windy-map" class="mt-1.5 text-xl font-semibold tracking-tight">Wind over the Netherlands</h2>
+      <h2 id="windy-map" class="mt-1.5 text-xl font-semibold tracking-tight">Wind over <span data-windy-name>{place.name}</span></h2>
     </div>
     <p class="text-xs text-muted-foreground">
-      Knots · ECMWF model · <a class="underline underline-offset-2 hover:text-foreground" href="https://www.windy.com/?52.2,5.2,8" target="_blank" rel="noopener">Source: Windy.com</a>
+      Knots · ECMWF model · <a data-windy-link class="underline underline-offset-2 hover:text-foreground" href={`https://www.windy.com/?${place.lat},${place.lon},${zoom}`} target="_blank" rel="noopener">Source: Windy.com</a>
     </p>
   </div>
-  <div class="relative mt-4 h-[460px] w-full bg-[#2a3b4d] sm:h-[560px]" data-windy>
+  <div
+    class="relative mt-4 h-[460px] w-full bg-[#2a3b4d] sm:h-[560px]"
+    data-windy
+    data-lat={place.lat}
+    data-lon={place.lon}
+    data-zoom={zoom}
+    data-name={place.name}
+  >
     <iframe
-      data-src={src}
-      data-src-mobile={srcMobile}
-      title="Live wind map of the Netherlands by Windy.com"
+      title={`Live wind map by Windy.com`}
       loading="lazy"
       class="absolute inset-0 h-full w-full border-0"
       referrerpolicy="strict-origin-when-cross-origin"
       allowfullscreen></iframe>
-    <noscript><iframe src={src} title="Live wind map of the Netherlands by Windy.com" loading="lazy" class="absolute inset-0 h-full w-full border-0"></iframe></noscript>
     <!-- Lets the page scroll past the map; one tap/click hands control to the map. -->
     <button
       type="button"
@@ -68,9 +51,47 @@ const srcMobile = embed(zoom - 1);
 </section>
 
 <script>
+  import { fetchSettings, type Place } from "@/lib/settings";
+
+  const embed = (p: Place, z: number) => {
+    const params = new URLSearchParams({
+      type: "map",
+      location: "coordinates",
+      lat: String(p.lat),
+      lon: String(p.lon),
+      zoom: String(z),
+      level: "surface",
+      overlay: "wind",
+      product: "ecmwf",
+      calendar: "now",
+      pressure: "",
+      menu: "",
+      message: "true",
+      marker: "",
+      metricWind: "kt",
+      metricTemp: "°C",
+      radarRange: "-1",
+    });
+    return `https://embed.windy.com/embed.html?${params}`;
+  };
+
   document.querySelectorAll<HTMLElement>("[data-windy]").forEach((box) => {
-    const frame = box.querySelector<HTMLIFrameElement>("iframe[data-src]");
-    if (frame) frame.src = (box.clientWidth < 640 ? frame.dataset.srcMobile : frame.dataset.src) ?? "";
+    const section = box.closest("section");
+    const frame = box.querySelector<HTMLIFrameElement>("iframe");
+    const show = (p: Place) => {
+      const zoom = p.zoom ?? 8;
+      const src = embed(p, box.clientWidth < 640 ? zoom - 1 : zoom);
+      if (frame && frame.src !== src) frame.src = src;
+      section?.querySelectorAll("[data-windy-name]").forEach((el) => (el.textContent = p.name));
+      section?.querySelector<HTMLAnchorElement>("[data-windy-link]")?.setAttribute("href", `https://www.windy.com/?${p.lat},${p.lon},${zoom}`);
+    };
+    const d = box.dataset;
+    const baked: Place = { name: d.name ?? "", lat: Number(d.lat), lon: Number(d.lon), zoom: Number(d.zoom) };
+    show(baked);
+    void fetchSettings().then((s) => {
+      const w = s.wind_map;
+      if (w.lat !== baked.lat || w.lon !== baked.lon || (w.zoom ?? 8) !== baked.zoom || w.name !== baked.name) show(w);
+    });
     const shield = box.querySelector<HTMLButtonElement>("[data-windy-shield]");
     shield?.addEventListener("click", () => shield.remove());
   });

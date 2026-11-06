@@ -7,9 +7,9 @@ import { useSiteSettings } from "@/lib/settings-store";
 
 type Frame = { time: number; path: string };
 
-/** Animated rain radar (RainViewer, free) over an OpenStreetMap base, centred on the live wind location. */
+/** Animated rain radar (RainViewer, free) over an OpenStreetMap base, centred on the radar place from the admin settings. */
 export default function RainRadar({ settings: initial, timeZone }: { settings: SiteSettings; timeZone: string }) {
-  const { lat, lon, name } = useSiteSettings(initial).live_wind;
+  const { lat, lon, name, zoom = 7 } = useSiteSettings(initial).radar;
   const node = React.useRef<HTMLDivElement | null>(null);
   const mapRef = React.useRef<L.Map | null>(null);
   const layers = React.useRef<L.TileLayer[]>([]);
@@ -21,7 +21,7 @@ export default function RainRadar({ settings: initial, timeZone }: { settings: S
 
   React.useEffect(() => {
     if (!node.current) return;
-    const map = L.map(node.current, { scrollWheelZoom: false, zoomControl: true, maxZoom: 10 }).setView([lat, lon], 7);
+    const map = L.map(node.current, { scrollWheelZoom: false, zoomControl: true, maxZoom: 10 }).setView([lat, lon], zoom);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · Radar <a href="https://www.rainviewer.com/">RainViewer</a>',
@@ -50,9 +50,9 @@ export default function RainRadar({ settings: initial, timeZone }: { settings: S
   }, []);
 
   React.useEffect(() => {
-    mapRef.current?.setView([lat, lon], mapRef.current.getZoom());
+    mapRef.current?.setView([lat, lon], zoom);
     marker.current?.setLatLng([lat, lon]).bindTooltip(name);
-  }, [lat, lon, name]);
+  }, [lat, lon, name, zoom]);
 
   React.useEffect(() => {
     layers.current.forEach((l, i) => l.setOpacity(i === index ? 0.75 : 0));

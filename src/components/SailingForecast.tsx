@@ -27,7 +27,7 @@ function verdict(wind: number, gust: number) {
 }
 
 export default function SailingForecast({ settings: initial, timeZone }: { settings: SiteSettings; timeZone: string }) {
-  const { lat, lon, name } = useSiteSettings(initial).live_wind;
+  const { lat, lon, name } = useSiteSettings(initial).forecast;
   const [days, setDays] = React.useState<Day[] | null>(null);
   const [error, setError] = React.useState(false);
 

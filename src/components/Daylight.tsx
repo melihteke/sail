@@ -41,7 +41,7 @@ function MoonIcon({ age, illumination }: { age: number; illumination: number }) 
  * browser. A bar shows night / twilight / day across today with a marker for now.
  */
 export default function Daylight({ settings: initial, timeZone }: { settings: SiteSettings; timeZone: string }) {
-  const { lat, lon, name } = useSiteSettings(initial).live_wind;
+  const { lat, lon, name } = useSiteSettings(initial).daylight;
   const [now, setNow] = React.useState<Date | null>(null);
   React.useEffect(() => {
     setNow(new Date());

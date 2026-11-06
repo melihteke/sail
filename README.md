@@ -61,7 +61,7 @@ media and handles the Google login of the admin panel.
   - YouTube links and other links.
   - Captions, ordering and a cover pick.
 - **Boats:** add/edit boats, photo with credit, specs table, main boat.
-- **Settings:** live wind and sea locations (address autocomplete). Changes show on the site without a deploy.
+- **Settings:** the place behind each home page card (live wind, 3-day forecast, daylight, sea now, Windy wind map and rain radar, the maps with a zoom level), with address autocomplete. Forecast, daylight and radar follow the live wind place until they get their own. Changes show on the site without a deploy.
 - **Deploy site:** rebuilds the static site through the `publish` edge function (about 2 minutes) and shows
   whether the latest changes are live.
 

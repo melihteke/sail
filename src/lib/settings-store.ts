@@ -1,5 +1,5 @@
 import * as React from "react";
-import { fetchSettings, type Place, type SiteSettings } from "./settings";
+import { fetchSettings, type Place, type SettingKey, type SiteSettings } from "./settings";
 
 // One shared copy of the site settings for every island on the page.
 let current: SiteSettings | null = null;
@@ -50,9 +50,18 @@ export function useIsAdmin() {
   return admin;
 }
 
-export async function saveSetting(key: keyof SiteSettings, value: Place) {
+export async function saveSetting(key: SettingKey, value: Place) {
   const { db } = await import("./supabase");
   const { error } = await db().from("site_settings").upsert({ key, value }, { onConflict: "key" });
   if (error) throw new Error(error.message);
-  publish({ ...(current ?? (await fetchSettings())), [key]: value });
+  // Re-read so cards that follow the live wind place pick up the change too.
+  publish(await fetchSettings());
+}
+
+/** Removes a card's own place so it follows the live wind location (or its default) again. */
+export async function clearSetting(key: SettingKey) {
+  const { db } = await import("./supabase");
+  const { error } = await db().from("site_settings").delete().eq("key", key);
+  if (error) throw new Error(error.message);
+  publish(await fetchSettings());
 }
