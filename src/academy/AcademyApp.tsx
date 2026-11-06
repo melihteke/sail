@@ -2,7 +2,7 @@ import { lazy, Suspense, type ComponentType } from "react";
 import { HashRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 import "./academy.css";
-import { I18nProvider, useI18n } from "./i18n";
+import { I18nProvider } from "./i18n";
 import { Hub } from "./shell/Hub";
 
 /** Each module is loaded on demand so the hub opens fast. */
@@ -23,15 +23,11 @@ const SextantModule = load(() => import("./games/sextant/SextantModule"), "Sexta
 const RaceModule = load(() => import("./games/race/RaceModule"), "RaceModule");
 
 function AcademyLayout() {
-  const { t } = useI18n();
   return (
     <div className="academy">
       <Suspense fallback={<div className="p-8 text-center text-sm text-slate-500">…</div>}>
         <Outlet />
       </Suspense>
-      <p className="mx-auto mt-12 max-w-3xl border-t border-border pt-4 text-center text-xs text-muted-foreground">
-        {t("academy.disclaimer")}
-      </p>
     </div>
   );
 }

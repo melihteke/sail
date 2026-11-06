@@ -72,7 +72,7 @@ function WindField({ course, t, show }: { course: CourseData; t: number; show: b
     const x1 = Math.min(bx1, Math.max(...xs) + pad)
     const y0 = Math.max(by0, Math.min(...ys) - pad)
     const y1 = Math.min(by1, Math.max(...ys) + pad)
-    const g = Math.max(x1 - x0, y1 - y0) / 11
+    const g = Math.max(x1 - x0, y1 - y0) / 9
     const out: XY[] = []
     for (let y = y0 + g / 2; y < y1; y += g) for (let x = x0 + g / 2; x < x1; x += g) out.push([x, y])
     return { out, g }
@@ -83,15 +83,26 @@ function WindField({ course, t, show }: { course: CourseData; t: number; show: b
   const base = course.wind.speed
   return (
     <SVGOverlay bounds={[sw, ne]} attributes={{ viewBox: `${bx0} ${-by1} ${bx1 - bx0} ${by1 - by0}`, preserveAspectRatio: 'none' }}>
+      <defs>
+        <radialGradient id="rc-puff">
+          <stop offset="0" stopColor="#0b3a5c" stopOpacity="0.55" />
+          <stop offset="1" stopColor="#0b3a5c" stopOpacity="0" />
+        </radialGradient>
+      </defs>
       {pts.out.map(([x, y]) => {
         const w = windAt(course.wind, t, x, y)
         const k = Math.max(0, Math.min(1, (w.tws / base - 0.85) / 0.5))
-        const len = pts.g * (0.28 + 0.22 * k)
+        return k > 0.3 ? <circle key={`p${x}-${y}`} cx={x} cy={-y} r={pts.g * 0.95} fill="url(#rc-puff)" opacity={(k - 0.3) * 0.8} /> : null
+      })}
+      {pts.out.map(([x, y]) => {
+        const w = windAt(course.wind, t, x, y)
+        const k = Math.max(0, Math.min(1, (w.tws / base - 0.85) / 0.5))
+        const len = pts.g * (0.22 + 0.12 * k)
+        const head = pts.g * 0.06
         return (
-          <g key={`${x}-${y}`} transform={`translate(${x} ${-y}) rotate(${w.dir + 180})`}>
-            {k > 0.25 && <circle r={pts.g * 0.5} fill="#0b3a5c" opacity={0.16 * (k - 0.25)} />}
-            <line x1={0} y1={len / 2} x2={0} y2={-len / 2} stroke="#0b3a5c" strokeWidth={pts.g * 0.03} opacity={0.45} />
-            <path d={`M0 ${-len / 2 - pts.g * 0.09} L${-pts.g * 0.07} ${-len / 2 + pts.g * 0.03} L${pts.g * 0.07} ${-len / 2 + pts.g * 0.03}Z`} fill="#0b3a5c" opacity={0.5} />
+          <g key={`${x}-${y}`} transform={`translate(${x} ${-y}) rotate(${w.dir + 180})`} stroke="#0b3a5c" strokeWidth={pts.g * 0.016} strokeLinecap="round" fill="none" opacity={0.3 + 0.2 * k}>
+            <line x1={0} y1={len / 2} x2={0} y2={-len / 2} />
+            <polyline points={`${-head},${-len / 2 + head} 0,${-len / 2} ${head},${-len / 2 + head}`} />
           </g>
         )
       })}

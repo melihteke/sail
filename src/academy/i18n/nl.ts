@@ -15,8 +15,6 @@ export const nl: Messages = {
   'common.toggleTheme': 'Donkere modus aan/uit',
   'common.footer': 'Onderdeel van Melih’s Sailing',
   'common.kn': 'kn',
-  'academy.disclaimer':
-    'Let op: niet alles hier is per se correct. Dit zijn dingen die ik heb verzameld tijdens mijn eigen zeilstudie. Controleer altijd officiële bronnen voordat je erop vertrouwt op het water.',
   'game.race.title': 'Wedstrijdzeilen',
 
   'hub.title': 'Zeilacademie',

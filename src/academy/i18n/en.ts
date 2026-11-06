@@ -13,8 +13,6 @@ export const en = {
   'common.toggleTheme': 'Toggle dark mode',
   'common.footer': 'Part of Melih’s Sailing',
   'common.kn': 'kn',
-  'academy.disclaimer':
-    'Note: not everything here may be correct. These are things I collected from my own sailing studies. Always check official sources before you rely on them on the water.',
   'game.race.title': 'Race',
 
   'hub.title': 'Sailing Academy',

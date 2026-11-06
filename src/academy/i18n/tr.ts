@@ -15,8 +15,6 @@ export const tr: Messages = {
   'common.toggleTheme': 'Karanlık modu aç/kapat',
   'common.footer': 'Melih’s Sailing’in bir parçası',
   'common.kn': 'kn',
-  'academy.disclaimer':
-    'Not: Buradaki her şey doğru olmayabilir. Bunlar kendi yelken çalışmalarımda öğrendiklerimi derlediğim notlardır. Suda güvenmeden önce mutlaka resmi kaynakları kontrol edin.',
   'game.race.title': 'Yarış',
 
   'hub.title': 'Yelken Akademisi',
