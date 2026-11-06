@@ -35,6 +35,7 @@ export const raceNl: RaceMessages = {
   'rc.port': 'bakboord',
   'rc.starboard': 'stuurboord',
   'rc.type': 'Baantype',
+  'rc.areaMap': 'Wedstrijdgebied',
   'rc.type.wl': 'Up-and-down',
   'rc.type.triangle': 'Driehoek',
   'rc.leg.finish': 'Finishlijn',

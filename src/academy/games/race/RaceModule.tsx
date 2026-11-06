@@ -4,6 +4,7 @@ import type { MessageKey } from '../../i18n/en'
 import { useI18n, type Translate } from '../../i18n'
 import { loadJson, saveJson } from '../../lib/storage'
 import coursesJson from './courses.json'
+import { RaceAreaMap } from './RaceAreaMap'
 import { RaceGame } from './RaceGame'
 import { errorKey, formatRaceTime, leaderboard, listCourses, online, startRace, submitRace, type BoardRow, type CourseRow, type SubmitResult } from './raceApi'
 import { RaceRules } from './RaceRules'
@@ -216,8 +217,14 @@ function RaceTab({ t, rows, selected, onSelect, offline, showBoard }: { t: Trans
           </dl>
           <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">{t('rc.briefing')}</p>
         </section>
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900/60">
+          <h3 className="px-4 pb-2 pt-3 font-semibold">
+            {t('rc.areaMap')} <span className="font-normal text-slate-500">· {entry.meta.area}</span>
+          </h3>
+          <RaceAreaMap id={entry.meta.id} course={entry.course} label={entry.meta.name} />
+        </section>
       </div>
-      <aside className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-navy-900/60">
+      <aside className="space-y-3 self-start rounded-xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-navy-900/60">
         <label className="block text-sm font-medium" htmlFor="rc-name">
           {t('rc.yourName')}
         </label>

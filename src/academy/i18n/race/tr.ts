@@ -35,6 +35,7 @@ export const raceTr: RaceMessages = {
   'rc.port': 'iskeleden',
   'rc.starboard': 'sancaktan',
   'rc.type': 'Parkur tipi',
+  'rc.areaMap': 'Yarış alanı',
   'rc.type.wl': 'Rüzgarüstü–rüzgaraltı',
   'rc.type.triangle': 'Üçgen',
   'rc.leg.finish': 'Finiş çizgisi',

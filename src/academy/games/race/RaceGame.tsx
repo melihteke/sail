@@ -3,7 +3,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Circle, ImageOverlay, MapContainer, Marker, Polygon, Polyline, Rectangle, SVGOverlay, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import type { Translate } from '../../i18n'
 import { playHorn } from '../../lib/horn'
+import { FlowField } from '../../map/FlowField'
 import { boatIcon } from '../../map/icons'
+import { WindCompass } from '../../map/WindCompass'
 import { formatRaceTime } from './raceApi'
 import { committeeIcon, pinBuoyIcon, raceMarkIcon } from './raceIcons'
 import {
@@ -11,6 +13,7 @@ import {
   initialState,
   norm180,
   norm360,
+  POLAR,
   SPEEDUP,
   step,
   toLatLon,
@@ -22,6 +25,8 @@ import {
 } from './sim'
 
 const UP_TWA = 45
+/** Closest angle to the wind in the polar table: the no-go wedge on the compass. */
+const MIN_TWA = POLAR.twa[0]!
 const DOWN_TWA = 150
 
 interface Props {
@@ -41,25 +46,6 @@ const legTarget = (c: CourseData, leg: number): XY | null => {
 const CARDINALS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
 export const cardinal = (deg: number) => CARDINALS[Math.round(norm360(deg) / 22.5) % 16]!
 
-/** Small, tidy wind dial: ticks every 45°, a slim needle pointing where the wind blows to. */
-function WindDial({ dir }: { dir: number }) {
-  return (
-    <svg viewBox="-22 -22 44 44" className="h-11 w-11 shrink-0" aria-hidden>
-      <circle r="19" fill="#f8fafc" stroke="#cbd5e1" />
-      {Array.from({ length: 8 }, (_, i) => (
-        <line key={i} y1={-19} y2={i % 2 ? -16.5 : -15} stroke="#94a3b8" strokeWidth={i % 2 ? 0.6 : 1} transform={`rotate(${i * 45})`} />
-      ))}
-      <text y="-9" textAnchor="middle" fontSize="6" fontWeight="600" fill="#64748b">
-        N
-      </text>
-      <g transform={`rotate(${dir + 180})`}>
-        <circle cy="15" r="1.8" fill="#0b3a5c" />
-        <line y1="14" y2="-11" stroke="#0b3a5c" strokeWidth="1.2" strokeLinecap="round" />
-        <path d="M0 -15 L-3 -9.5 L0 -10.8 L3 -9.5Z" fill="#0b3a5c" />
-      </g>
-    </svg>
-  )
-}
 function FitCourse({ course }: { course: CourseData }) {
   const map = useMap()
   useEffect(() => {
@@ -79,7 +65,7 @@ function ClickToSteer({ course, onPoint }: { course: CourseData; onPoint: (p: XY
   return null
 }
 
-/** Wind as evenly spaced streaks flowing downwind, plus soft shading for puffs (darker = more wind). */
+/** Puffs as soft dark patches on the water (darker = more wind); the streaks come from FlowField. */
 function WindField({ course, t, show }: { course: CourseData; t: number; show: boolean }) {
   const [bx0, by0, bx1, by1] = course.bounds
   const pts = useMemo(() => {
@@ -112,20 +98,6 @@ function WindField({ course, t, show }: { course: CourseData; t: number; show: b
         const w = windAt(course.wind, t, x, y)
         const k = Math.max(0, Math.min(1, (w.tws / base - 0.85) / 0.5))
         return k > 0.3 ? <circle key={`p${x}-${y}`} cx={x} cy={-y} r={pts.g * 0.95} fill="url(#rc-puff)" opacity={(k - 0.3) * 0.8} /> : null
-      })}
-      {pts.out.map(([x, y], i) => {
-        const w = windAt(course.wind, t, x, y)
-        const k = Math.max(0, Math.min(1, (w.tws / base - 0.85) / 0.5))
-        const len = pts.g * 0.5
-        const dash = pts.g * 0.1
-        // Lines run upwind → downwind; the dashes drift along them like wind on the water.
-        return (
-          <g key={`${x}-${y}`} transform={`translate(${x} ${-y}) rotate(${w.dir + 180})`}>
-            <line y1={len / 2} y2={-len / 2} stroke="#ffffff" strokeWidth={pts.g * 0.03} strokeLinecap="round" opacity={0.35 + 0.35 * k} strokeDasharray={`${dash} ${dash * 1.6}`}>
-              <animate attributeName="stroke-dashoffset" from="0" to={-dash * 2.6} dur="1.6s" begin={`${(i % 7) * -0.23}s`} repeatCount="indefinite" />
-            </line>
-          </g>
-        )
       })}
     </SVGOverlay>
   )
@@ -366,6 +338,9 @@ export function RaceGame({ course, t, onEnd }: Props) {
             <p className="font-mono text-xs sm:hidden">
               {((hud.speed * 3600) / 1852).toFixed(1)} kn · {Math.round(Math.abs(hud.twa))}° · {hud.tacks}/{hud.gybes}
             </p>
+            <p className="font-mono text-xs text-slate-500 sm:hidden">
+              {t('rc.wind')} {hud.tws.toFixed(1)} kn · {cardinal(hud.windDir)}
+            </p>
           </div>
           {hud.t < 0 && (
             <div className="rounded-lg bg-amber-100/95 px-3 py-1.5 text-xs font-medium text-amber-900 shadow">
@@ -383,14 +358,18 @@ export function RaceGame({ course, t, onEnd }: Props) {
           )}
         </div>
 
-        <div className="pointer-events-none absolute right-2 top-2 z-[1000] w-36 rounded-lg bg-white/90 px-3 py-2 text-xs shadow sm:w-44 dark:bg-navy-950/85">
-          <div className="flex items-center gap-2">
-            <WindDial dir={hud.windDir} />
-            <div>
-              <p className="font-mono text-base font-bold">{hud.tws.toFixed(1)} kn</p>
-              <p className="text-slate-500">{t('rc.windFrom', { dir: `${cardinal(hud.windDir)} ${Math.round(hud.windDir)}` })}</p>
-            </div>
-          </div>
+        {showWind && <FlowField env={{ windFromDeg: Math.round(hud.windDir), windSpeedKn: course.wind.speed, currentSetDeg: 0, currentSpeedKn: 0 }} />}
+        <div className="pointer-events-none absolute right-2 top-2 z-[1000] flex flex-col items-center gap-1.5 sm:w-44">
+          <WindCompass
+            env={{ windFromDeg: hud.windDir, windSpeedKn: hud.tws, currentSetDeg: 0, currentSpeedKn: 0 }}
+            minTwa={MIN_TWA}
+            windLabel={t('rc.windFrom', { dir: `${cardinal(hud.windDir)} ${Math.round(hud.windDir)}` })}
+            currentLabel=""
+            noGoLabel={t('rp.noGoShort')}
+          />
+        <div className="hidden w-full rounded-lg bg-white/90 px-3 py-2 text-xs shadow sm:block dark:bg-navy-950/85">
+          <p className="font-mono text-base font-bold">{hud.tws.toFixed(1)} kn</p>
+          <p className="text-slate-500">{t('rc.windFrom', { dir: `${cardinal(hud.windDir)} ${Math.round(hud.windDir)}` })}</p>
           {hud.t >= 0 && upwindLeg && hud.leg !== 0 && Math.abs(lift) >= 1 && (
             <p className={`mt-1 font-semibold ${lift > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
               {lift > 0 ? t('rc.lift', { d: Math.round(Math.abs(lift)) }) : t('rc.header', { d: Math.round(Math.abs(lift)) })}
@@ -410,6 +389,7 @@ export function RaceGame({ course, t, onEnd }: Props) {
               {hud.tacks} / {hud.gybes}
             </dd>
           </dl>
+        </div>
         </div>
       </div>
 

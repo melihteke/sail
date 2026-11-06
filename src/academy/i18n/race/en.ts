@@ -34,6 +34,7 @@ export const raceEn = {
   'rc.port': 'port',
   'rc.starboard': 'starboard',
   'rc.type': 'Course type',
+  'rc.areaMap': 'Race area',
   'rc.type.wl': 'Windward-leeward',
   'rc.type.triangle': 'Triangle',
   'rc.leg.finish': 'Finish line',

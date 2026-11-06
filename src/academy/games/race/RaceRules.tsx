@@ -6,23 +6,40 @@ import type { Translate } from '../../i18n'
 const UP = '#2563eb'
 const DOWN = '#16a34a'
 const ROUND = '#ea580c'
-const LEGS = [
-  { color: UP, d: 'M180 452 L180 420 L120 350 L215 262 L150 182 L205 112' },
-  { color: ROUND, d: 'M205 112 Q205 50 180 50 Q150 52 128 64 Q104 70 106 94' },
-  { color: DOWN, d: 'M106 94 L150 205 L118 315 L172 440 L180 478' },
-  { color: ROUND, d: 'M180 478 Q182 500 205 500 Q226 498 228 470' },
-  { color: UP, d: 'M228 470 L234 398 L200 345 L238 282' },
+type Pt = [number, number]
+// Upwind zigzags in the middle, the run is down the left side and the final beat up the right,
+// so no two legs cross. Straight legs are point lists; roundings are smooth curves.
+const LEGS: { color: string; pts?: Pt[]; d?: string }[] = [
+  { color: UP, pts: [[190, 420], [150, 350], [200, 270], [150, 190], [196, 110]] },
+  { color: ROUND, d: 'M196 110 Q200 50 178 50 Q140 50 124 62 Q106 74 104 96' },
+  { color: DOWN, pts: [[104, 96], [70, 205], [100, 320], [116, 440], [180, 472]] },
+  { color: ROUND, d: 'M180 472 Q184 504 208 502 Q232 498 232 468' },
+  { color: UP, pts: [[232, 468], [282, 410], [262, 352], [292, 298]] },
 ]
-const FULL = LEGS.map((l, i) => (i === 0 ? l.d : l.d.replace(/^M[\d.]+ [\d.]+ /, ' '))).join('')
+const pathOf = (l: (typeof LEGS)[number]) => l.d ?? `M${l.pts!.map((p) => p.join(' ')).join(' L')}`
+const FULL = LEGS.map((l, i) => (i === 0 ? pathOf(l) : pathOf(l).replace(/^M[\d.]+ [\d.]+ /, ' '))).join('')
+const legStart = (l: (typeof LEGS)[number]): Pt => l.pts?.[0] ?? (l.d!.match(/^M([\d.]+) ([\d.]+)/)!.slice(1).map(Number) as Pt)
 const STEPS = [
-  { n: 1, x: 205, y: 445, color: ROUND },
-  { n: 2, x: 104, y: 352, color: UP },
-  { n: 3, x: 224, y: 50, color: ROUND },
-  { n: 4, x: 88, y: 210, color: DOWN },
-  { n: 5, x: 246, y: 506, color: ROUND },
-  { n: 6, x: 182, y: 340, color: UP },
+  { n: 1, x: 190, y: 444, color: ROUND },
+  { n: 2, x: 128, y: 352, color: UP },
+  { n: 3, x: 222, y: 46, color: ROUND },
+  { n: 4, x: 46, y: 205, color: DOWN },
+  { n: 5, x: 248, y: 506, color: ROUND },
+  { n: 6, x: 308, y: 418, color: UP },
 ]
 
+/** Small chevron in the middle of each straight segment, pointing the way to sail. */
+function SegmentArrows({ pts, color }: { pts: Pt[]; color: string }) {
+  return (
+    <>
+      {pts.slice(1).map(([x2, y2], i) => {
+        const [x1, y1] = pts[i]!
+        const a = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI
+        return <path key={i} d="M-4 -4.5 L4 0 L-4 4.5" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" transform={`translate(${(x1 + x2) / 2} ${(y1 + y2) / 2}) rotate(${a})`} />
+      })}
+    </>
+  )
+}
 function Badge({ n, x, y, color }: { n: number; x: number; y: number; color: string }) {
   return (
     <g transform={`translate(${x} ${y})`}>
@@ -36,10 +53,10 @@ function Badge({ n, x, y, color }: { n: number; x: number; y: number; color: str
 
 /** Beginner-friendly picture of the course: the route to sail, step numbers and an animated boat. */
 function CourseDiagram({ t }: { t: Translate }) {
-  const mark = (x: number, y: number, label: string, color = '#f97316') => (
+  const mark = (x: number, y: number, label: string, color = '#f97316', at: [number, number, 'start' | 'middle'] = [9, -5, 'start']) => (
     <g transform={`translate(${x} ${y})`}>
       <path d="M-6 6 L-3.5 -7 Q0 -10 3.5 -7 L6 6 Q0 8.5 -6 6Z" fill={color} stroke="#7c2d12" strokeWidth="0.8" />
-      <text x="9" y="-5" fontSize="11" fontWeight="700" fill="#0b3a5c">
+      <text x={at[0]} y={at[1]} textAnchor={at[2]} fontSize="11" fontWeight="700" fill="#0b3a5c">
         {label}
       </text>
     </g>
@@ -49,7 +66,7 @@ function CourseDiagram({ t }: { t: Translate }) {
       <path d="M-11 2 H11 L8 7 H-8Z" fill="#fff" stroke="#334155" />
       <line x1="5" y1="2" x2="5" y2="-12" stroke="#334155" />
       <rect x="5" y="-12" width="9" height="6" fill={flag} />
-      <text x="16" y="5" fontSize="10" fill="#0b3a5c">
+      <text y="19" textAnchor="middle" fontSize="10" fill="#0b3a5c">
         {label}
       </text>
     </g>
@@ -92,33 +109,41 @@ function CourseDiagram({ t }: { t: Translate }) {
       </g>
 
       {/* lines */}
-      <line x1="110" y1="420" x2="250" y2="420" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" />
-      <circle cx="110" cy="420" r="4.5" fill="#f97316" stroke="#334155" />
-      {boat(255, 420, '#f97316', t('rc.rules.start'))}
-      <line x1="180" y1="290" x2="270" y2="290" stroke="#2563eb" strokeWidth="2" strokeDasharray="2 4" />
-      <circle cx="180" cy="290" r="4.5" fill="#2563eb" stroke="#334155" />
-      {boat(275, 290, '#2563eb', t('rc.rules.finish'))}
+      <line x1="134" y1="420" x2="240" y2="420" stroke="#f97316" strokeWidth="2" strokeDasharray="6 4" />
+      <circle cx="134" cy="420" r="4.5" fill="#f97316" stroke="#334155" />
+      {boat(245, 420, '#f97316', t('rc.rules.start'))}
+      <line x1="262" y1="290" x2="320" y2="290" stroke="#2563eb" strokeWidth="2" strokeDasharray="2 4" />
+      <circle cx="262" cy="290" r="4.5" fill="#2563eb" stroke="#334155" />
+      {boat(326, 290, '#2563eb', t('rc.rules.finish'))}
 
       {/* route */}
-      {LEGS.map((l, i) => (
-        <path
-          key={i}
-          d={l.d}
-          fill="none"
-          stroke={l.color}
-          strokeWidth="3"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          opacity="0.85"
-          markerMid={`url(#${l.color === UP ? 'rc-arr-up' : l.color === DOWN ? 'rc-arr-down' : 'rc-arr-round'})`}
-          markerEnd={`url(#${l.color === UP ? 'rc-arr-up' : l.color === DOWN ? 'rc-arr-down' : 'rc-arr-round'})`}
-        />
-      ))}
+      {/* where each leg begins (drawn first so the previous leg's arrowhead sits on top) */}
+      {LEGS.map((l, i) => {
+        const [sx, sy] = legStart(l)
+        return <circle key={`s${i}`} cx={sx} cy={sy} r="5" fill="#fff" stroke={l.color} strokeWidth="2.2" />
+      })}
+      {LEGS.map((l, i) => {
+        return (
+          <g key={i}>
+            <path
+              d={pathOf(l)}
+              fill="none"
+              stroke={l.color}
+              strokeWidth="3"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              opacity="0.85"
+              markerEnd={`url(#${l.color === UP ? 'rc-arr-up' : l.color === DOWN ? 'rc-arr-down' : 'rc-arr-round'})`}
+            />
+            {l.pts && <SegmentArrows pts={l.pts} color={l.color} />}
+          </g>
+        )
+      })}
 
       {mark(180, 70, '1')}
-      {mark(128, 84, '1a', '#facc15')}
-      {mark(152, 478, '4S')}
-      {mark(208, 478, '4P')}
+      {mark(124, 84, '1a', '#facc15')}
+      {mark(150, 478, '4S', undefined, [0, 22, 'middle'])}
+      {mark(210, 478, '4P', undefined, [0, -13, 'middle'])}
 
       {STEPS.map((s) => (
         <Badge key={s.n} {...s} />

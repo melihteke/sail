@@ -3,6 +3,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import StatCard from "@/components/StatCard.astro";
 import SailCard from "@/components/SailCard.astro";
 import LiveWind from "@/components/LiveWind";
+import Daylight from "@/components/Daylight";
 import SailHeatmap from "@/components/SailHeatmap";
 import SailingForecast from "@/components/SailingForecast";
 import SeaConditions from "@/components/SeaConditions";
@@ -57,7 +58,7 @@ const jsonLd = {
     </div>
   </section>
 
-  <section class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+  <section class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-stretch">
     <div class="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <div class="mb-5">
         <p class="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground" data-i18n="home.activityKicker">Sailing activity · last 12 months</p>
@@ -65,7 +66,10 @@ const jsonLd = {
       </div>
       <SailHeatmap client:visible data={heatmap} />
     </div>
-    <LiveWind client:load settings={settings} timeZone={SITE.timeZone} />
+    <div class="flex flex-col gap-6">
+      <LiveWind client:load settings={settings} timeZone={SITE.timeZone} />
+      <div class="flex-1"><Daylight client:visible settings={settings} timeZone={SITE.timeZone} /></div>
+    </div>
   </section>
 
   <section aria-label="Conditions" class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-stretch">
