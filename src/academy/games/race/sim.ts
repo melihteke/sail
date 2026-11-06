@@ -17,6 +17,22 @@ export const MAX_SPEED = 4.5
 export const SPEEDUP = 8
 const RAY = 400
 
+const b64 = (s: string): Uint8Array => {
+  const bin = atob(s)
+  const out = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i)
+  return out
+}
+const maskCache = new WeakMap<CourseMask, { bits: Uint8Array; dist: Uint8Array }>()
+function maskData(m: CourseMask) {
+  let d = maskCache.get(m)
+  if (!d) {
+    d = { bits: b64(m.bits), dist: b64(m.dist) }
+    maskCache.set(m, d)
+  }
+  return d
+}
+
 export type XY = [number, number]
 
 export interface CourseWind {
@@ -34,8 +50,39 @@ export interface CourseWind {
   puff: [number, number, number, number, number]
 }
 
+/**
+ * What to do after the start, in order. A mark is rounded when the track crosses its outward ray
+ * (`ray`, unit vector) turning the right way: side 1 = leave it to port, -1 = to starboard.
+ * A gate or the finish is passed by crossing the segment a→b while moving along `dir`.
+ */
+export type CourseLeg =
+  | { kind: 'mark'; at: XY; ray: XY; side: number; label: string }
+  | { kind: 'gate' | 'finish'; a: XY; b: XY; dir: XY; label: string }
+
+/** Shown on the map only. */
+export interface CourseObject {
+  kind: 'mark' | 'committee' | 'pin' | 'finishBoat' | 'finishPin'
+  at: XY
+  label: string
+  color: string
+}
+
+/** Land/water grid for sea courses: 10 m cells, bit set = water; `dist` is a coarse min-distance grid. */
+export interface CourseMask {
+  x0: number
+  y0: number
+  cell: number
+  nx: number
+  ny: number
+  bits: string
+  /** Per `coarse`×`coarse` block of cells: min Chebyshev distance to land in cells (capped 255). */
+  coarse: number
+  dist: string
+}
+
 export interface CourseData {
   id: string
+  type: 'windward-leeward' | 'triangle'
   origin: { lat: number; lon: number }
   /** Race area [minX, minY, maxX, maxY]; leaving it ends the race. */
   bounds: [number, number, number, number]
@@ -43,19 +90,12 @@ export interface CourseData {
   water: XY[][][]
   /** Extra land inside the water (islands mapped separately). */
   land: XY[][]
+  /** Sea courses use a land/water grid instead of polygons. */
+  mask?: CourseMask
   wind: CourseWind
-  marks: {
-    committee: XY
-    pin: XY
-    windward: XY
-    offset: XY
-    gateS: XY
-    gateP: XY
-    finishBoat: XY
-    finishPin: XY
-  }
-  /** Outward rays used to check the port roundings of mark 1 and 1a. */
-  rays: { windward: XY; offset: XY }
+  start: { committee: XY; pin: XY }
+  legs: CourseLeg[]
+  objects: CourseObject[]
   /** Sign of cross(pin - committee, p - committee) on the pre-start side of the start line. */
   preSign: number
   boat: { x: number; y: number; heading: number }
@@ -159,6 +199,18 @@ function segHit(p1x: number, p1y: number, p2x: number, p2y: number, ax: number, 
 
 /** Point-in-polygon (even-odd per polygon) plus distance to the nearest edge. */
 export function landProbe(c: CourseData, x: number, y: number): { water: boolean; dist: number } {
+  if (c.mask) {
+    const m = c.mask
+    const ix = Math.floor((x - m.x0) / m.cell)
+    const iy = Math.floor((y - m.y0) / m.cell)
+    if (ix < 0 || iy < 0 || ix >= m.nx || iy >= m.ny) return { water: false, dist: 0 }
+    const { bits, dist } = maskData(m)
+    const idx = iy * m.nx + ix
+    const water = (bits[idx >> 3]! & (1 << (idx & 7))) !== 0
+    const cn = Math.ceil(m.nx / m.coarse)
+    const v = dist[Math.floor(iy / m.coarse) * cn + Math.floor(ix / m.coarse)]!
+    return { water, dist: (v > 1 ? v - 1 : 0) * m.cell }
+  }
   let inWater = false
   let dist = Infinity
   const scan = (ring: XY[]): boolean => {
@@ -190,8 +242,6 @@ export function landProbe(c: CourseData, x: number, y: number): { water: boolean
 }
 
 export type RaceStatus = 'racing' | 'finished' | 'crashed' | 'outside' | 'timeout'
-export type Leg = 'start' | 'windward' | 'offset' | 'gate' | 'finish' | 'done'
-const LEGS: Leg[] = ['start', 'windward', 'offset', 'gate', 'finish', 'done']
 
 export interface RaceState {
   /** Time at the current position: seconds after the gun (negative before). */
@@ -201,7 +251,8 @@ export interface RaceState {
   heading: number
   speed: number
   target: number
-  leg: Leg
+  /** 0 = start, i = sailing to legs[i - 1], legs.length + 1 = finished. */
+  leg: number
   ocs: boolean
   status: RaceStatus
   tacks: number
@@ -226,7 +277,7 @@ export function initialState(c: CourseData): RaceState {
     heading: c.boat.heading,
     speed: q((polarSpeedKn(Math.abs(twa), w.tws) * 1852) / 3600, 1e6),
     target: c.boat.heading,
-    leg: 'start',
+    leg: 0,
     ocs: false,
     status: 'racing',
     tacks: 0,
@@ -243,8 +294,8 @@ export function initialState(c: CourseData): RaceState {
 
 /** -1 on the pre-start side of the start line, 1 on the course side. */
 export function sideOfStart(c: CourseData, x: number, y: number): number {
-  const [cx, cy] = c.marks.committee
-  const [px, py] = c.marks.pin
+  const [cx, cy] = c.start.committee
+  const [px, py] = c.start.pin
   return crossOf(px - cx, py - cy, x - cx, y - cy) * c.preSign > 0 ? -1 : 1
 }
 
@@ -292,37 +343,36 @@ export function step(c: CourseData, s: RaceState, target: number): RaceState {
     n.nextLandCheck = n.t + Math.max(1, Math.floor(probe.dist / MAX_SPEED))
   }
 
-  const m = c.marks
-  if (n.leg === 'start') {
+  if (n.leg === 0) {
     const before = sideOfStart(c, s.x, s.y)
     const after = sideOfStart(c, n.x, n.y)
+    const { committee, pin } = c.start
     if (k < 0) {
       if (n.t === 0 && after === 1) n.ocs = true
     } else if (n.ocs) {
       if (after === -1) n.ocs = false
-    } else if (before === -1 && after === 1 && segHit(s.x, s.y, n.x, n.y, m.committee[0], m.committee[1], m.pin[0], m.pin[1]) >= 0) {
-      n.leg = 'windward'
+    } else if (before === -1 && after === 1 && segHit(s.x, s.y, n.x, n.y, committee[0], committee[1], pin[0], pin[1]) >= 0) {
+      n.leg = 1
     }
-  } else if (n.leg === 'windward' || n.leg === 'offset') {
-    const mark = n.leg === 'windward' ? m.windward : m.offset
-    const ray = n.leg === 'windward' ? c.rays.windward : c.rays.offset
-    const hit = segHit(s.x, s.y, n.x, n.y, mark[0], mark[1], mark[0] + ray[0] * RAY, mark[1] + ray[1] * RAY)
-    if (hit >= 0 && crossOf(ray[0], ray[1], n.x - s.x, n.y - s.y) > 0) n.leg = LEGS[LEGS.indexOf(n.leg) + 1]
-  } else if (n.leg === 'gate') {
-    const hit = segHit(s.x, s.y, n.x, n.y, m.gateS[0], m.gateS[1], m.gateP[0], m.gateP[1])
-    const a = rad(c.wind.dir)
-    if (hit >= 0 && (n.x - s.x) * Math.sin(a) + (n.y - s.y) * Math.cos(a) < 0) n.leg = 'finish'
-  } else if (n.leg === 'finish') {
-    const hit = segHit(s.x, s.y, n.x, n.y, m.finishBoat[0], m.finishBoat[1], m.finishPin[0], m.finishPin[1])
-    const a = rad(c.wind.dir)
-    if (hit >= 0 && (n.x - s.x) * Math.sin(a) + (n.y - s.y) * Math.cos(a) > 0) {
-      n.leg = 'done'
-      n.status = 'finished'
-      n.finishTime = q(k + hit, 10)
-      return n
+  } else if (n.leg <= c.legs.length) {
+    const L = c.legs[n.leg - 1]!
+    if (L.kind === 'mark') {
+      const [ax, ay] = L.at
+      const [dx, dy] = L.ray
+      const hit = segHit(s.x, s.y, n.x, n.y, ax, ay, ax + dx * RAY, ay + dy * RAY)
+      if (hit >= 0 && L.side * crossOf(dx, dy, n.x - s.x, n.y - s.y) > 0) n.leg++
+    } else {
+      const hit = segHit(s.x, s.y, n.x, n.y, L.a[0], L.a[1], L.b[0], L.b[1])
+      if (hit >= 0 && (n.x - s.x) * L.dir[0] + (n.y - s.y) * L.dir[1] > 0) {
+        n.leg++
+        if (L.kind === 'finish') {
+          n.status = 'finished'
+          n.finishTime = q(k + hit, 10)
+          return n
+        }
+      }
     }
-  }
-  if (n.t >= TIME_LIMIT) n.status = 'timeout'
+  }  if (n.t >= TIME_LIMIT) n.status = 'timeout'
   return n
 }
 

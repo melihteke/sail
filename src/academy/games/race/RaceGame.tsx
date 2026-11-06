@@ -1,6 +1,6 @@
 import L from 'leaflet'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Circle, MapContainer, Marker, Polygon, Polyline, Rectangle, SVGOverlay, TileLayer, useMap, useMapEvents } from 'react-leaflet'
+import { Circle, ImageOverlay, MapContainer, Marker, Polygon, Polyline, Rectangle, SVGOverlay, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import type { Translate } from '../../i18n'
 import { playHorn } from '../../lib/horn'
 import { boatIcon } from '../../map/icons'
@@ -17,7 +17,6 @@ import {
   windAt,
   type CourseData,
   type HelmEvent,
-  type Leg,
   type RaceState,
   type XY,
 } from './sim'
@@ -31,20 +30,40 @@ interface Props {
   onEnd: (final: RaceState, events: HelmEvent[]) => void
 }
 
-const legTarget = (c: CourseData, leg: Leg): XY | null => {
-  const m = c.marks
-  if (leg === 'start') return [(m.committee[0] + m.pin[0]) / 2, (m.committee[1] + m.pin[1]) / 2]
-  if (leg === 'windward') return m.windward
-  if (leg === 'offset') return m.offset
-  if (leg === 'gate') return [(m.gateS[0] + m.gateP[0]) / 2, (m.gateS[1] + m.gateP[1]) / 2]
-  if (leg === 'finish') return [(m.finishBoat[0] + m.finishPin[0]) / 2, (m.finishBoat[1] + m.finishPin[1]) / 2]
-  return null
+/** Where the boat is heading next: the start line, a mark, or the middle of a gate / finish line. */
+const legTarget = (c: CourseData, leg: number): XY | null => {
+  if (leg === 0) return [(c.start.committee[0] + c.start.pin[0]) / 2, (c.start.committee[1] + c.start.pin[1]) / 2]
+  const L = c.legs[leg - 1]
+  if (!L) return null
+  return L.kind === 'mark' ? L.at : [(L.a[0] + L.b[0]) / 2, (L.a[1] + L.b[1]) / 2]
 }
 
+const CARDINALS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
+export const cardinal = (deg: number) => CARDINALS[Math.round(norm360(deg) / 22.5) % 16]!
+
+/** Small, tidy wind dial: ticks every 45°, a slim needle pointing where the wind blows to. */
+function WindDial({ dir }: { dir: number }) {
+  return (
+    <svg viewBox="-22 -22 44 44" className="h-11 w-11 shrink-0" aria-hidden>
+      <circle r="19" fill="#f8fafc" stroke="#cbd5e1" />
+      {Array.from({ length: 8 }, (_, i) => (
+        <line key={i} y1={-19} y2={i % 2 ? -16.5 : -15} stroke="#94a3b8" strokeWidth={i % 2 ? 0.6 : 1} transform={`rotate(${i * 45})`} />
+      ))}
+      <text y="-9" textAnchor="middle" fontSize="6" fontWeight="600" fill="#64748b">
+        N
+      </text>
+      <g transform={`rotate(${dir + 180})`}>
+        <circle cy="15" r="1.8" fill="#0b3a5c" />
+        <line y1="14" y2="-11" stroke="#0b3a5c" strokeWidth="1.2" strokeLinecap="round" />
+        <path d="M0 -15 L-3 -9.5 L0 -10.8 L3 -9.5Z" fill="#0b3a5c" />
+      </g>
+    </svg>
+  )
+}
 function FitCourse({ course }: { course: CourseData }) {
   const map = useMap()
   useEffect(() => {
-    const pts = [...Object.values(course.marks), [course.boat.x, course.boat.y] as XY].map(([x, y]) => toLatLon(course, x, y))
+    const pts = [...course.objects.map((o) => o.at), [course.boat.x, course.boat.y] as XY].map(([x, y]) => toLatLon(course, x, y))
     // Keep the course clear of the clock and wind boxes drawn over the top of the map.
     map.fitBounds(L.latLngBounds(pts), { paddingTopLeft: [24, 130], paddingBottomRight: [24, 24] })
   }, [map, course])
@@ -60,11 +79,11 @@ function ClickToSteer({ course, onPoint }: { course: CourseData; onPoint: (p: XY
   return null
 }
 
-/** Wind arrows and puffs (darker water = more wind), recomputed every simulated second. */
+/** Wind as evenly spaced streaks flowing downwind, plus soft shading for puffs (darker = more wind). */
 function WindField({ course, t, show }: { course: CourseData; t: number; show: boolean }) {
   const [bx0, by0, bx1, by1] = course.bounds
   const pts = useMemo(() => {
-    const ms = Object.values(course.marks)
+    const ms = course.objects.map((o) => o.at)
     const xs = ms.map((p) => p[0])
     const ys = ms.map((p) => p[1])
     const pad = course.legM * 0.45
@@ -72,7 +91,7 @@ function WindField({ course, t, show }: { course: CourseData; t: number; show: b
     const x1 = Math.min(bx1, Math.max(...xs) + pad)
     const y0 = Math.max(by0, Math.min(...ys) - pad)
     const y1 = Math.min(by1, Math.max(...ys) + pad)
-    const g = Math.max(x1 - x0, y1 - y0) / 9
+    const g = Math.max(x1 - x0, y1 - y0) / 10
     const out: XY[] = []
     for (let y = y0 + g / 2; y < y1; y += g) for (let x = x0 + g / 2; x < x1; x += g) out.push([x, y])
     return { out, g }
@@ -94,20 +113,50 @@ function WindField({ course, t, show }: { course: CourseData; t: number; show: b
         const k = Math.max(0, Math.min(1, (w.tws / base - 0.85) / 0.5))
         return k > 0.3 ? <circle key={`p${x}-${y}`} cx={x} cy={-y} r={pts.g * 0.95} fill="url(#rc-puff)" opacity={(k - 0.3) * 0.8} /> : null
       })}
-      {pts.out.map(([x, y]) => {
+      {pts.out.map(([x, y], i) => {
         const w = windAt(course.wind, t, x, y)
         const k = Math.max(0, Math.min(1, (w.tws / base - 0.85) / 0.5))
-        const len = pts.g * (0.22 + 0.12 * k)
-        const head = pts.g * 0.06
+        const len = pts.g * 0.5
+        const dash = pts.g * 0.1
+        // Lines run upwind → downwind; the dashes drift along them like wind on the water.
         return (
-          <g key={`${x}-${y}`} transform={`translate(${x} ${-y}) rotate(${w.dir + 180})`} stroke="#0b3a5c" strokeWidth={pts.g * 0.016} strokeLinecap="round" fill="none" opacity={0.3 + 0.2 * k}>
-            <line x1={0} y1={len / 2} x2={0} y2={-len / 2} />
-            <polyline points={`${-head},${-len / 2 + head} 0,${-len / 2} ${head},${-len / 2 + head}`} />
+          <g key={`${x}-${y}`} transform={`translate(${x} ${-y}) rotate(${w.dir + 180})`}>
+            <line y1={len / 2} y2={-len / 2} stroke="#ffffff" strokeWidth={pts.g * 0.03} strokeLinecap="round" opacity={0.35 + 0.35 * k} strokeDasharray={`${dash} ${dash * 1.6}`}>
+              <animate attributeName="stroke-dashoffset" from="0" to={-dash * 2.6} dur="1.6s" begin={`${(i % 7) * -0.23}s`} repeatCount="indefinite" />
+            </line>
           </g>
         )
       })}
     </SVGOverlay>
   )
+}
+
+/** Sea courses: tint the land of the race grid so the crash line is visible on the map. */
+function LandMask({ course }: { course: CourseData }) {
+  const url = useMemo(() => {
+    const m = course.mask!
+    const bin = atob(m.bits)
+    const canvas = document.createElement('canvas')
+    canvas.width = m.nx
+    canvas.height = m.ny
+    const ctx = canvas.getContext('2d')!
+    const img = ctx.createImageData(m.nx, m.ny)
+    const water = (ix: number, iy: number) => {
+      if (ix < 0 || iy < 0 || ix >= m.nx || iy >= m.ny) return true
+      const i = iy * m.nx + ix
+      return (bin.charCodeAt(i >> 3) & (1 << (i & 7))) !== 0
+    }
+    for (let iy = 0; iy < m.ny; iy++)
+      for (let ix = 0; ix < m.nx; ix++) {
+        if (water(ix, iy)) continue
+        const shore = water(ix + 1, iy) || water(ix - 1, iy) || water(ix, iy + 1) || water(ix, iy - 1)
+        img.data.set(shore ? [180, 83, 9, 150] : [241, 226, 180, 40], ((m.ny - 1 - iy) * m.nx + ix) * 4)
+      }
+    ctx.putImageData(img, 0, 0)
+    return canvas.toDataURL()
+  }, [course])
+  const m = course.mask!
+  return <ImageOverlay url={url} bounds={[toLatLon(course, m.x0, m.y0), toLatLon(course, m.x0 + m.nx * m.cell, m.y0 + m.ny * m.cell)]} />
 }
 
 export function RaceGame({ course, t, onEnd }: Props) {
@@ -217,10 +266,16 @@ export function RaceGame({ course, t, onEnd }: Props) {
     return () => window.removeEventListener('keydown', onKey)
   }, [helm, over])
 
-  const m = course.marks
   const ll = (p: XY) => toLatLon(course, p[0], p[1])
   const next = legTarget(course, hud.leg)
-  const upwindLeg = hud.leg === 'windward' || hud.leg === 'finish' || hud.leg === 'start'
+  const nextLeg = hud.leg > 0 ? course.legs[hud.leg - 1] : undefined
+  // Upwind when the next target lies within ~60° of the wind direction.
+  const upwindLeg = (() => {
+    const p = hud.leg === 0 ? legTarget(course, 1) : next
+    if (!p) return false
+    const b = (Math.atan2(p[0] - hud.x, p[1] - hud.y) * 180) / Math.PI
+    return Math.abs(norm180(b - hud.windDir)) < 60
+  })()
   const shift = norm180(hud.windDir - course.wind.dir)
   const lift = hud.side > 0 ? shift : -shift
   const boatIco = useMemo(() => boatIcon(hud.heading, hud.twa, 'player'), [hud.heading, hud.twa])
@@ -229,7 +284,7 @@ export function RaceGame({ course, t, onEnd }: Props) {
 
   const laylines = useMemo(() => {
     if (!showLaylines || !upwindLeg || !next) return []
-    const ends: XY[] = hud.leg === 'finish' ? [m.finishBoat, m.finishPin] : hud.leg === 'start' ? [m.windward] : [next]
+    const ends: XY[] = nextLeg && nextLeg.kind !== 'mark' ? [nextLeg.a, nextLeg.b] : hud.leg === 0 ? [legTarget(course, 1)!] : [next]
     const len = course.legM * 0.9
     const lines: [number, number][][] = []
     for (const e of ends)
@@ -242,14 +297,14 @@ export function RaceGame({ course, t, onEnd }: Props) {
   }, [showLaylines, upwindLeg, hud.leg, Math.round(hud.windDir)])
 
   const clock = hud.t < 0 ? `−${formatRaceTime(-hud.t).replace(/\.0$/, '')}` : formatRaceTime(hud.t).replace(/\.0$/, '')
-  const legName: Record<Leg, string> = {
-    start: t('rc.leg.start'),
-    windward: t('rc.leg.windward'),
-    offset: t('rc.leg.offset'),
-    gate: t('rc.leg.gate'),
-    finish: t('rc.leg.finish'),
-    done: t('rc.leg.done'),
+  const legName = (leg: number) => {
+    if (leg === 0) return t('rc.leg.start')
+    const L = course.legs[leg - 1]
+    if (!L) return t('rc.leg.done')
+    if (L.kind === 'mark') return t('rc.leg.mark', { label: L.label, side: t(L.side > 0 ? 'rc.port' : 'rc.starboard') })
+    return L.kind === 'gate' ? t('rc.leg.gate', { label: L.label }) : t('rc.leg.finish')
   }
+  const isNext = (label: string) => !!nextLeg && (nextLeg.kind === 'mark' ? nextLeg.label === label : nextLeg.kind === 'gate' && nextLeg.label.split('/').includes(label))
   const base = 'rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm active:scale-95'
   const btn = `${base} border-slate-300 bg-white hover:bg-slate-50 dark:border-white/20 dark:bg-white/10 dark:hover:bg-white/15`
 
@@ -269,21 +324,35 @@ export function RaceGame({ course, t, onEnd }: Props) {
           {course.land.map((r, i) => (
             <Polygon key={`l${i}`} positions={r.map(ll)} pathOptions={{ color: '#b45309', weight: 1, fillColor: '#f1e2b4', fillOpacity: 0.6 }} />
           ))}
-          <Polyline positions={[ll(m.committee), ll(m.pin)]} pathOptions={{ color: '#f97316', weight: 2.5, dashArray: '8 6' }} />
-          <Polyline positions={[ll(m.finishBoat), ll(m.finishPin)]} pathOptions={{ color: '#2563eb', weight: 2.5, dashArray: '2 5' }} />
-          <Polyline positions={[ll(m.gateS), ll(m.gateP)]} pathOptions={{ color: '#f97316', weight: 1, dashArray: '2 6', opacity: 0.7 }} />
+          <Polyline positions={[ll(course.start.committee), ll(course.start.pin)]} pathOptions={{ color: '#f97316', weight: 2.5, dashArray: '8 6' }} />
+          {course.legs.map((L, i) =>
+            L.kind === 'mark' ? null : (
+              <Polyline
+                key={`line${i}`}
+                positions={[ll(L.a), ll(L.b)]}
+                pathOptions={L.kind === 'finish' ? { color: '#2563eb', weight: 2.5, dashArray: '2 5' } : { color: '#f97316', weight: 1, dashArray: '2 6', opacity: 0.7 }}
+              />
+            ),
+          )}
           {laylines.map((l, i) => (
             <Polyline key={i} positions={l} pathOptions={{ color: '#7c3aed', weight: 1.5, dashArray: '6 6', opacity: 0.7 }} />
           ))}
-          <Marker position={ll(m.committee)} icon={committeeIcon('RC', '#f97316')} interactive={false} />
-          <Marker position={ll(m.pin)} icon={pinBuoyIcon('#f97316')} interactive={false} />
-          <Marker position={ll(m.windward)} icon={raceMarkIcon('1', '#f97316', hud.leg === 'windward')} interactive={false} />
-          <Marker position={ll(m.offset)} icon={raceMarkIcon('1a', '#facc15', hud.leg === 'offset')} interactive={false} />
-          <Marker position={ll(m.gateS)} icon={raceMarkIcon('4S', '#f97316', hud.leg === 'gate')} interactive={false} />
-          <Marker position={ll(m.gateP)} icon={raceMarkIcon('4P', '#f97316', hud.leg === 'gate')} interactive={false} />
-          <Marker position={ll(m.finishBoat)} icon={committeeIcon('F', '#2563eb')} interactive={false} />
-          <Marker position={ll(m.finishPin)} icon={pinBuoyIcon('#2563eb')} interactive={false} />
-          {next && hud.leg !== 'start' && <Circle center={ll(next)} radius={22} pathOptions={{ color: '#facc15', weight: 2, fill: false, dashArray: '4 4' }} />}
+          {course.mask && <LandMask course={course} />}
+          {course.objects.map((o, i) => (
+            <Marker
+              key={`o${i}`}
+              position={ll(o.at)}
+              interactive={false}
+              icon={
+                o.kind === 'committee' || o.kind === 'finishBoat'
+                  ? committeeIcon(o.label, o.color)
+                  : o.kind === 'mark'
+                    ? raceMarkIcon(o.label, o.color, isNext(o.label))
+                    : pinBuoyIcon(o.color)
+              }
+            />
+          ))}
+          {next && hud.leg !== 0 && <Circle center={ll(next)} radius={22} pathOptions={{ color: '#facc15', weight: 2, fill: false, dashArray: '4 4' }} />}
           {track.length > 1 && <Polyline positions={track} pathOptions={{ color: '#0b3a5c', weight: 2, opacity: 0.6 }} />}
           <Marker position={boatStart} icon={boatIco} ref={boatRef} interactive={false} zIndexOffset={1000} />
         </MapContainer>
@@ -292,7 +361,7 @@ export function RaceGame({ course, t, onEnd }: Props) {
           <div className="rounded-lg bg-white/90 px-3 py-2 shadow dark:bg-navy-950/85">
             <p className={`font-mono text-2xl font-bold tabular-nums ${hud.t < 0 ? 'text-amber-600' : 'text-navy-900 dark:text-white'}`}>{clock}</p>
             <p className="text-xs text-slate-600 dark:text-slate-300">
-              {t('rc.next')}: <strong>{legName[hud.leg]}</strong>
+              {t('rc.next')}: <strong>{legName(hud.leg)}</strong>
             </p>
             <p className="font-mono text-xs sm:hidden">
               {((hud.speed * 3600) / 1852).toFixed(1)} kn · {Math.round(Math.abs(hud.twa))}° · {hud.tacks}/{hud.gybes}
@@ -316,20 +385,13 @@ export function RaceGame({ course, t, onEnd }: Props) {
 
         <div className="pointer-events-none absolute right-2 top-2 z-[1000] w-36 rounded-lg bg-white/90 px-3 py-2 text-xs shadow sm:w-44 dark:bg-navy-950/85">
           <div className="flex items-center gap-2">
-            <svg viewBox="-20 -20 40 40" className="h-10 w-10" aria-hidden>
-              <circle r="18" fill="none" stroke="#94a3b8" />
-              <text y="-11" textAnchor="middle" fontSize="7" fill="#64748b">N</text>
-              <g transform={`rotate(${hud.windDir + 180})`}>
-                <line y1="12" y2="-10" stroke="#0b3a5c" strokeWidth="2.5" />
-                <path d="M0 -15 L-4.5 -7 L4.5 -7Z" fill="#0b3a5c" />
-              </g>
-            </svg>
+            <WindDial dir={hud.windDir} />
             <div>
               <p className="font-mono text-base font-bold">{hud.tws.toFixed(1)} kn</p>
-              <p className="text-slate-500">{t('rc.windFrom', { dir: Math.round(hud.windDir) })}</p>
+              <p className="text-slate-500">{t('rc.windFrom', { dir: `${cardinal(hud.windDir)} ${Math.round(hud.windDir)}` })}</p>
             </div>
           </div>
-          {hud.t >= 0 && upwindLeg && hud.leg !== 'start' && Math.abs(lift) >= 1 && (
+          {hud.t >= 0 && upwindLeg && hud.leg !== 0 && Math.abs(lift) >= 1 && (
             <p className={`mt-1 font-semibold ${lift > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
               {lift > 0 ? t('rc.lift', { d: Math.round(Math.abs(lift)) }) : t('rc.header', { d: Math.round(Math.abs(lift)) })}
             </p>

@@ -4,22 +4,32 @@ import { landProbe, norm180, norm360, type CourseData, type HelmEvent, type Race
  * A simple autopilot that sails the course by the book (close-hauled upwind, VMG angles downwind,
  * marks on the correct side). Used to check that every course can be sailed and in tests.
  */
-export function waypoints(c: CourseData): Record<string, XY[]> {
-  const a = (c.wind.dir * Math.PI) / 180
-  const u: XY = [Math.sin(a), Math.cos(a)]
-  const r: XY = [Math.cos(a), -Math.sin(a)]
-  const at = (p: XY, du: number, dr: number): XY => [p[0] + u[0] * du + r[0] * dr, p[1] + u[1] * du + r[1] * dr]
-  const m = c.marks
-  const gate: XY = [(m.gateS[0] + m.gateP[0]) / 2, (m.gateS[1] + m.gateP[1]) / 2]
-  const finish: XY = [(m.finishBoat[0] + m.finishPin[0]) / 2, (m.finishBoat[1] + m.finishPin[1]) / 2]
-  return {
-    windward: [at(m.windward, -8, 14), at(m.windward, 14, 0)],
-    offset: [at(m.offset, 14, 0), at(m.offset, 0, -14)],
-    gate: [at(gate, 0, 0), at(gate, -18, 0)],
-    finish: [at(finish, 18, 0)],
+export function waypoints(c: CourseData): XY[][] {
+  const out: XY[][] = []
+  let prev: XY = [(c.start.committee[0] + c.start.pin[0]) / 2, (c.start.committee[1] + c.start.pin[1]) / 2]
+  for (const L of c.legs) {
+    if (L.kind === 'mark') {
+      const dx = L.at[0] - prev[0]
+      const dy = L.at[1] - prev[1]
+      const len = Math.hypot(dx, dy) || 1
+      const a: XY = [dx / len, dy / len]
+      // Keep the mark on the required side: approach just to the other side of it, then swing out along the ray.
+      const side: XY = L.side > 0 ? [a[1], -a[0]] : [-a[1], a[0]]
+      out.push([
+        [L.at[0] - a[0] * 10 + side[0] * 14, L.at[1] - a[1] * 10 + side[1] * 14],
+        // Swing out along the ray, then cross it turning the right way (counter-clockwise for port).
+        [L.at[0] + L.ray[0] * 16 + L.ray[1] * L.side * 16, L.at[1] + L.ray[1] * 16 - L.ray[0] * L.side * 16],
+        [L.at[0] + L.ray[0] * 16 - L.ray[1] * L.side * 24, L.at[1] + L.ray[1] * 16 + L.ray[0] * L.side * 24],
+      ])
+      prev = L.at
+    } else {
+      const mid: XY = [(L.a[0] + L.b[0]) / 2, (L.a[1] + L.b[1]) / 2]
+      out.push([mid, [mid[0] + L.dir[0] * 18, mid[1] + L.dir[1] * 18]])
+      prev = mid
+    }
   }
+  return out
 }
-
 export interface Bot {
   helm: (s: RaceState) => number
 }
@@ -28,11 +38,11 @@ export function createBot(c: CourseData, opts: { upwindTwa?: number; downwindTwa
   const upTwa = opts.upwindTwa ?? 45
   const downTwa = opts.downwindTwa ?? 150
   const wps = waypoints(c)
-  let leg = ''
+  let leg = -1
   let idx = 0
   let tack = 0
   const preStart: XY = (() => {
-    const mid: XY = [(c.marks.committee[0] + c.marks.pin[0]) / 2, (c.marks.committee[1] + c.marks.pin[1]) / 2]
+    const mid: XY = [(c.start.committee[0] + c.start.pin[0]) / 2, (c.start.committee[1] + c.start.pin[1]) / 2]
     const a = (c.wind.dir * Math.PI) / 180
     return [mid[0] - Math.sin(a) * 35, mid[1] - Math.cos(a) * 35]
   })()
@@ -74,7 +84,7 @@ export function createBot(c: CourseData, opts: { upwindTwa?: number; downwindTwa
 
   return {
     helm(s) {
-      if (s.leg === 'start') {
+      if (s.leg === 0) {
         if (s.t < -12 && !s.ocs) {
           const d = Math.hypot(preStart[0] - s.x, preStart[1] - s.y)
           return Math.round(norm360(d < 12 ? s.windDir : steer(s, toward(s, preStart))))
@@ -87,11 +97,12 @@ export function createBot(c: CourseData, opts: { upwindTwa?: number; downwindTwa
         idx = 0
         tack = 0
       }
-      const list = wps[leg]
+      const list = wps[leg - 1]
       if (!list) return Math.round(s.target)
-      let p = list[Math.min(idx, list.length - 1)]
-      if (Math.hypot(p[0] - s.x, p[1] - s.y) < 12 && idx < list.length - 1) {
-        idx++
+      let p = list[Math.min(idx, list.length - 1)]!
+      if (Math.hypot(p[0] - s.x, p[1] - s.y) < 12) {
+        // Reached the last point without completing the leg: go round again.
+        idx = idx < list.length - 1 ? idx + 1 : 0
         tack = 0
         p = list[idx]
       }

@@ -70,14 +70,10 @@ function CourseDiagram({ t }: { t: Translate }) {
       <rect width="360" height="540" rx="16" fill="#e0f2fe" />
 
       {/* wind */}
-      <g transform="translate(300 18)">
-        {[-14, 0, 14].map((dx) => (
-          <g key={dx} transform={`translate(${dx} 0)`}>
-            <line y1="0" y2="26" stroke="#0b3a5c" strokeWidth="2" />
-            <path d="M0 33 L-5 24 L5 24Z" fill="#0b3a5c" />
-          </g>
-        ))}
-        <text y="48" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0b3a5c">
+      <g transform="translate(310 16)">
+        <line y1="2" y2="28" stroke="#0b3a5c" strokeWidth="1.3" strokeLinecap="round" />
+        <path d="M0 33 L-3.5 26 L0 27.5 L3.5 26Z" fill="#0b3a5c" />
+        <text y="46" textAnchor="middle" fontSize="10" fontWeight="600" fill="#0b3a5c">
           {t('rc.wind')}
         </text>
       </g>
@@ -138,6 +134,31 @@ function CourseDiagram({ t }: { t: Translate }) {
 }
 
 const STEP_COLORS = [ROUND, UP, ROUND, DOWN, ROUND, UP]
+
+/** Small picture of the triangle course: 1 upwind, 2 to the side, 3 downwind, all left to port. */
+function TriangleDiagram({ t }: { t: Translate }) {
+  const mark = (x: number, y: number, label: string) => (
+    <g transform={`translate(${x} ${y})`}>
+      <circle r="4.5" fill="#f97316" stroke="#7c2d12" strokeWidth="0.7" />
+      <text x="7" y="3" fontSize="9" fontWeight="700" fill="#0b3a5c">
+        {label}
+      </text>
+    </g>
+  )
+  return (
+    <svg viewBox="0 0 120 130" className="h-28 w-24 shrink-0" role="img" aria-label={t('rc.rules.triangle.t')}>
+      <rect width="120" height="130" rx="10" fill="#e0f2fe" />
+      <line x1="104" y1="8" x2="104" y2="24" stroke="#0b3a5c" strokeWidth="1" />
+      <path d="M104 28 L101.5 23 L104 24 L106.5 23Z" fill="#0b3a5c" />
+      <path d="M62 112 L62 26" stroke={UP} strokeWidth="2" strokeDasharray="4 3" fill="none" />
+      <path d="M62 26 L22 66" stroke={DOWN} strokeWidth="2" fill="none" />
+      <path d="M22 66 L60 104" stroke={DOWN} strokeWidth="2" fill="none" />
+      {mark(62, 22, '1')}
+      {mark(18, 66, '2')}
+      {mark(62, 108, '3')}
+    </svg>
+  )
+}
 const SEQUENCE = ['warning', 'prep', 'oneMinute', 'start'] as const
 const RULES = ['r26', 'r29', 'r28', 'r10', 'r11', 'r13', 'r18', 'r31', 'r44'] as const
 const TACTICS = ['shifts', 'puffs', 'laylines', 'startEnd', 'gate', 'shore'] as const
@@ -184,6 +205,13 @@ export function RaceRules({ t }: { t: Translate }) {
           <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-slate-700 dark:border-amber-400/20 dark:bg-amber-950/30 dark:text-slate-200">
             ⬅️ {t('rc.rules.portTip')}
           </p>
+          <div className="flex gap-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-navy-900/60">
+            <TriangleDiagram t={t} />
+            <div>
+              <p className="font-semibold">{t('rc.rules.triangle.t')}</p>
+              <p className="mt-1 text-slate-600 dark:text-slate-300">{t('rc.rules.triangle')}</p>
+            </div>
+          </div>
         </div>
       </section>
 

@@ -20,13 +20,16 @@ function sail(c: CourseData, plan: HelmEvent[], until = 1500): RaceState {
 describe('race courses', () => {
   for (const { meta, course } of list) {
     it(`${meta.id}: marks, lines and the boat are on the water`, () => {
-      for (const p of [...Object.values(course.marks), [course.boat.x, course.boat.y]]) {
+      for (const p of [...course.objects.map((o) => o.at), [course.boat.x, course.boat.y]]) {
         const probe = landProbe(course, p[0]!, p[1]!)
         expect(probe.water).toBe(true)
         expect(probe.dist).toBeGreaterThan(15)
       }
       expect(sideOfStart(course, course.boat.x, course.boat.y)).toBe(-1)
-      expect(sideOfStart(course, ...course.marks.windward)).toBe(1)
+      const first = course.legs[0]!
+      expect(first.kind).toBe('mark')
+      if (first.kind === 'mark') expect(sideOfStart(course, ...first.at)).toBe(1)
+      expect(course.legs.at(-1)!.kind).toBe('finish')
     })
   }
 })
@@ -55,34 +58,40 @@ describe('race model', () => {
     const down = Math.round(poel.wind.dir + 180) % 360
     const s = sail(poel, [[-60, up]], 3)
     expect(s.ocs).toBe(true)
-    expect(s.leg).toBe('start')
+    expect(s.leg).toBe(0)
     const back = sail(poel, [[-60, up], [3, down]], 80)
     expect(back.ocs).toBe(false)
   })
 
   it('only counts mark 1 when it is left to port', () => {
-    const { events } = botRace(poel, step, initialState(poel))
-    let s = initialState(poel)
-    let e = 0
-    let target = s.target
-    let sawWindward = false
-    while (s.status === 'racing') {
-      while (e < events.length && events[e]![0] <= s.t) target = events[e++]![1]
-      s = step(poel, s, target)
-      if (s.leg === 'windward') sawWindward = true
-      if (s.leg === 'offset') break
-    }
-    expect(sawWindward).toBe(true)
-    expect(s.leg).toBe('offset')
-    // Passing the mark the wrong way (west to east) does not round it.
-    const wrong: RaceState = { ...s, leg: 'windward', x: poel.marks.windward[0] - 20, y: poel.marks.windward[1] + 20 }
-    const a = (poel.wind.dir * Math.PI) / 180
-    const east = Math.round(((Math.atan2(Math.cos(a), -Math.sin(a)) * 180) / Math.PI + 360) % 360)
-    let w = wrong
-    for (let i = 0; i < 25 && w.status === 'racing'; i++) w = step(poel, w, east)
-    expect(w.leg).toBe('windward')
+    const mark = poel.legs[0]!
+    if (mark.kind !== 'mark') throw new Error('first leg is a mark')
+    const s0 = initialState(poel)
+    // Cross the mark's ray the wrong way: no rounding.
+    const [rx, ry] = mark.ray
+    const perp: [number, number] = [-ry, rx]
+    const from = { ...s0, leg: 1, t: 100, x: mark.at[0] + rx * 20 - perp[0] * 15, y: mark.at[1] + ry * 20 - perp[1] * 15 }
+    const wrongDir = Math.round(((Math.atan2(-perp[0], -perp[1]) * 180) / Math.PI + 360) % 360)
+    const rightDir = Math.round(((Math.atan2(perp[0], perp[1]) * 180) / Math.PI + 360) % 360)
+    const before = { ...from, x: mark.at[0] + rx * 20 + perp[0] * 15, y: mark.at[1] + ry * 20 + perp[1] * 15, heading: wrongDir, speed: 2 }
+    let w: RaceState = before
+    for (let i = 0; i < 20 && w.status === 'racing'; i++) w = step(poel, w, wrongDir)
+    expect(w.leg).toBe(1)
+    let r: RaceState = { ...from, heading: rightDir, speed: 2 }
+    for (let i = 0; i < 20 && r.status === 'racing'; i++) r = step(poel, r, rightDir)
+    expect(r.leg).toBe(2)
   })
 
+  it('sails triangle courses (1 → 2 → 3 → finish) and sea courses on a land grid', () => {
+    const tri = list.filter((c) => c.course.type === 'triangle')
+    expect(tri.length).toBeGreaterThanOrEqual(2)
+    for (const { course } of tri) {
+      expect(course.legs.map((l) => l.label)).toEqual(['1', '2', '3', 'F'])
+      expect(course.mask).toBeDefined()
+      const { events } = botRace(course, step, initialState(course))
+      expect(simulate(course, events).status).toBe('finished')
+    }
+  })
   it('runs aground when steered into the shore', () => {
     const r = simulate(poel, [[-60, Math.round((poel.wind.dir + 90) % 360)]])
     expect(['crashed', 'outside']).toContain(r.status)

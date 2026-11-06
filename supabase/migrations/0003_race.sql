@@ -168,26 +168,33 @@ declare
   b1 float8 := (c #>> '{bounds,1}')::float8;
   b2 float8 := (c #>> '{bounds,2}')::float8;
   b3 float8 := (c #>> '{bounds,3}')::float8;
-  cmx float8 := (c #>> '{marks,committee,0}')::float8;
-  cmy float8 := (c #>> '{marks,committee,1}')::float8;
-  pnx float8 := (c #>> '{marks,pin,0}')::float8;
-  pny float8 := (c #>> '{marks,pin,1}')::float8;
-  wwx float8 := (c #>> '{marks,windward,0}')::float8;
-  wwy float8 := (c #>> '{marks,windward,1}')::float8;
-  ofx float8 := (c #>> '{marks,offset,0}')::float8;
-  ofy float8 := (c #>> '{marks,offset,1}')::float8;
-  gsx float8 := (c #>> '{marks,gateS,0}')::float8;
-  gsy float8 := (c #>> '{marks,gateS,1}')::float8;
-  gpx float8 := (c #>> '{marks,gateP,0}')::float8;
-  gpy float8 := (c #>> '{marks,gateP,1}')::float8;
-  fbx float8 := (c #>> '{marks,finishBoat,0}')::float8;
-  fby float8 := (c #>> '{marks,finishBoat,1}')::float8;
-  fpx float8 := (c #>> '{marks,finishPin,0}')::float8;
-  fpy float8 := (c #>> '{marks,finishPin,1}')::float8;
-  rwx float8 := (c #>> '{rays,windward,0}')::float8;
-  rwy float8 := (c #>> '{rays,windward,1}')::float8;
-  rox float8 := (c #>> '{rays,offset,0}')::float8;
-  roy float8 := (c #>> '{rays,offset,1}')::float8;
+  cmx float8 := (c #>> '{start,committee,0}')::float8;
+  cmy float8 := (c #>> '{start,committee,1}')::float8;
+  pnx float8 := (c #>> '{start,pin,0}')::float8;
+  pny float8 := (c #>> '{start,pin,1}')::float8;
+  -- legs after the start: kind 1 = mark, 2 = gate, 3 = finish
+  lk int[] := '{}';
+  lax float8[] := '{}';
+  lay float8[] := '{}';
+  lbx float8[] := '{}';
+  lby float8[] := '{}';
+  ldx float8[] := '{}';
+  ldy float8[] := '{}';
+  lside float8[] := '{}';
+  n_legs int := 0;
+  lj jsonb;
+  -- land/water grid (sea courses)
+  has_mask boolean := c ? 'mask';
+  m_x0 float8 := (c #>> '{mask,x0}')::float8;
+  m_y0 float8 := (c #>> '{mask,y0}')::float8;
+  m_cell float8 := (c #>> '{mask,cell}')::float8;
+  m_nx int := (c #>> '{mask,nx}')::int;
+  m_ny int := (c #>> '{mask,ny}')::int;
+  m_coarse int := (c #>> '{mask,coarse}')::int;
+  m_bits bytea;
+  m_dist bytea;
+  m_cn int;
+  mix int; miy int; midx int; mv int;
   pre_sign float8 := (c ->> 'preSign')::float8;
   -- state
   t int := -prestart;
@@ -195,7 +202,7 @@ declare
   y float8 := (c #>> '{boat,y}')::float8;
   heading float8 := (c #>> '{boat,heading}')::float8;
   speed float8;
-  leg int := 0; -- 0 start, 1 windward, 2 offset, 3 gate, 4 finish, 5 done
+  leg int := 0; -- 0 start, i = sailing to legs[i], n_legs + 1 = finished
   ocs boolean := false;
   status text := 'racing';
   tacks int := 0;
@@ -247,6 +254,33 @@ begin
       ry := ry || (pt ->> 1)::float8;
     end loop;
   end loop;
+  for lj in select value from jsonb_array_elements(c -> 'legs') loop
+    if lj ->> 'kind' = 'mark' then
+      lk := lk || 1;
+      lax := lax || (lj #>> '{at,0}')::float8;
+      lay := lay || (lj #>> '{at,1}')::float8;
+      lbx := lbx || 0::float8;
+      lby := lby || 0::float8;
+      ldx := ldx || (lj #>> '{ray,0}')::float8;
+      ldy := ldy || (lj #>> '{ray,1}')::float8;
+      lside := lside || (lj ->> 'side')::float8;
+    else
+      lk := lk || case when lj ->> 'kind' = 'finish' then 3 else 2 end;
+      lax := lax || (lj #>> '{a,0}')::float8;
+      lay := lay || (lj #>> '{a,1}')::float8;
+      lbx := lbx || (lj #>> '{b,0}')::float8;
+      lby := lby || (lj #>> '{b,1}')::float8;
+      ldx := ldx || (lj #>> '{dir,0}')::float8;
+      ldy := ldy || (lj #>> '{dir,1}')::float8;
+      lside := lside || 0::float8;
+    end if;
+  end loop;
+  n_legs := coalesce(array_length(lk, 1), 0);
+  if has_mask then
+    m_bits := decode(c #>> '{mask,bits}', 'base64');
+    m_dist := decode(c #>> '{mask,dist}', 'base64');
+    m_cn := ceil(m_nx::float8 / m_coarse)::int;
+  end if;
 
   -- wind at the boat for the initial speed
   wa := wdir * pi() / 180;
@@ -328,7 +362,20 @@ begin
       min_d := 'Infinity'::float8;
       cur_poly := -2;
       in_poly := false;
-      for ri in 1 .. coalesce(array_length(r_start, 1), 0) loop
+      if has_mask then
+        mix := floor((x - m_x0) / m_cell)::int;
+        miy := floor((y - m_y0) / m_cell)::int;
+        if mix < 0 or miy < 0 or mix >= m_nx or miy >= m_ny then
+          in_water := false;
+          min_d := 0;
+        else
+          midx := miy * m_nx + mix;
+          in_water := (get_byte(m_bits, midx >> 3) & (1 << (midx & 7))) <> 0;
+          mv := get_byte(m_dist, (miy / m_coarse) * m_cn + (mix / m_coarse));
+          min_d := (case when mv > 1 then mv - 1 else 0 end) * m_cell;
+        end if;
+      end if;
+      for ri in 1 .. case when has_mask then 0 else coalesce(array_length(r_start, 1), 0) end loop
         p := r_poly[ri];
         if p <> cur_poly then
           if cur_poly >= 0 and in_poly then in_water := true; end if;
@@ -386,13 +433,14 @@ begin
         end if;
         if hit >= 0 then leg := 1; end if;
       end if;
-    elsif leg = 1 or leg = 2 then
-      if leg = 1 then
-        sax := wwx; say := wwy; rdx := rwx; rdy := rwy;
+    elsif leg <= n_legs then
+      sax := lax[leg]; say := lay[leg];
+      if lk[leg] = 1 then
+        rdx := ldx[leg]; rdy := ldy[leg];
+        sbx := sax + rdx * ray_len; sby := say + rdy * ray_len;
       else
-        sax := ofx; say := ofy; rdx := rox; rdy := roy;
+        sbx := lbx[leg]; sby := lby[leg];
       end if;
-      sbx := sax + rdx * ray_len; sby := say + rdy * ray_len;
       hit := -1;
       den := (x - sx) * (sby - say) - (y - sy) * (sbx - sax);
       if den <> 0 then
@@ -400,34 +448,18 @@ begin
         uu := ((sax - sx) * (y - sy) - (say - sy) * (x - sx)) / den;
         if tt >= 0 and tt <= 1 and uu >= 0 and uu <= 1 then hit := tt; end if;
       end if;
-      if hit >= 0 and (rdx * (y - sy) - rdy * (x - sx)) > 0 then leg := leg + 1; end if;
-    elsif leg = 3 then
-      sax := gsx; say := gsy; sbx := gpx; sby := gpy;
-      hit := -1;
-      den := (x - sx) * (sby - say) - (y - sy) * (sbx - sax);
-      if den <> 0 then
-        tt := ((sax - sx) * (sby - say) - (say - sy) * (sbx - sax)) / den;
-        uu := ((sax - sx) * (y - sy) - (say - sy) * (x - sx)) / den;
-        if tt >= 0 and tt <= 1 and uu >= 0 and uu <= 1 then hit := tt; end if;
+      if lk[leg] = 1 then
+        if hit >= 0 and lside[leg] * (rdx * (y - sy) - rdy * (x - sx)) > 0 then leg := leg + 1; end if;
+      elsif hit >= 0 and (x - sx) * ldx[leg] + (y - sy) * ldy[leg] > 0 then
+        if lk[leg] = 3 then
+          leg := leg + 1;
+          status := 'finished';
+          finish_time := race_q(k + hit, 10);
+          exit;
+        end if;
+        leg := leg + 1;
       end if;
-      if hit >= 0 and (x - sx) * sin(wa) + (y - sy) * cos(wa) < 0 then leg := 4; end if;
-    elsif leg = 4 then
-      sax := fbx; say := fby; sbx := fpx; sby := fpy;
-      hit := -1;
-      den := (x - sx) * (sby - say) - (y - sy) * (sbx - sax);
-      if den <> 0 then
-        tt := ((sax - sx) * (sby - say) - (say - sy) * (sbx - sax)) / den;
-        uu := ((sax - sx) * (y - sy) - (say - sy) * (x - sx)) / den;
-        if tt >= 0 and tt <= 1 and uu >= 0 and uu <= 1 then hit := tt; end if;
-      end if;
-      if hit >= 0 and (x - sx) * sin(wa) + (y - sy) * cos(wa) > 0 then
-        leg := 5;
-        status := 'finished';
-        finish_time := race_q(k + hit, 10);
-        exit;
-      end if;
-    end if;
-    if t >= time_limit then status := 'timeout'; end if;
+    end if;    if t >= time_limit then status := 'timeout'; end if;
   end loop;
 
   return jsonb_build_object(

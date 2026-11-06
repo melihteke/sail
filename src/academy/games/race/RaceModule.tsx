@@ -210,7 +210,9 @@ function RaceTab({ t, rows, selected, onSelect, offline, showBoard }: { t: Trans
             <dt className="text-slate-500">{t('rc.par')}</dt>
             <dd className="font-mono">{formatRaceTime(entry.meta.botTime)}</dd>
             <dt className="text-slate-500">{t('rc.order')}</dt>
-            <dd className="font-mono text-xs">S → 1 → 1a → 4S/4P → F</dd>
+            <dd className="font-mono text-xs">{['S', ...entry.course.legs.map((l) => l.label)].join(' → ')}</dd>
+            <dt className="text-slate-500">{t('rc.type')}</dt>
+            <dd>{t(entry.course.type === 'triangle' ? 'rc.type.triangle' : 'rc.type.wl')}</dd>
           </dl>
           <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">{t('rc.briefing')}</p>
         </section>
