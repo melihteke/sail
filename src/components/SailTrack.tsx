@@ -17,7 +17,22 @@ type Props = {
   windHours?: WindHour[];
   twa?: (number | null)[];
   maneuvers?: Maneuver[];
+  /** Logged events from the Sail Tracker app, already labelled */
+  events?: MapEvent[];
+  /** Engine periods as [fromSec, toSec] since the track start */
+  engine?: [number, number][];
+  /** Photos with the place they were taken */
+  photos?: { lat: number; lon: number; thumb: string; caption?: string }[];
 };
+
+export interface MapEvent {
+  lat: number;
+  lon: number;
+  sec: number;
+  icon: string;
+  label: string;
+  alert?: boolean;
+}
 
 const COLOR_STEPS = 14;
 const SPEEDS = [1, 5, 10, 30, 60];
@@ -76,12 +91,14 @@ const boatIcon = L.divIcon({
   </div>`,
 });
 
-export default function SailTrack({ track, bounds, startIso, timeZone, maxSpeedKn, windHours = [], twa = [], maneuvers = [] }: Props) {
+export default function SailTrack({ track, bounds, startIso, timeZone, maxSpeedKn, windHours = [], twa = [], maneuvers = [], events = [], engine = [], photos = [] }: Props) {
   const mapNode = React.useRef<HTMLDivElement | null>(null);
   const mapRef = React.useRef<L.Map | null>(null);
   const boat = React.useRef<L.Marker | null>(null);
   const trail = React.useRef<L.Polyline | null>(null);
   const maneuverLayer = React.useRef<L.LayerGroup | null>(null);
+  const logLayer = React.useRef<L.LayerGroup | null>(null);
+  const [showLog, setShowLog] = React.useState(true);
   const tRef = React.useRef<number | null>(null);
   const [t, setT] = React.useState<number | null>(null);
   const [playing, setPlaying] = React.useState(false);
@@ -139,6 +156,38 @@ export default function SailTrack({ track, bounds, startIso, timeZone, maxSpeedK
     }
     maneuverLayer.current = group;
 
+    // App log: engine sections as a dashed grey line over the track, events and photos as pins.
+    const log = L.layerGroup();
+    for (const [from, to] of engine) {
+      const a = indexAt(track, from);
+      const b = indexAt(track, to);
+      const pts = track.slice(a, b + 1).map((p) => [p[0], p[1]] as L.LatLngExpression);
+      if (pts.length > 1) L.polyline(pts, { color: "#334155", weight: 3, dashArray: "4 6", opacity: 0.9 }).bindTooltip("Under engine").addTo(log);
+    }
+    for (const e of events) {
+      const icon = L.divIcon({
+        className: "",
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
+        html: `<div style="width:22px;height:22px;border-radius:9999px;display:flex;align-items:center;justify-content:center;font-size:12px;background:${e.alert ? "#e11d48" : "#fff"};box-shadow:0 1px 3px rgba(0,0,0,.35);border:1.5px solid ${e.alert ? "#fff" : "#0b3a5c"}">${e.icon}</div>`,
+      });
+      L.marker([e.lat, e.lon], { icon, keyboard: false })
+        .bindTooltip(`${clockLabel(startIso, e.sec, timeZone)} · ${e.label.replace(/</g, "&lt;")}`)
+        .addTo(log);
+    }
+    for (const ph of photos) {
+      const icon = L.divIcon({
+        className: "",
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
+        html: `<div style="width:34px;height:34px;border-radius:8px;overflow:hidden;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"><img src="${encodeURI(ph.thumb)}" alt="" style="width:100%;height:100%;object-fit:cover"/></div>`,
+      });
+      const m = L.marker([ph.lat, ph.lon], { icon, keyboard: false });
+      if (ph.caption) m.bindTooltip(ph.caption.replace(/</g, "&lt;"));
+      m.addTo(log);
+    }
+    logLayer.current = log;
+
     trail.current = L.polyline([], { color: "#0f172a", weight: 6, opacity: 0.75, lineCap: "round", lineJoin: "round" }).addTo(map);
     boat.current = L.marker([first?.[0] ?? 0, first?.[1] ?? 0], { icon: boatIcon, interactive: false, keyboard: false, opacity: 0, zIndexOffset: 1000 }).addTo(map);
 
@@ -150,8 +199,17 @@ export default function SailTrack({ track, bounds, startIso, timeZone, maxSpeedK
       boat.current = null;
       trail.current = null;
       maneuverLayer.current = null;
+      logLayer.current = null;
     };
-  }, [track, bounds, scaleMax, maneuvers, startIso, timeZone]);
+  }, [track, bounds, scaleMax, maneuvers, startIso, timeZone, events, engine, photos]);
+
+  React.useEffect(() => {
+    const group = logLayer.current;
+    const map = mapRef.current;
+    if (!group || !map) return;
+    if (showLog) group.addTo(map);
+    else group.remove();
+  }, [showLog, events, engine, photos, track]);
 
   React.useEffect(() => {
     const group = maneuverLayer.current;
@@ -328,6 +386,17 @@ export default function SailTrack({ track, bounds, startIso, timeZone, maxSpeedK
               <input type="checkbox" checked={showManeuvers} onChange={(e) => setShowManeuvers(e.currentTarget.checked)} className="accent-[var(--sea)]" />
               <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-500" /> Tacks
               <span className="ml-1 inline-block h-2.5 w-2.5 rounded-full bg-purple-500" /> Gybes
+            </label>
+          )}
+          {(events.length > 0 || engine.length > 0 || photos.length > 0) && (
+            <label className="flex cursor-pointer items-center gap-1.5">
+              <input type="checkbox" checked={showLog} onChange={(e) => setShowLog(e.currentTarget.checked)} className="accent-[var(--sea)]" />
+              Log
+              {engine.length > 0 && (
+                <>
+                  <span className="ml-1 inline-block w-4 border-t-2 border-dashed border-slate-600" /> engine
+                </>
+              )}
             </label>
           )}
         </div>

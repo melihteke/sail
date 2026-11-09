@@ -1,6 +1,7 @@
 import * as React from "react";
 import { ArrowLeft, Eye, EyeOff, RefreshCw, Trash2, Upload } from "lucide-react";
-import { deleteSail, getSail, listBoats, processGpx, refreshWind, replaceGpx, updateSail, type SailPatch } from "@/lib/admin-api";
+import { deleteSail, getSail, listBoats, listEvents, processGpx, processStoredGpx, refreshWind, replaceGpx, updateSail, type SailPatch } from "@/lib/admin-api";
+import { EVENT_META, describeEvent, summarizeLog, type EventRow } from "@/lib/events";
 import { POINT_OF_SAIL_LABEL, type PointOfSail } from "@/lib/analysis";
 import { SECTION_TITLES } from "@/lib/sections";
 import { SAIL_ROLES, type BoatRow, type SailRow } from "@/lib/types";
@@ -26,13 +27,36 @@ export default function SailEditor({ id }: { id: string }) {
   const [busy, setBusy] = React.useState<null | "publish" | "gpx" | "wind" | "delete">(null);
   const [notice, setNotice] = React.useState<{ tone: "ok" | "error" | "warn"; text: string } | null>(null);
 
+  const [events, setEvents] = React.useState<EventRow[]>([]);
+
   React.useEffect(() => {
-    Promise.all([getSail(id), listBoats()])
-      .then(([s, b]) => {
+    let active = true;
+    Promise.all([getSail(id), listBoats(), listEvents(id).catch(() => [] as EventRow[])])
+      .then(async ([s, b, ev]) => {
+        if (!active) return;
         setSail(s);
         setBoats(b);
+        setEvents(ev);
+        // A sail from the app has only its GPX file: compute stats, wind and the analysis once.
+        if (s.gpx_path && !s.stats) {
+          setBusy("gpx");
+          setNotice({ tone: "ok", text: "Processing the track from the Sail Tracker app…" });
+          try {
+            const { sail: processed, windError } = await processStoredGpx(s);
+            if (!active) return;
+            setSail(processed);
+            setNotice(windError ? { tone: "warn", text: `Track processed, but wind failed: ${windError}` } : { tone: "ok", text: "Track from the Sail Tracker app processed. Review the story and publish." });
+          } catch (e) {
+            if (active) setNotice({ tone: "error", text: `Could not process the app track: ${(e as Error).message}` });
+          } finally {
+            if (active) setBusy(null);
+          }
+        }
       })
       .catch((e: Error) => setError(e.message));
+    return () => {
+      active = false;
+    };
   }, [id]);
 
   const save = useAutosave<SailRow>(async (patch) => {
@@ -129,6 +153,7 @@ export default function SailEditor({ id }: { id: string }) {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="min-w-0 flex-1 truncate text-2xl font-semibold tracking-tight">{sail.title || "Untitled sail"}</h1>
+        {sail.source === "app" && <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-medium text-sky-800 dark:bg-sky-900/40 dark:text-sky-200">From the app</span>}
         <SaveState state={save.state} error={save.error} />
         {published && (
           <a href={url(`/logbook/${sail.slug}`)} target="_blank" rel="noopener" className="text-xs text-primary hover:underline">
@@ -221,6 +246,8 @@ export default function SailEditor({ id }: { id: string }) {
         </div>
       </Card>
 
+      {events.length > 0 && <EventLog events={events} endIso={stats?.end ?? events[events.length - 1]!.at} />}
+
       <MediaManager sailId={sail.id} coverId={sail.cover_media_id} onCoverChange={(mediaId) => set("cover_media_id", mediaId)} />
 
       <Card
@@ -278,5 +305,26 @@ export default function SailEditor({ id }: { id: string }) {
         </div>
       </Card>
     </div>
+  );
+}
+
+function EventLog({ events, endIso }: { events: EventRow[]; endIso: string }) {
+  const log = summarizeLog(events, Date.parse(endIso));
+  const time = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return (
+    <Card title={`Event log · ${events.length}`}>
+      <p className="-mt-2 mb-3 text-sm text-muted-foreground">
+        Recorded on the boat. Under sail {formatDuration(log.sailingMs / 1000)} · under engine {formatDuration(log.engineMs / 1000)}.
+      </p>
+      <ol className="max-h-80 space-y-1 overflow-y-auto text-sm">
+        {events.map((e) => (
+          <li key={e.id} className="flex items-baseline gap-2">
+            <span className="w-12 shrink-0 font-mono text-xs tabular-nums text-muted-foreground">{time(e.at)}</span>
+            <span aria-hidden="true">{EVENT_META[e.kind]?.icon ?? "•"}</span>
+            <span className={EVENT_META[e.kind]?.tone === "alert" ? "font-semibold text-rose-600" : ""}>{describeEvent(e)}</span>
+          </li>
+        ))}
+      </ol>
+    </Card>
   );
 }

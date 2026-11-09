@@ -10,6 +10,7 @@ import AnalysisCard from "@/components/AnalysisCard.astro";
 import MediaGallery from "@/components/MediaGallery.astro";
 import SailTrack from "@/components/SailTrack";
 import { SITE } from "@/config";
+import { EVENT_META, describeEvent, summarizeLog } from "@/lib/events";
 import { SECTION_TITLES, type SailSections } from "@/lib/sections";
 import { formatLocal, getSails, type Sail } from "@/lib/sails";
 import { formatDuration, formatKn, formatNm } from "@/lib/units";
@@ -38,6 +39,19 @@ const details = [
   { label: "Crew", value: sail.crew.length ? sail.crew.join(", ") : "–" },
   { label: "Sails", value: sail.sailsUsed ? `${sail.sailsUsed}${sail.reef ? " (reefed)" : ""}` : sail.reef ? "Reefed" : "–" },
 ];
+// Event log from the Sail Tracker app: engine vs sailing time, timeline and map pins.
+const startMs = Date.parse(stats.start);
+const endMs = Date.parse(stats.end);
+const log = sail.events.length ? summarizeLog(sail.events, endMs) : null;
+if (log) details.push({ label: "Under sail / engine", value: `${formatDuration(log.sailingMs / 1000)} / ${formatDuration(log.engineMs / 1000)}` });
+const mapEvents = sail.events
+  .filter((e) => e.lat != null && e.lon != null && !["start", "stop", "photo"].includes(e.kind))
+  .map((e) => ({ lat: e.lat!, lon: e.lon!, sec: (Date.parse(e.at) - startMs) / 1000, icon: EVENT_META[e.kind]?.icon ?? "•", label: describeEvent(e), alert: e.kind === "mob" }));
+const engineSecs = (log?.engine ?? []).map((x) => [(x.from - startMs) / 1000, (x.to - startMs) / 1000] as [number, number]);
+const photoPins = sail.media.flatMap((m) => (m.kind === "photo" && m.lat != null && m.lon != null ? [{ lat: m.lat, lon: m.lon, thumb: m.thumb, caption: m.caption }] : []));
+const timeline = sail.events
+  .filter((e) => e.kind !== "start" && e.kind !== "stop")
+  .map((e) => ({ time: formatLocal(e.at, { hour: "2-digit", minute: "2-digit" }), icon: EVENT_META[e.kind]?.icon ?? "•", text: describeEvent(e), tone: EVENT_META[e.kind]?.tone ?? "neutral" }));
 const sections = (Object.keys(SECTION_TITLES) as (keyof SailSections)[])
   .filter((key) => sail.sections[key].trim())
   .map((key) => ({ key, title: SECTION_TITLES[key], html: marked.parse(sail.sections[key], { async: false }) as string }));
@@ -94,6 +108,9 @@ const jsonLd = {
       windHours={wind?.hours ?? []}
       twa={analysis?.twa ?? []}
       maneuvers={analysis?.maneuvers ?? []}
+      events={mapEvents}
+      engine={engineSecs}
+      photos={photoPins}
     />
   </section>
 
@@ -117,6 +134,36 @@ const jsonLd = {
 
     <aside class="space-y-4">
       {analysis && <AnalysisCard analysis={analysis} />}
+      {
+        timeline.length > 0 && (
+          <section aria-labelledby="onboard" class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <h2 id="onboard" class="text-sm font-semibold">On the boat</h2>
+            {log && (
+              <div class="mt-3 flex h-2 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+                <span class="bg-sky-500" style={`width:${(log.sailingMs / Math.max(1, endMs - startMs)) * 100}%`}></span>
+                <span class="bg-slate-500" style={`width:${(log.engineMs / Math.max(1, endMs - startMs)) * 100}%`}></span>
+              </div>
+            )}
+            {log && (
+              <p class="mt-1.5 text-[11px] text-muted-foreground">
+                <span class="mr-1 inline-block h-2 w-2 rounded-full bg-sky-500"></span>sail {formatDuration(log.sailingMs / 1000)}
+                <span class="ml-2 mr-1 inline-block h-2 w-2 rounded-full bg-slate-500"></span>engine {formatDuration(log.engineMs / 1000)}
+              </p>
+            )}
+            <ol class="mt-3 max-h-96 space-y-1.5 overflow-y-auto text-sm">
+              {
+                timeline.map((e) => (
+                  <li class="flex items-baseline gap-2">
+                    <span class="w-11 shrink-0 font-mono text-xs tabular-nums text-muted-foreground">{e.time}</span>
+                    <span aria-hidden="true">{e.icon}</span>
+                    <span class:list={[e.tone === "alert" && "font-semibold text-rose-600"]}>{e.text}</span>
+                  </li>
+                ))
+              }
+            </ol>
+          </section>
+        )
+      }
       <div class="rounded-2xl border border-border bg-card p-5 shadow-sm">
         <h2 class="text-sm font-semibold">Details</h2>
         <dl class="mt-3 space-y-2 text-sm">

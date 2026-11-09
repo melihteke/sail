@@ -1,5 +1,6 @@
 import { DEPLOY, SITE } from "@/config";
 import { analyzeSail } from "./analysis";
+import type { EventRow } from "./events";
 import { computeStats, type TrackStats } from "./gpx";
 import { extensionOf, processPhoto, processVideo, BOAT_PHOTO_MAX_PX } from "./media-process";
 import { sailSlug, slugify } from "./sections";
@@ -108,6 +109,20 @@ async function uploadGpx(sailId: string, xml: string) {
   const path = `${sailId}/track.gpx`;
   check(await db().storage.from(GPX_BUCKET).upload(path, new Blob([xml], { type: "application/gpx+xml" }), { upsert: true, contentType: "application/gpx+xml" }));
   return path;
+}
+
+/** Sails uploaded by the Sail Tracker app arrive with only the GPX file; this fills in stats, wind and analysis. */
+export async function processStoredGpx(sail: SailRow) {
+  if (!sail.gpx_path) throw new Error("This sail has no GPX track yet.");
+  const res = await fetch(`${publicUrl(GPX_BUCKET, sail.gpx_path)}?v=${Date.now()}`);
+  if (!res.ok) throw new Error(`Could not download the track (${res.status}).`);
+  const gpx = await processGpx(new File([await res.text()], "track.gpx", { type: "application/gpx+xml" }));
+  const updated = check(await db().from("sails").update(gpxFields(gpx)).eq("id", sail.id).select("*").single()) as SailRow;
+  return { sail: updated, windError: gpx.windError };
+}
+
+export async function listEvents(sailId: string) {
+  return check(await db().from("sail_events").select("*").eq("sail_id", sailId).order("at")) as EventRow[];
 }
 
 export async function replaceGpx(sailId: string, gpx: ProcessedGpx) {

@@ -6,6 +6,7 @@ import { SITE, SUPABASE } from "@/config";
 import { BOAT } from "@/data/boat";
 import windCache from "@/data/wind-cache.json";
 import { analyzeSail, type SailAnalysis } from "./analysis";
+import type { SailEvent } from "./events";
 import { computeStats, type TrackStats } from "./gpx";
 import { sailMedia as legacyMedia } from "./media";
 import { splitSections, type SailSections } from "./sections";
@@ -38,7 +39,7 @@ export interface BoatView {
 }
 
 export type MediaView =
-  | { kind: "photo"; id: string; src: string; thumb: string; width?: number; height?: number; caption?: string }
+  | { kind: "photo"; id: string; src: string; thumb: string; width?: number; height?: number; caption?: string; lat?: number; lon?: number }
   | { kind: "video"; id: string; src: string; poster?: string; width?: number; height?: number; caption?: string }
   | { kind: "youtube"; id: string; video: YouTubeVideo; caption?: string }
   | { kind: "link"; id: string; url: string; caption?: string };
@@ -68,6 +69,8 @@ export interface Sail {
   localDate: string;
   /** Where to read the original GPX from at build time */
   gpx: { file: string } | { url: string };
+  /** Event log recorded with the Sail Tracker app (empty for other sails) */
+  events: SailEvent[];
 }
 
 export interface Logbook {
@@ -113,7 +116,15 @@ export function mediaFromRow(row: MediaRow): MediaView | null {
   switch (row.kind) {
     case "photo":
       return row.storage_path
-        ? { kind: "photo", id: row.id, src: storageUrl("media", row.storage_path), thumb: storageUrl("media", row.thumb_path ?? row.storage_path), ...size, caption }
+        ? {
+            kind: "photo",
+            id: row.id,
+            src: storageUrl("media", row.storage_path),
+            thumb: storageUrl("media", row.thumb_path ?? row.storage_path),
+            ...size,
+            caption,
+            ...(row.lat != null && row.lon != null ? { lat: row.lat, lon: row.lon } : {}),
+          }
         : null;
     case "video":
       return row.storage_path
@@ -148,6 +159,16 @@ async function loadSupabase(): Promise<Logbook> {
     ? await db.from("sail_media").select("*").in("sail_id", sailRows.map((s) => s.id)).order("sort")
     : { data: [], error: null };
   if (mediaRes.error) throw new Error(`Supabase media: ${mediaRes.error.message}`);
+  // The event log table arrives with migration 0005; build without it if it is not there yet.
+  const eventsRes = sailRows.length
+    ? await db.from("sail_events").select("sail_id, at, kind, lat, lon, data").in("sail_id", sailRows.map((s) => s.id)).order("at")
+    : { data: [], error: null };
+  if (eventsRes.error) console.warn(`[logbook] no event log: ${eventsRes.error.message}`);
+  const eventsBySail = new Map<string, SailEvent[]>();
+  for (const row of (eventsRes.error ? [] : eventsRes.data) as (SailEvent & { sail_id: string })[]) {
+    const { sail_id, ...e } = row;
+    eventsBySail.set(sail_id, [...(eventsBySail.get(sail_id) ?? []), { ...e, data: e.data ?? {} }]);
+  }
 
   const boats = (boatsRes.data as BoatRow[]).map(boatFromRow);
   const boatById = new Map(boats.map((b) => [b.id, b]));
@@ -188,6 +209,7 @@ async function loadSupabase(): Promise<Logbook> {
       explicitCover: row.cover_media_id && media.some((m) => m.id === row.cover_media_id) ? coverOf(media, row.cover_media_id) : null,
       localDate: localDate(stats.start),
       gpx: { url: storageUrl("gpx", row.gpx_path) },
+      events: eventsBySail.get(row.id) ?? [],
     });
   }
   return { source: "supabase", sails: sortSails(sails), boats };
@@ -273,6 +295,7 @@ async function loadMarkdown(): Promise<Logbook> {
         explicitCover,
         localDate: localDate(stats.start),
         gpx: { file },
+        events: [],
       };
     }),
   );

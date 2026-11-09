@@ -70,6 +70,9 @@ export interface SailRow {
   created_at: string;
   updated_at: string;
   published_at: string | null;
+  /** Set for sails uploaded by the Sail Tracker app */
+  client_id?: string | null;
+  source?: "web" | "app";
 }
 
 export type MediaKind = "photo" | "video" | "youtube" | "link";
@@ -86,6 +89,8 @@ export interface MediaRow {
   height: number | null;
   poster_path: string | null;
   taken_at: string | null;
+  lat?: number | null;
+  lon?: number | null;
   sort: number;
   created_at: string;
 }

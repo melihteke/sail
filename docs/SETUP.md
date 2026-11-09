@@ -22,7 +22,9 @@ breaks along the way.
    locations editable from the admin), then
    [`supabase/migrations/0003_race.sql`](../supabase/migrations/0003_race.sql) and
    [`supabase/migrations/0004_race_courses.sql`](../supabase/migrations/0004_race_courses.sql) (the academy race:
-   courses, scoreboards and the server-side race check). All of them are safe to run again.
+   courses, scoreboards and the server-side race check), then
+   [`supabase/migrations/0005_sail_log.sql`](../supabase/migrations/0005_sail_log.sql) (uploads from the Sail Tracker
+   Android app: the `sail_events` log and the `app_save_sail` function). All of them are safe to run again.
 3. **Project Settings → API**: copy the **Project URL** and the **anon / publishable key**. Both are public by design.
    Also note the **service_role / secret key** for step 6. That one is secret: never commit or share it.
 
@@ -33,7 +35,7 @@ breaks along the way.
 | Setting       | Value                                                                              |
 | ------------- | ---------------------------------------------------------------------------------- |
 | Site URL      | `https://sail.mteke.com`                                                           |
-| Redirect URLs | `https://sail.mteke.com/**` and `http://localhost:4321/**` (for local development) |
+| Redirect URLs | `https://sail.mteke.com/**`, `http://localhost:4321/**` (for local development) and `com.mteke.sail://login-callback` (Sail Tracker app) |
 
 ## 3. Google login
 

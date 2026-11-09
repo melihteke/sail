@@ -65,6 +65,18 @@ media and handles the Google login of the admin panel.
 - **Deploy site:** rebuilds the static site through the `publish` edge function (about 2 minutes) and shows
   whether the latest changes are live.
 
+**Sail Tracker app** ([melihteke/sail-tracker](https://github.com/melihteke/sail-tracker), Android)
+
+- Records sails on the phone (offline, screen off): track only, or a full log of engine, sails, reef, tacks, MOB,
+  anchor, notes, weather and photos, each with time and position.
+- Uploads a sail as a **draft** through `app_save_sail` (`supabase/migrations/0005_sail_log.sql`). The GPX goes to the
+  `gpx` bucket, the log to `sail_events`, and photos (with their position) to `sail_media`. Re-uploads are matched by id
+  and never duplicate.
+- Opening an app draft in the admin fills in stats, wind and the manoeuvre analysis automatically, and shows a "From
+  the app" badge and the event log.
+- Published sails with a log get an "On the boat" timeline, the under sail / under engine split, event pins on the map,
+  dashed engine sections and photos pinned where they were taken.
+
 ## Set up
 
 See **[docs/SETUP.md](docs/SETUP.md)**: Supabase project and SQL, Google login, the deploy edge function, GitHub
