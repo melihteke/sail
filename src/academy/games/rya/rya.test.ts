@@ -185,6 +185,15 @@ describe('Anchor Bay', () => {
 })
 
 describe('Passage planning', () => {
+  it('matches the departure times quoted in the tidal gate lesson', () => {
+    const at = (h: number) => simulatePassage(h * 60)
+    expect(at(7.25).barOk).toBe(false)
+    expect(at(8).barOk).toBe(false)
+    expect(at(8.5).barOk).toBe(true)
+    expect(at(11.5).barOk).toBe(true)
+    expect(at(12).barOk).toBe(false)
+  })
+
   it('only reaches the bar with enough water when leaving in the right window', () => {
     expect(simulatePassage(5 * 60).barOk).toBe(false)
     expect(simulatePassage(9 * 60).barOk).toBe(true)

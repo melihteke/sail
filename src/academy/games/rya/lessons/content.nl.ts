@@ -473,49 +473,98 @@ export const lessonsNl: LessonSet = {
       {
         h: 'Getijstromen',
         blocks: [
-          { p: 'Terwijl het water stijgt en daalt, stroomt het ook: de **getijstroom**. De richting is waar het water **naartoe** stroomt (de zet), de snelheid in knopen.' },
+          { p: 'Terwijl het getij stijgt en daalt, wordt zeewater van de ene plek naar de andere verplaatst: dat is de **getijstroom**. De richting is waar het water **naartoe** gaat (de **set**), de snelheid is in knopen (de **rate**). Voor een jacht dat 5 kn loopt, is 2 kn stroom ongeveer **40 %** van de snelheid – een van de grootste factoren voor hoe lang een tocht duurt.' },
           {
             list: [
-              'Een **stroomatlas** of de **getijruiten** op de kaart geven richting en snelheid voor elk uur vóór en na HW.',
-              'Snelheid over de grond = bootsnelheid ± stroom: 5 kn met 2 kn **mee** = 7 kn; met 2 kn **tegen** = maar 3 kn.',
-              '**Springtij** (rond nieuwe en volle maan): groot verschil, sterke stroom. **Doodtij** (halve maan): klein verschil, zwakke stroom.',
+              '**Stroom gedraagt zich als de twaalfdenregel**: zwak rond HW en LW (**stil water / kentering**), het sterkst midden in het getij (3e en 4e uur).',
+              '**Springtij** (rond nieuwe en volle maan): groot verval, sterke stroom. **Doodtij** (halve maan): klein verval, zwakke stroom – ongeveer de helft.',
+              'De **stroomatlas** of de **getijdiamanten** op de kaart (een letter in een ◊) geven richting en snelheid voor elk uur voor en na HW.',
+              '**Snelheid over de grond (SOG)** = bootsnelheid ± stroom. Meestroom telt op, tegenstroom trekt af; dwarsstroom **duwt** je van je lijn.',
             ],
           },
-          { ex: { title: 'Mee of tegen?', lines: ['18 NM met 5 kn in stilstaand water = 3 u 36 min.', 'Met gemiddeld 2 kn stroom mee: 7 kn → ongeveer **2 u 35 min**.', 'Met 2 kn tegen: 3 kn → **6 uur**!'] } },
+          { widget: 'stream' },
+          { ex: { title: 'Mee of tegen?', lines: ['In stil water: 18 NM met 5 kn = **3 u 36 min**.', 'Met gemiddeld 2 kn mee: 5 + 2 = 7 kn → ongeveer **2 u 35 min**.', 'Met 2 kn tegen: 5 − 2 = 3 kn → **6 uur**!', 'Dezelfde tocht, alleen een andere vertrektijd: **3½ uur verschil**.'] } },
+          { p: '**Een getijdiamant lezen.** Op de kaart zie je een letter in een ◊. De tabel in de kaartrand geeft in de kolom van die letter de stroom voor elk uur voor en na HW in de referentiehaven:' },
+          {
+            table: {
+              head: ['Tijd', 'Richting (set)', 'Springtij (kn)', 'Doodtij (kn)'],
+              rows: [
+                ['HW −3', '045°', '2,4', '1,2'],
+                ['HW −2', '050°', '2,0', '1,0'],
+                ['HW −1', '060°', '1,0', '0,5'],
+                ['HW', '—', '0,2', '0,1'],
+                ['HW +1', '220°', '1,0', '0,5'],
+                ['HW +2', '230°', '2,1', '1,0'],
+                ['HW +3', '225°', '2,5', '1,3'],
+              ],
+            },
+          },
+          {
+            steps: [
+              'Zoek de HW-tijd van vandaag in de referentiehaven.',
+              'Hoeveel uur voor of na HW is jouw tijd? Ga naar die rij.',
+              'Springtij of doodtij vandaag? Kijk naar het verval; zit het ertussen, neem dan een snelheid ertussen.',
+              'Noteer richting en snelheid: het water stroomt **naar** die richting.',
+            ],
+          },
+          { ex: { title: 'Wat is de stroom om 10:00?', lines: ['HW vandaag 13:00 → 10:00 = **HW −3**.', 'Tabel: richting 045°, springtij 2,4 kn, doodtij 1,2 kn.', 'Het verval van vandaag zit precies tussen spring- en doodtij → snelheid ≈ (2,4 + 1,2) ÷ 2 = **1,8 kn**.', 'Resultaat: het water stroomt **naar 045° met 1,8 kn**.'] } },
+          { ex: { title: 'Dwarsstroom: wat als je niet corrigeert?', lines: ['Je boot loopt 5 kn, de stroom is 2 kn recht dwars.', 'Zonder correctie drijf je elk uur **2 NM opzij** – 6 NM in 3 uur!', 'Om op je lijn te blijven stuur je ≈ **24°** de stroom in (kies “Dwars” in de animatie).', 'Je snelheid over de grond daalt iets: ≈ **4,6 kn**.'] } },
+          { tip: '**Zestigregel**: correctiehoek ≈ stroom ÷ bootsnelheid × 60. Voorbeeld: 2 ÷ 5 × 60 = **24°**. Goed genoeg voor hoofdrekenen.' },
         ],
       },
       {
         h: 'Getijdenpoorten: de vertrektijd kiezen',
         blocks: [
-          { p: 'Een getijdenpoort is een plek waar je alleen op bepaalde tijden langs kunt: een drempel, een sluis, een kaap met sterke stroom. Plan **terug** vanaf de poort.' },
+          { p: 'Een **getijdenpoort** is een plek die alleen op bepaalde tijden “open” is – zoals een brug die alleen op vaste uren opengaat. Is de poort dicht, dan kom je er niet door, of het is heel lastig en gevaarlijk. Daarom plan je **terug vanaf de poort**.' },
           {
-            steps: [
-              'Zoek het venster waarin je erlangs kunt (genoeg water of stroom mee).',
-              'Schat hoe lang de tocht duurt met de verwachte stroom.',
-              'ETD (vertrek) = aankomsttijd − vaartijd.',
-              'Controleer de stroom onderweg en schuif iets eerder of later om zo lang mogelijk stroom mee te hebben.',
+            list: [
+              '**Een ondiepe drempel of haveningang**: open zolang er genoeg **waterhoogte** is.',
+              '**Een kaap of nauwe doorgang**: open zolang de stroom **mee** of zwak is; wind tegen sterke stroom geeft gevaarlijke golven.',
+              '**Een sluis of drempel van een jachthaven**: alleen open tijdens de **openingstijden**.',
             ],
           },
           {
+            steps: [
+              'Zoek het venster waarin de poort open is (genoeg water of meestroom).',
+              'Schat hoe lang de tocht duurt – **inclusief de stroom**.',
+              'ETD (vertrek) = aankomsttijd − vaartijd.',
+              'Kijk naar de stroom onderweg; schuif iets eerder of later om zo lang mogelijk meestroom te hebben.',
+            ],
+          },
+          { widget: 'gate' },
+          { ex: { title: 'Eenvoudig voorbeeld: eerst stil water, dan de stroom', lines: ['De poort (drempel) gaat om **10:50** open en om **15:10** dicht. Tocht 18 NM, bootsnelheid 5 kn.', 'Stil water: 18 ÷ 5 = 3,6 u = **3 u 36 min** → vroegste vertrek 10:50 − 3:36 ≈ **07:15**?', 'Maar ’s ochtends staat de stroom **mee**: vertrek je om 07:15, dan ben je er om 10:17 – maar 3,2 m op de drempel. **Te vroeg!**', 'Opnieuw rekenen met de stroom: vroegste goede vertrek ≈ **08:30**, laatste ≈ **11:30** (met tegenstroom ben je er om 15:04, net voordat de poort dichtgaat).', 'Les: de stroom verandert de vaartijd, en de vaartijd verandert de aankomst. **Reken altijd mét de stroom.**'] } },
+          {
             ex: {
-              title: 'De tocht naar Kingsport plannen (18 NM, 5 kn, HW 13:00)',
+              title: 'Kingsport: drie vertrektijden vergeleken (HW 13:00)',
               lines: [
-                'Venster op de drempel: ongeveer 10:50 – 15:10.',
-                'De stroom loopt mee van HW−5 tot HW (08:00–13:00), het sterkst van HW−3 tot HW−2 (10:00–11:00). Na HW kentert hij.',
-                'Vertrek **09:00** → gemiddeld ≈ 6,9 kn → aankomst ≈ 11:37 bij 4,4 m water: **je komt binnen**, de hele weg met stroom mee.',
-                'Vertrek 06:00 → je begint met stroom tegen en komt om 09:27 aan bij maar 2,3 m: de drempel is nog te ondiep.',
-                'Vertrek 12:00 → de stroom kentert, je komt om 16:12 aan bij 2,7 m: te laat.',
+                'De stroom is mee van 08:00 tot 13:00, het sterkst 10:00–11:00; na HW keert hij.',
+                'Vertrek **06:00** → eerst tegenstroom, aankomst 09:27, 2,3 m op de drempel: **te vroeg** ✗',
+                'Vertrek **09:00** → gemiddeld ≈ 6,9 kn, aankomst 11:37, 4,4 m: **je komt binnen**, de hele weg met meestroom ✔⭐⭐⭐',
+                'Vertrek **12:00** → de stroom keert, aankomst 16:12, 2,7 m: **te laat** ✗',
               ],
             },
           },
-          { tip: 'In het spel drie sterren = genoeg water op de drempel **en** een gemiddelde snelheid van minstens 6,6 kn (het grootste deel met stroom mee). Probeer vertrektijden tussen 08:30 en 10:00.' },
+          { tip: 'Drie sterren in het spel = genoeg water op de drempel **en** gemiddeld minstens 6,6 kn (het grootste deel meestroom). Probeer vertrektijden tussen 08:30 en 10:00 in de planner hierboven en doe daarna hetzelfde in het spel.' },
           { game: 'passage' },
         ],
       },
       {
         h: 'Getij en ankeren',
         blocks: [
-          { p: 'Voor anker verandert de diepte de hele nacht. Gebruik de diepte bij **hoogwater** voor de kettinglengte en controleer dat er bij het **laagste** water rondom je zwaaicirkel nog genoeg water staat. Zie de les over ankeren.' },
+          { p: 'Voor anker stijgt en daalt de zee de hele nacht, dus de **diepte verandert steeds**. Beantwoord voor je gaat slapen twee vragen: is mijn ketting bij **hoogwater** lang genoeg? Staat er bij **laagwater** nog water onder mijn kiel?' },
+          {
+            steps: [
+              'Zoek in de getijtafel de **HW**- en **LW**-hoogtes voor de nacht.',
+              'Diepte bij HW = kaartdiepte + HW-hoogte → ketting minstens **4 ×** die diepte.',
+              'Diepte bij LW = kaartdiepte + LW-hoogte → onder de kiel = LW-diepte − diepgang; minstens **0,5 m**.',
+              'Doe dezelfde controle voor het **ondiepste** punt van je zwaaicirkel (zie de les Ankeren).',
+            ],
+          },
+          { widget: 'tideanchor' },
+          { ex: { title: 'Valkuil 1: ankeren bij laagwater, krabben bij hoogwater', lines: ['Kaartdiepte 3,0 m. Je ankert ’s avonds bij LW (0,6 m): diepte 3,6 m.', '“Vier keer is genoeg”, dus je steekt 4 × 3,6 ≈ **15 m** ketting.', 'Om middernacht HW (4,2 m): diepte 7,2 m → scope 15 ÷ 7,2 ≈ **2 : 1** → als de wind toeneemt, **krabt het anker**!', 'Goed: gebruik de diepte bij HW → 4 × 7,2 ≈ **30 m** ketting.'] } },
+          { ex: { title: 'Valkuil 2: ankeren bij hoogwater, droogvallen bij laagwater', lines: ['Kaartdiepte maar 0,5 m. Bij HW (4,2 m) is de diepte 4,7 m – het lijkt “water genoeg”.', '’s Nachts LW (0,6 m): diepte 0,5 + 0,6 = **1,1 m**. Je diepgang is 1,8 m.', 'Resultaat: **je loopt aan de grond** – midden in de nacht, op een scheve boot.', 'Goed: controleer de diepte bij LW → 1,1 − 1,8 < 0,5 m → deze plek is **niet geschikt**.'] } },
+          { warn: 'Zet na het ankeren een **ankeralarm** (plotter of telefoon-app) en controleer je positie als de wind of het getij keert.' },
+          { tip: 'Speel in de animatie eerst met ▶ de 12 uur af, en verander dan ketting en kaartdiepte om beide valkuilen zelf te vinden. Meer details in de les **Ankeren**; oefenen kan in **Ankerbaai**.' },
           { game: 'anchor' },
         ],
       },
@@ -525,6 +574,8 @@ export const lessonsNl: LessonSet = {
       { q: 'Kaartdiepte 1,2 m, waterhoogte 2,5 m. Waterdiepte?', options: ['3,7 m', '1,3 m', '2,5 m', '1,2 m'], answer: 0, why: 'Diepte = kaartdiepte + waterhoogte.' },
       { q: 'In welke uren stijgt het water het snelst?', options: ['3e en 4e', '1e en 6e', '2e en 5e', 'Allemaal even snel'], answer: 0, why: '1-2-3-3-2-1: drie twaalfden in elk van de middelste uren.' },
       { q: 'Je boot vaart 5 kn, de stroom is 1,5 kn tegen. Snelheid over de grond?', options: ['3,5 kn', '6,5 kn', '5 kn', '1,5 kn'], answer: 0, why: 'Stroom tegen trek je af: 5 − 1,5 = 3,5 kn.' },
+      { q: 'Je ankerde bij laagwater in 3,6 m met 15 m ketting. Bij hoogwater is de diepte 7,2 m. Wat gebeurt er?', options: ['De scope zakt naar ≈ 2 : 1, het anker kan krabben', 'Er verandert niets', 'Er staat alleen meer water onder de kiel', 'Je loopt aan de grond'], answer: 0, why: '15 ÷ 7,2 ≈ 2 : 1. Bepaal de kettinglengte altijd op de diepte bij hoogwater: 4 × 7,2 ≈ 30 m.' },
+      { q: 'Je boot loopt 6 kn, de stroom is 2 kn recht dwars. Ongeveer hoeveel correctie om op je lijn te blijven?', options: ['≈ 20°', '≈ 2°', '≈ 45°', 'Geen'], answer: 0, why: 'Zestigregel: 2 ÷ 6 × 60 = 20°.' },
     ],
   },
 

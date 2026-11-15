@@ -473,49 +473,98 @@ export const lessonsEn: LessonSet = {
       {
         h: 'Tidal streams',
         blocks: [
-          { p: 'While the tide rises and falls the water also flows: the **tidal stream**. Its direction is where it flows **to** (the set), its speed in knots (the rate).' },
+          { p: 'As the tide rises and falls, sea water is moved from one place to another: this is the **tidal stream**. Its direction is where the water is **going to** (the **set**), its speed is in knots (the **rate**). For a yacht doing 5 kn, a 2 kn stream is about **40 %** of its speed – one of the biggest factors in how long a passage takes.' },
           {
             list: [
-              'A **tidal atlas** or the **tidal diamonds** on the chart give set and rate for each hour before and after HW.',
-              'Speed over the ground = boat speed ± stream: 5 kn with 2 kn **fair** = 7 kn; with 2 kn **foul** = only 3 kn.',
-              '**Springs** (around new and full moon): big range, strong streams. **Neaps** (half moon): small range, weak streams.',
+              '**Streams behave like the rule of twelfths**: weak around HW and LW (**slack water**), strongest in the middle of the tide (3rd and 4th hours).',
+              '**Springs** (around new and full moon): big range, strong streams. **Neaps** (half moon): small range, weak streams – roughly half.',
+              'The **tidal stream atlas** or the **tidal diamonds** on the chart (a letter in a ◊) give the direction and rate for every hour before and after HW.',
+              '**Speed over the ground (SOG)** = boat speed ± stream. A fair stream adds, a foul stream subtracts; a cross stream **pushes** you off your line.',
             ],
           },
-          { ex: { title: 'Fair or foul?', lines: ['18 NM at 5 kn in still water = 3 h 36 min.', 'With an average 2 kn fair stream: 7 kn → about **2 h 35 min**.', 'With 2 kn foul: 3 kn → **6 hours**!'] } },
+          { widget: 'stream' },
+          { ex: { title: 'Fair or foul?', lines: ['In still water, 18 NM at 5 kn = **3 h 36 min**.', 'With 2 kn fair on average: 5 + 2 = 7 kn → about **2 h 35 min**.', 'With 2 kn foul: 5 − 2 = 3 kn → **6 hours**!', 'Same passage, only a different departure time: **3½ hours difference**.'] } },
+          { p: '**Reading a tidal diamond.** On the chart you see a letter in a ◊. The table in the chart margin gives, in that letter’s column, the stream for every hour before and after HW at the reference port:' },
+          {
+            table: {
+              head: ['Time', 'Set', 'Springs (kn)', 'Neaps (kn)'],
+              rows: [
+                ['HW −3', '045°', '2.4', '1.2'],
+                ['HW −2', '050°', '2.0', '1.0'],
+                ['HW −1', '060°', '1.0', '0.5'],
+                ['HW', '—', '0.2', '0.1'],
+                ['HW +1', '220°', '1.0', '0.5'],
+                ['HW +2', '230°', '2.1', '1.0'],
+                ['HW +3', '225°', '2.5', '1.3'],
+              ],
+            },
+          },
+          {
+            steps: [
+              'Find today’s HW time at the reference port.',
+              'How many hours before or after HW is your time? Go to that row.',
+              'Springs or neaps today? Look at the range; if it is in between, take a rate in between.',
+              'Note the set and rate: the water is flowing **towards** that direction.',
+            ],
+          },
+          { ex: { title: 'What is the stream at 10:00?', lines: ['HW today 13:00 → 10:00 = **HW −3**.', 'Table: set 045°, springs 2.4 kn, neaps 1.2 kn.', 'Today’s range is halfway between springs and neaps → rate ≈ (2.4 + 1.2) ÷ 2 = **1.8 kn**.', 'Result: the water is flowing **towards 045° at 1.8 kn**.'] } },
+          { ex: { title: 'Cross stream: what if you do not correct?', lines: ['Your boat does 5 kn, the stream is 2 kn straight across.', 'Without correction you drift **2 NM sideways** every hour – 6 NM in 3 hours!', 'To stay on your line, point ≈ **24°** up into the stream (choose “Across” in the animation).', 'Your speed over the ground drops a little: ≈ **4.6 kn**.'] } },
+          { tip: '**Rule of 60**: correction angle ≈ stream ÷ boat speed × 60. Example: 2 ÷ 5 × 60 = **24°**. Good enough for mental arithmetic.' },
         ],
       },
       {
         h: 'Tidal gates: choosing the departure time',
         blocks: [
-          { p: 'A tidal gate is a place you can only pass at certain times: a bar, a lock, a headland with strong streams. Plan **backwards** from the gate.' },
+          { p: 'A **tidal gate** is a place that is only “open” at certain times – like a bridge that only lifts at certain hours. While the gate is closed you cannot get through, or it is very hard and dangerous. So you plan **backwards from the gate**.' },
           {
-            steps: [
-              'Find the window when you can pass (enough water, or a fair stream).',
-              'Estimate how long the passage takes with the expected stream.',
-              'ETD (departure) = arrival time − passage time.',
-              'Check the stream along the way and shift a little earlier or later to carry the fair stream as long as possible.',
+            list: [
+              '**A shallow bar or harbour entrance**: open while there is enough **height of tide**.',
+              '**A headland or a narrow channel**: open while the stream is **fair** or weak; wind against a strong stream makes dangerous seas.',
+              '**A lock or marina sill**: open only during its **opening hours**.',
             ],
           },
           {
+            steps: [
+              'Find the window when the gate is open (enough water or a fair stream).',
+              'Estimate how long the passage takes – **including the stream**.',
+              'ETD (departure) = arrival time − passage time.',
+              'Check the streams along the way; shift a little earlier or later to ride a fair stream for as long as possible.',
+            ],
+          },
+          { widget: 'gate' },
+          { ex: { title: 'Simple example: still water first, then the stream', lines: ['The gate (bar) opens at **10:50** and closes at **15:10**. Passage 18 NM, boat speed 5 kn.', 'Still water: 18 ÷ 5 = 3.6 h = **3 h 36 min** → earliest departure 10:50 − 3:36 ≈ **07:15**?', 'But in the morning the stream is **fair**: leave at 07:15 and you arrive at 10:17 – only 3.2 m over the bar. **Too early!**', 'Recalculate with the stream: earliest good departure ≈ **08:30**, latest ≈ **11:30** (with a foul stream you arrive at 15:04, just before the gate closes).', 'Lesson: the stream changes the passage time, and the passage time changes the arrival. **Always calculate with the stream.**'] } },
+          {
             ex: {
-              title: 'Planning the Kingsport passage (18 NM, 5 kn, HW 13:00)',
+              title: 'Kingsport: three departure times compared (HW 13:00)',
               lines: [
-                'Window at the bar: about 10:50 – 15:10.',
-                'The stream is fair from HW−5 to HW (08:00–13:00) and strongest at HW−3 to HW−2 (10:00–11:00). After HW it turns foul.',
-                'Leave **09:00** → average ≈ 6.9 kn → arrive ≈ 11:37 with 4.4 m of tide: **in**, with a fair stream all the way.',
-                'Leave 06:00 → you start with a foul stream and arrive at 09:27 with only 2.3 m: the bar is still too shallow.',
-                'Leave 12:00 → the stream turns foul, you arrive at 16:12 with 2.7 m: too late.',
+                'The stream is fair from 08:00 to 13:00, strongest 10:00–11:00; after HW it turns foul.',
+                'Leave **06:00** → foul stream at first, arrive 09:27, 2.3 m over the bar: **too early** ✗',
+                'Leave **09:00** → average ≈ 6.9 kn, arrive 11:37, 4.4 m: **you get in**, with a fair stream all the way ✔⭐⭐⭐',
+                'Leave **12:00** → the stream turns foul, arrive 16:12, 2.7 m: **too late** ✗',
               ],
             },
           },
-          { tip: 'In the game three stars = enough water at the bar **and** an average speed of at least 6.6 kn (a fair stream most of the way). Try departures between 08:30 and 10:00.' },
+          { tip: 'Three stars in the game = enough water over the bar **and** an average of at least 6.6 kn (a fair stream for most of the way). Try departures between 08:30 and 10:00 in the planner above, then do the same in the game.' },
           { game: 'passage' },
         ],
       },
       {
         h: 'Tide and anchoring',
         blocks: [
-          { p: 'At anchor the depth changes all night. Use the depth at **high water** for the length of chain, and check there is still enough water at the **lowest** tide all round your swinging circle. See the anchoring lesson.' },
+          { p: 'At anchor the sea rises and falls all night, so the **depth keeps changing**. Before you settle, answer two questions: at **high water**, is my chain long enough? At **low water**, is there still water under my keel?' },
+          {
+            steps: [
+              'From the tide table, find the **HW** and **LW** heights for the night.',
+              'Depth at HW = charted depth + HW height → chain at least **4 ×** that depth.',
+              'Depth at LW = charted depth + LW height → under the keel = LW depth − draught; at least **0.5 m**.',
+              'Do the same check for the **shallowest** point of your swinging circle (see the Anchoring lesson).',
+            ],
+          },
+          { widget: 'tideanchor' },
+          { ex: { title: 'Trap 1: anchor at low water, drag at high water', lines: ['Charted depth 3.0 m. You anchor in the evening at LW (0.6 m): depth 3.6 m.', '“Four times is enough”, so you let out 4 × 3.6 ≈ **15 m** of chain.', 'At midnight HW (4.2 m): depth 7.2 m → scope 15 ÷ 7.2 ≈ **2 : 1** → when the wind picks up, **the anchor drags**!', 'Correct: use the depth at HW → 4 × 7.2 ≈ **30 m** of chain.'] } },
+          { ex: { title: 'Trap 2: anchor at high water, ground at low water', lines: ['Charted depth only 0.5 m. At HW (4.2 m) the depth is 4.7 m – it looks like “plenty of water”.', 'At night LW (0.6 m): depth 0.5 + 0.6 = **1.1 m**. Your draught is 1.8 m.', 'Result: **you go aground** – in the middle of the night, on a heeling boat.', 'Correct: check the depth at LW → 1.1 − 1.8 < 0.5 m → this spot is **no good**.'] } },
+          { warn: 'After anchoring, set an **anchor alarm** (plotter or phone app) and check your position when the wind or the tide turns.' },
+          { tip: 'In the animation, first press ▶ to play the 12 hours, then change the chain and charted depth to find both traps yourself. For details see the **Anchoring** lesson; to practise, play **Anchor Bay**.' },
           { game: 'anchor' },
         ],
       },
@@ -525,6 +574,8 @@ export const lessonsEn: LessonSet = {
       { q: 'Charted depth 1.2 m, height of tide 2.5 m. Depth of water?', options: ['3.7 m', '1.3 m', '2.5 m', '1.2 m'], answer: 0, why: 'Depth = charted depth + height of tide.' },
       { q: 'In which hours does the tide rise fastest?', options: ['3rd and 4th', '1st and 6th', '2nd and 5th', 'All the same'], answer: 0, why: '1-2-3-3-2-1: three twelfths in each of the middle hours.' },
       { q: 'Your boat does 5 kn, the stream is 1.5 kn against you. Speed over the ground?', options: ['3.5 kn', '6.5 kn', '5 kn', '1.5 kn'], answer: 0, why: 'A foul stream is subtracted: 5 − 1.5 = 3.5 kn.' },
+      { q: 'You anchored at low water in 3.6 m with 15 m of chain. At high water the depth is 7.2 m. What happens?', options: ['Scope drops to ≈ 2 : 1, the anchor may drag', 'Nothing changes', 'There is only more water under the keel', 'You go aground'], answer: 0, why: '15 ÷ 7.2 ≈ 2 : 1. Always size the chain for the depth at high water: 4 × 7.2 ≈ 30 m.' },
+      { q: 'Your boat does 6 kn, the stream is 2 kn straight across. Roughly how much correction to stay on your line?', options: ['≈ 20°', '≈ 2°', '≈ 45°', 'None'], answer: 0, why: 'Rule of 60: 2 ÷ 6 × 60 = 20°.' },
     ],
   },
 

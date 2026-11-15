@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useMemo, useState } from 'react'
 import { pointOfSail } from '../../../core/environment'
 import { norm180 } from '../../../core/units'
 import type { MessageKey } from '../../../i18n/en'
@@ -7,38 +7,14 @@ import { TopBoat } from '../../../map/TopBoat'
 import { lightScreenOffset, visibleLights, type VesselType } from '../collision/encounter'
 import { TYPES } from '../lookout/LookoutGame'
 import { DirArrow } from '../ui'
+import { Frame, Num } from './frame'
 import { swingRadius, tideWindow, TWELFTHS, twelfthsHeight, type WidgetId } from './lessons'
+import { GateWidget, StreamWidget, TideAnchorWidget } from './tideWidgets'
 
 const Rig3DExplorer = lazy(() => import('../rig3d/Rig3D'))
 
 const fmt = (min: number) => `${String(Math.floor((((min % 1440) + 1440) % 1440) / 60)).padStart(2, '0')}:${String(Math.round(((min % 60) + 60) % 60)).padStart(2, '0')}`
 const n1 = (v: number) => v.toFixed(1)
-
-function Frame({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div className="my-4 rounded-xl border-2 border-sea-500/40 bg-sea-100/40 p-4 dark:bg-sea-500/10">
-      <div className="text-sm font-semibold text-navy-900 dark:text-sky-100">🧮 {title}</div>
-      <div className="mt-3">{children}</div>
-    </div>
-  )
-}
-
-function Num({ label, value, onChange, step = 0.1, min = 0, max = 100 }: { label: string; value: number; onChange: (v: number) => void; step?: number; min?: number; max?: number }) {
-  return (
-    <label className="text-xs">
-      <span className="text-slate-500 dark:text-slate-400">{label}</span>
-      <input
-        type="number"
-        step={step}
-        min={min}
-        max={max}
-        value={value}
-        onChange={(e) => onChange(Math.max(min, Math.min(max, Number(e.target.value) || 0)))}
-        className="mt-0.5 w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-sm dark:border-white/20 dark:bg-white/5"
-      />
-    </label>
-  )
-}
 
 export function LessonWidget({ id }: { id: WidgetId }) {
   const { t } = useI18n()
@@ -50,6 +26,9 @@ export function LessonWidget({ id }: { id: WidgetId }) {
         </Suspense>
       </Frame>
     )
+  if (id === 'stream') return <StreamWidget t={t} />
+  if (id === 'gate') return <GateWidget t={t} />
+  if (id === 'tideanchor') return <TideAnchorWidget t={t} />
   if (id === 'twelfths') return <Twelfths t={t} />
   if (id === 'scope') return <Scope t={t} />
   if (id === 'points') return <Points t={t} />

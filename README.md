@@ -156,6 +156,7 @@ Pushing to `main` runs the tests and deploys. The admin panel's **Deploy site** 
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.5 | 2026-11-15 | Melih Teke | Tides lesson: richer tidal streams, tidal gates and tide & anchoring sections with animated stream, gate-planner and anchored-through-the-tide widgets. |
 | 1.4 | 2026-11-15 | Melih Teke | Added the 3D Rig Explorer (pull/ease every sail control line, see what moves) with a "Which line?" challenge, in Competent Crew and the sails lesson. |
 | 1.3 | 2026-11-15 | Melih Teke | Animated RYA roadmap scene (sun, clouds, gulls, waves, sailing boat) with reduced-motion support. |
 | 1.2 | 2026-11-15 | Melih Teke | Added RYA topic lessons with worked examples, calculators and quick checks. |
