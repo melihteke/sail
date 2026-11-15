@@ -105,14 +105,14 @@ function RigExplorer({ value, setValue, snap = 0, compact = false, top }: Explor
   const term = (id: ControlId) => (lang === 'en' ? '' : t(k(`rya.r3.c.${id}.term`)))
 
   const row = (id: ControlId) => (
-    <li key={id} className={`rounded-lg border p-2 transition ${selected === id ? 'border-amber-400 bg-amber-50 dark:bg-amber-500/10' : 'border-slate-200 dark:border-white/10'}`}>
+    <li key={id} className={`rounded-lg border px-2 py-1.5 transition ${selected === id ? 'border-amber-400 bg-amber-50 dark:bg-amber-500/10' : 'border-slate-200 bg-white dark:border-white/10 dark:bg-navy-900/60'}`}>
       <button type="button" className="flex w-full items-center gap-2 text-left text-sm" onClick={() => setSelected(id)}>
         <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: ROPE_COLORS[id] }} aria-hidden />
-        <span className="font-medium">{t(k(`rya.r3.c.${id}.name`))}</span>
-        {term(id) && <span className="text-xs text-slate-500 dark:text-slate-400">({term(id)})</span>}
+        <span className="truncate font-medium">{t(k(`rya.r3.c.${id}.name`))}</span>
+        {term(id) && <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">({term(id)})</span>}
       </button>
-      <div className="mt-1.5 flex items-center gap-2">
-        <HoldButton label={t('rya.r3.ease')} onStep={(dt) => adjust(id, -RATE * dt)} className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium hover:bg-slate-100 active:bg-slate-200 dark:border-white/20 dark:hover:bg-white/10">
+      <div className="mt-1 flex items-center gap-1.5">
+        <HoldButton label={t('rya.r3.ease')} onStep={(dt) => adjust(id, -RATE * dt)} className="shrink-0 rounded-md border border-slate-300 px-2 py-1 text-xs font-medium hover:bg-slate-100 active:bg-slate-200 dark:border-white/20 dark:hover:bg-white/10">
           ⟵ {t('rya.r3.ease')}
         </HoldButton>
         <input
@@ -129,73 +129,93 @@ function RigExplorer({ value, setValue, snap = 0, compact = false, top }: Explor
           style={{ accentColor: ROPE_COLORS[id] }}
           aria-label={t(k(`rya.r3.c.${id}.name`))}
         />
-        <HoldButton label={t('rya.r3.pull')} onStep={(dt) => adjust(id, RATE * dt)} className="rounded-md bg-navy-900 px-2 py-1 text-xs font-medium text-white hover:bg-navy-800 active:bg-sea-500 dark:bg-sea-500">
+        <HoldButton label={t('rya.r3.pull')} onStep={(dt) => adjust(id, RATE * dt)} className="shrink-0 rounded-md bg-navy-900 px-2 py-1 text-xs font-medium text-white hover:bg-navy-800 active:bg-sea-500 dark:bg-sea-500">
           {t('rya.r3.pull')} ⟶
         </HoldButton>
       </div>
     </li>
   )
 
+  const info = (
+    <Panel className="text-sm">
+      {selected ? (
+        <>
+          <div className="flex items-center gap-2">
+            <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: ROPE_COLORS[selected] }} aria-hidden />
+            <h3 className="font-semibold">
+              {t(k(`rya.r3.c.${selected}.name`))} {term(selected) && <span className="font-normal text-slate-500">({term(selected)})</span>}
+            </h3>
+          </div>
+          <p className="mt-1 text-slate-700 dark:text-slate-200">{t(k(`rya.r3.c.${selected}.does`))}</p>
+          <div className="mt-1.5 grid gap-x-4 gap-y-1 sm:grid-cols-2">
+            <p>
+              <b>{t('rya.r3.pull')}:</b> {t(k(`rya.r3.c.${selected}.pull`))}
+            </p>
+            <p>
+              <b>{t('rya.r3.ease')}:</b> {t(k(`rya.r3.c.${selected}.ease`))}
+            </p>
+          </div>
+          <p className="mt-1.5 w-fit rounded bg-amber-50 px-2 py-0.5 text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
+            ✨ {t('rya.r3.moves')}: {CONTROL_PARTS[selected].map((p) => t(k(`rya.r3.p.${p}`))).join(', ')}
+          </p>
+        </>
+      ) : (
+        <p className="text-slate-600 dark:text-slate-300">{t('rya.r3.select')}</p>
+      )}
+    </Panel>
+  )
+
+  const hint = <p className="text-center text-xs text-slate-500 dark:text-slate-400">🖐️ {t('rya.r3.drag')}</p>
+  // Wide layout: sticky 3D view + info on the left, controls on the right. Narrow/compact: sticky 3D view on top.
+  const wide = !compact
+  const canvasSize = wide ? 'aspect-[4/3] max-h-[42vh] lg:aspect-auto lg:h-[min(54vh,34rem)] lg:max-h-none' : 'aspect-[4/3] max-h-[45vh]'
+
   return (
     <div className="space-y-4">
       {top}
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem]">
-        <div className="self-start">
-        <div className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-white/10">
-          <div ref={host} className={`relative w-full cursor-grab active:cursor-grabbing ${compact ? 'aspect-[4/3]' : 'aspect-[16/11]'}`} role="img" aria-label={t('rya.r3.canvas')} />
-          {failed && <p className="absolute inset-0 grid place-items-center bg-white/90 p-4 text-sm text-slate-700">{t('rya.r3.noWebgl')}</p>}
-          <div className="absolute right-2 top-2 z-10 flex flex-wrap justify-end gap-1">
-            {VIEW_IDS.map((vw) => (
-              <button
-                key={vw}
-                type="button"
-                onClick={() => {
-                  setView(vw)
-                  api.current?.setView(vw)
-                }}
-                className={`rounded px-2 py-0.5 text-xs font-medium shadow-sm ${view === vw ? 'bg-navy-900 text-white' : 'bg-white/85 text-slate-700 hover:bg-white'}`}
-              >
-                {t(k(`rya.r3.view.${vw}`))}
-              </button>
-            ))}
-          </div>
-          {s.warnings.length > 0 && (
-            <ul className="pointer-events-none absolute bottom-2 left-2 right-2 z-10 space-y-1 text-xs">
-              {s.warnings.map((w) => (
-                <li key={w} className="w-fit rounded bg-amber-100/95 px-2 py-0.5 font-medium text-amber-900">
-                  ⚠️ {t(k(`rya.r3.w.${w}`))}
-                </li>
+      <div className={wide ? 'grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start' : 'space-y-4'}>
+        <div className="sticky top-14 z-20 space-y-2 bg-background pb-2 pt-2">
+          <div className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-white/10">
+            <div ref={host} className={`relative w-full cursor-grab active:cursor-grabbing ${canvasSize}`} role="img" aria-label={t('rya.r3.canvas')} />
+            {failed && <p className="absolute inset-0 grid place-items-center bg-white/90 p-4 text-sm text-slate-700">{t('rya.r3.noWebgl')}</p>}
+            <div className="absolute right-2 top-2 z-10 flex flex-wrap justify-end gap-1">
+              {VIEW_IDS.map((vw) => (
+                <button
+                  key={vw}
+                  type="button"
+                  onClick={() => {
+                    setView(vw)
+                    api.current?.setView(vw)
+                  }}
+                  className={`rounded px-2 py-0.5 text-xs font-medium shadow-sm ${view === vw ? 'bg-navy-900 text-white' : 'bg-white/85 text-slate-700 hover:bg-white'}`}
+                >
+                  {t(k(`rya.r3.view.${vw}`))}
+                </button>
               ))}
-            </ul>
-          )}
-        </div>
-        <p className="mt-1.5 text-center text-xs text-slate-500 dark:text-slate-400">🖐️ {t('rya.r3.drag')}</p>
+            </div>
+            {s.warnings.length > 0 && (
+              <ul className="pointer-events-none absolute bottom-2 left-2 right-2 z-10 space-y-1 text-xs">
+                {s.warnings.map((w) => (
+                  <li key={w} className="w-fit rounded bg-amber-100/95 px-2 py-0.5 font-medium text-amber-900">
+                    ⚠️ {t(k(`rya.r3.w.${w}`))}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {hint}
+          {wide && <div className="hidden lg:block">{info}</div>}
         </div>
         <div className="space-y-3">
-          <Panel className="text-sm">
-            {selected ? (
-              <>
-                <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full" style={{ background: ROPE_COLORS[selected] }} aria-hidden />
-                  <h3 className="font-semibold">
-                    {t(k(`rya.r3.c.${selected}.name`))} {term(selected) && <span className="font-normal text-slate-500">({term(selected)})</span>}
-                  </h3>
-                </div>
-                <p className="mt-1.5 text-slate-700 dark:text-slate-200">{t(k(`rya.r3.c.${selected}.does`))}</p>
-                <p className="mt-2">
-                  <b>{t('rya.r3.pull')}:</b> {t(k(`rya.r3.c.${selected}.pull`))}
-                </p>
-                <p className="mt-1">
-                  <b>{t('rya.r3.ease')}:</b> {t(k(`rya.r3.c.${selected}.ease`))}
-                </p>
-                <p className="mt-2 rounded bg-amber-50 px-2 py-1 text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
-                  ✨ {t('rya.r3.moves')}: {CONTROL_PARTS[selected].map((p) => t(k(`rya.r3.p.${p}`))).join(', ')}
-                </p>
-              </>
-            ) : (
-              <p className="text-slate-600 dark:text-slate-300">{t('rya.r3.select')}</p>
-            )}
-          </Panel>
+          <div className={wide ? 'lg:hidden' : ''}>{info}</div>
+          <div>
+            <h3 className="mb-1.5 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t('rya.r3.groupMain')}</h3>
+            <ul className="space-y-1.5">{MAIN_CONTROLS.map(row)}</ul>
+          </div>
+          <div>
+            <h3 className="mb-1.5 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t('rya.r3.groupJib')}</h3>
+            <ul className="space-y-1.5">{JIB_CONTROLS.map(row)}</ul>
+          </div>
           <Panel className="space-y-2 text-sm">
             <label className="block">
               <span className="flex justify-between">
@@ -206,14 +226,16 @@ function RigExplorer({ value, setValue, snap = 0, compact = false, top }: Explor
             </label>
             <div className="flex items-center gap-3">
               <WindDial angle={wind} fromStbd={fromStbd} label={t('rya.r3.wind')} />
-              <p className="font-medium">{t(k(`pos.${pos}`))}</p>
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {[true, false].map((sb) => (
-                <button key={String(sb)} type="button" onClick={() => setFromStbd(sb)} className={`rounded px-2 py-0.5 text-xs ${fromStbd === sb ? 'bg-sky-600 text-white' : 'bg-slate-100 dark:bg-white/10'}`}>
-                  {t(sb ? 'rya.r3.fromStbd' : 'rya.r3.fromPort')}
-                </button>
-              ))}
+              <div className="space-y-1.5">
+                <p className="font-medium">{t(k(`pos.${pos}`))}</p>
+                <div className="flex flex-wrap gap-1">
+                  {[true, false].map((sb) => (
+                    <button key={String(sb)} type="button" onClick={() => setFromStbd(sb)} className={`rounded px-2 py-0.5 text-xs ${fromStbd === sb ? 'bg-sky-600 text-white' : 'bg-slate-100 dark:bg-white/10'}`}>
+                      {t(sb ? 'rya.r3.fromStbd' : 'rya.r3.fromPort')}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
             <dl className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs">
               <dt className="text-slate-500">{t('rya.r3.read.boom')}</dt>
@@ -244,17 +266,7 @@ function RigExplorer({ value, setValue, snap = 0, compact = false, top }: Explor
               </button>
             </div>
           </Panel>
-        </div>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t('rya.r3.groupMain')}</h3>
-          <ul className="space-y-2">{MAIN_CONTROLS.map(row)}</ul>
-        </div>
-        <div>
-          <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t('rya.r3.groupJib')}</h3>
-          <ul className="space-y-2">{JIB_CONTROLS.map(row)}</ul>
-          <p className="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-600 dark:bg-white/5 dark:text-slate-300">{t('rya.r3.howTo')}</p>
+          <p className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600 dark:bg-white/5 dark:text-slate-300">{t('rya.r3.howTo')}</p>
         </div>
       </div>
     </div>
