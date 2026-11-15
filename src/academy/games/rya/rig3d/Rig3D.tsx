@@ -165,6 +165,61 @@ function RigExplorer({ value, setValue, snap = 0, compact = false, top }: Explor
     </Panel>
   )
 
+  const windBar = (
+    <Panel className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
+      <div className="flex min-w-[16rem] flex-1 items-center gap-3">
+        <WindDial angle={wind} fromStbd={fromStbd} label={t('rya.r3.wind')} />
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <label className="block">
+            <span className="flex justify-between">
+              <span>{t('rya.r3.windAngle')}</span>
+              <span className="font-mono">{Math.round(wind)}°</span>
+            </span>
+            <input type="range" min={20} max={180} value={wind} onChange={(e) => setWind(Number(e.target.value))} className="w-full accent-sky-600" />
+          </label>
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="mr-1 font-medium">{t(k(`pos.${pos}`))}</span>
+            {[true, false].map((sb) => (
+              <button key={String(sb)} type="button" onClick={() => setFromStbd(sb)} className={`rounded px-2 py-0.5 text-xs ${fromStbd === sb ? 'bg-sky-600 text-white' : 'bg-slate-100 dark:bg-white/10'}`}>
+                {t(sb ? 'rya.r3.fromStbd' : 'rya.r3.fromPort')}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-x-6 gap-y-3">
+      <dl className="grid grid-cols-[auto_auto] gap-x-3 gap-y-0.5 text-xs">
+        <dt className="text-slate-500">{t('rya.r3.read.boom')}</dt>
+        <dd className="font-mono">{Math.round(s.boomAngle)}°</dd>
+        <dt className="text-slate-500">{t('rya.r3.read.lift')}</dt>
+        <dd className="font-mono">{s.boomPitch.toFixed(1)}°</dd>
+        <dt className="text-slate-500">{t('rya.r3.read.main')}</dt>
+        <dd className="font-mono">{Math.round(s.hoist * 100)}%</dd>
+        <dt className="text-slate-500">{t('rya.r3.read.jib')}</dt>
+        <dd className="font-mono">{Math.round(s.jibOut * 100)}%</dd>
+        <dt className="text-slate-500">{t('rya.r3.read.jibAngle')}</dt>
+        <dd className="font-mono">{s.jibUp ? `${Math.round(s.jibAngle)}°` : '–'}</dd>
+      </dl>
+      <div className="space-y-2 text-xs">
+        <label className="flex items-center gap-1">
+          <input type="checkbox" checked={lineLabels} onChange={(e) => setLineLabels(e.target.checked)} /> {t('rya.r3.labelsLines')}
+        </label>
+        <label className="flex items-center gap-1">
+          <input type="checkbox" checked={partLabels} onChange={(e) => setPartLabels(e.target.checked)} /> {t('rya.r3.labelsParts')}
+        </label>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="btn-secondary !px-2 !py-1 text-xs" onClick={() => setValue({ ...SAILING })}>
+            ⛵ {t('rya.r3.preset.sailing')}
+          </button>
+          <button type="button" className="btn-secondary !px-2 !py-1 text-xs" onClick={() => setValue({ ...STOWED })}>
+            ⚓ {t('rya.r3.preset.stowed')}
+          </button>
+        </div>
+      </div>
+      </div>
+    </Panel>
+  )
+
   const hint = <p className="text-center text-xs text-slate-500 dark:text-slate-400">🖐️ {t('rya.r3.drag')}</p>
   // Wide layout: sticky 3D view + info on the left, controls on the right. Narrow/compact: sticky 3D view on top.
   const wide = !compact
@@ -173,6 +228,7 @@ function RigExplorer({ value, setValue, snap = 0, compact = false, top }: Explor
   return (
     <div className="space-y-4">
       {top}
+      {windBar}
       <div className={wide ? 'grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start' : 'space-y-4'}>
         <div className="sticky top-14 z-20 space-y-2 bg-background pb-2 pt-2">
           <div className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-white/10">
@@ -216,56 +272,6 @@ function RigExplorer({ value, setValue, snap = 0, compact = false, top }: Explor
             <h3 className="mb-1.5 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t('rya.r3.groupJib')}</h3>
             <ul className="space-y-1.5">{JIB_CONTROLS.map(row)}</ul>
           </div>
-          <Panel className="space-y-2 text-sm">
-            <label className="block">
-              <span className="flex justify-between">
-                <span>{t('rya.r3.windAngle')}</span>
-                <span className="font-mono">{Math.round(wind)}°</span>
-              </span>
-              <input type="range" min={20} max={180} value={wind} onChange={(e) => setWind(Number(e.target.value))} className="w-full accent-sky-600" />
-            </label>
-            <div className="flex items-center gap-3">
-              <WindDial angle={wind} fromStbd={fromStbd} label={t('rya.r3.wind')} />
-              <div className="space-y-1.5">
-                <p className="font-medium">{t(k(`pos.${pos}`))}</p>
-                <div className="flex flex-wrap gap-1">
-                  {[true, false].map((sb) => (
-                    <button key={String(sb)} type="button" onClick={() => setFromStbd(sb)} className={`rounded px-2 py-0.5 text-xs ${fromStbd === sb ? 'bg-sky-600 text-white' : 'bg-slate-100 dark:bg-white/10'}`}>
-                      {t(sb ? 'rya.r3.fromStbd' : 'rya.r3.fromPort')}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <dl className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs">
-              <dt className="text-slate-500">{t('rya.r3.read.boom')}</dt>
-              <dd className="font-mono">{Math.round(s.boomAngle)}°</dd>
-              <dt className="text-slate-500">{t('rya.r3.read.lift')}</dt>
-              <dd className="font-mono">{s.boomPitch.toFixed(1)}°</dd>
-              <dt className="text-slate-500">{t('rya.r3.read.main')}</dt>
-              <dd className="font-mono">{Math.round(s.hoist * 100)}%</dd>
-              <dt className="text-slate-500">{t('rya.r3.read.jib')}</dt>
-              <dd className="font-mono">{Math.round(s.jibOut * 100)}%</dd>
-              <dt className="text-slate-500">{t('rya.r3.read.jibAngle')}</dt>
-              <dd className="font-mono">{s.jibUp ? `${Math.round(s.jibAngle)}°` : '–'}</dd>
-            </dl>
-            <div className="flex flex-wrap gap-x-3 gap-y-1 pt-1 text-xs">
-              <label className="flex items-center gap-1">
-                <input type="checkbox" checked={lineLabels} onChange={(e) => setLineLabels(e.target.checked)} /> {t('rya.r3.labelsLines')}
-              </label>
-              <label className="flex items-center gap-1">
-                <input type="checkbox" checked={partLabels} onChange={(e) => setPartLabels(e.target.checked)} /> {t('rya.r3.labelsParts')}
-              </label>
-            </div>
-            <div className="flex flex-wrap gap-2 pt-1">
-              <button type="button" className="btn-secondary !px-2 !py-1 text-xs" onClick={() => setValue({ ...SAILING })}>
-                ⛵ {t('rya.r3.preset.sailing')}
-              </button>
-              <button type="button" className="btn-secondary !px-2 !py-1 text-xs" onClick={() => setValue({ ...STOWED })}>
-                ⚓ {t('rya.r3.preset.stowed')}
-              </button>
-            </div>
-          </Panel>
           <p className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600 dark:bg-white/5 dark:text-slate-300">{t('rya.r3.howTo')}</p>
         </div>
       </div>
