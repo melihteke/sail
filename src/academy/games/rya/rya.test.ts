@@ -8,6 +8,7 @@ import { buildScenarios, cpa, newHistory, scoreEncounter, visibleLights } from '
 import { courses, COURSE_IDS } from './courses'
 import { DECISIONS } from './decisions/SkipperCall'
 import { harbourLevels } from './harbour/levels'
+import { LESSON_IDS, lessonMeta, lessonSets, swingRadius, tideWindow, twelfthsHeight } from './lessons/lessons'
 import { CLEAT_STEPS, CLEAT_WRONG, JOBS, KNOTS } from './knots/KnotLab'
 import { linesLevels } from './lines/lines'
 import { ASPECTS, LOOKOUT_LEVELS, TYPES } from './lookout/LookoutGame'
@@ -152,5 +153,50 @@ describe('Passage planning', () => {
     expect(decisionCorrect(25, 20, 'hold')).toBe(true)
     expect(decisionCorrect(15, 20, 'port')).toBe(true)
     expect(decisionCorrect(15, 20, 'hold')).toBe(false)
+  })
+})
+
+describe('RYA lessons', () => {
+  const kinds = (set: (typeof lessonSets)['en']) =>
+    LESSON_IDS.map((id) => set[id].sections.map((s) => s.blocks.map((b) => Object.keys(b)[0] + ('widget' in b ? b.widget : 'game' in b ? b.game : '')).join(',')).join('|'))
+
+  it('have the same structure, widgets, game links and answers in every language', () => {
+    const ref = kinds(lessonSets.en)
+    for (const lang of ['nl', 'tr'] as const) {
+      expect(kinds(lessonSets[lang]), lang).toEqual(ref)
+      for (const id of LESSON_IDS) {
+        const a = lessonSets.en[id]
+        const b = lessonSets[lang][id]
+        expect(b.check.map((q) => [q.answer, q.options.length]), `${lang} ${id}`).toEqual(a.check.map((q) => [q.answer, q.options.length]))
+        a.sections.forEach((s, si) =>
+          s.blocks.forEach((blk, bi) => {
+            const other = b.sections[si].blocks[bi]
+            if ('steps' in blk && 'steps' in other) expect(other.steps.length, `${lang} ${id} ${si}`).toBe(blk.steps.length)
+            if ('table' in blk && 'table' in other) expect(other.table.rows.length, `${lang} ${id} ${si}`).toBe(blk.table.rows.length)
+          }),
+        )
+      }
+    }
+  })
+
+  it('only link to games that exist in the course', () => {
+    for (const m of lessonMeta) {
+      for (const g of m.games) expect(courses[g.course].games.some((x) => x.id === g.game), `${m.id} ${g.game}`).toBe(true)
+      for (const s of lessonSets.en[m.id].sections) for (const b of s.blocks) if ('game' in b) expect(m.games.some((g) => g.game === b.game), `${m.id} ${b.game}`).toBe(true)
+    }
+  })
+
+  it('give every game at least one lesson', () => {
+    for (const c of COURSE_IDS) for (const g of courses[c].games) expect(lessonMeta.some((m) => m.games.some((x) => x.game === g.id)), g.id).toBe(true)
+  })
+
+  it('match the worked tide examples', () => {
+    expect(twelfthsHeight(0.8, 5.0, 4)).toBeCloseTo(3.95, 2)
+    expect(twelfthsHeight(1.0, 4.6, 3)).toBeCloseTo(2.8, 2)
+    const win = tideWindow(0.8, 5.0, 3.8)!
+    expect(win[0]).toBeGreaterThan(3.5)
+    expect(win[0]).toBeLessThan(4)
+    expect(win[1]).toBeCloseTo(12 - win[0], 5)
+    expect(swingRadius(35, 8.2)).toBeCloseTo(39, 0)
   })
 })

@@ -48,6 +48,10 @@ media and handles the Google login of the admin panel.
     handling and lines & fenders games share a small yacht physics model (`src/academy/core/yacht.ts`: prop walk,
     windage, stream, mooring lines and fendered contact). Source in `src/academy/games/rya`, texts in
     `src/academy/i18n/rya`. Coastal Skipper and the Yachtmaster levels are on the roadmap as "coming soon".
+  - **RYA topic lessons** (`#/rya/learn`): nine step-by-step lessons (sails, knots & lines, handling under power, tides,
+    anchoring, collision rules, lights, passage planning & pilotage, distress & emergencies) with worked examples,
+    calculators (rule of twelfths, scope, points of sail, lights viewer), a quick check and links to the games they
+    prepare for. Each game page links back to its lessons. Content per language in `src/academy/games/rya/lessons/content.*.ts`.
 - **Languages:** English (default), Dutch and Turkish via the flag switcher. Site chrome uses `data-i18n` keys from
   `src/i18n/site.ts`; the academy has full dictionaries in `src/academy/i18n`. Choice is kept in `localStorage.lang`.
 - **Copy deterrent:** right-click, copy and text selection are blocked on public pages (not on `/admin`). It's
@@ -148,4 +152,5 @@ Pushing to `main` runs the tests and deploys. The admin panel's **Deploy site** 
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.2 | 2026-11-15 | Melih Teke | Added RYA topic lessons with worked examples, calculators and quick checks. |
 | 1.1 | 2026-11-15 | Melih Teke | Added the RYA courses section (syllabus roadmap, Competent Crew and Day Skipper games). |

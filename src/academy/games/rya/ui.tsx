@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import type { MessageKey } from '../../i18n/en'
 import { useI18n } from '../../i18n'
 import type { CourseId } from './courses'
+import { lessonSets, lessonsForGame } from './lessons/lessons'
 
 export function StarsView({ n, size = 'text-base' }: { n: number; size?: string }) {
   return (
@@ -26,7 +27,24 @@ export function GameShell({ course, game, children }: { course: CourseId; game: 
       </Link>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-navy-900 dark:text-white">{t(`rya.g.${game}.title` as MessageKey)}</h1>
       <p className="mt-2 max-w-3xl text-slate-600 dark:text-slate-300">{t(`rya.g.${game}.intro` as MessageKey)}</p>
+      <LessonLinks game={game} />
       <div className="mt-6">{children}</div>
+    </div>
+  )
+}
+
+function LessonLinks({ game }: { game: string }) {
+  const { t, lang } = useI18n()
+  const items = lessonsForGame(game)
+  if (!items.length) return null
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+      <span className="text-slate-500 dark:text-slate-400">📖 {t('rya.lessons.readFirst')}</span>
+      {items.map((m) => (
+        <Link key={m.id} to={`/rya/learn/${m.id}`} className="rounded-full border border-sea-500/40 bg-sea-100/60 px-3 py-0.5 font-medium text-navy-900 hover:bg-sea-100 dark:bg-sea-500/10 dark:text-sky-100">
+          {m.icon} {lessonSets[lang][m.id].title}
+        </Link>
+      ))}
     </div>
   )
 }

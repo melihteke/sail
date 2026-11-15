@@ -5,6 +5,8 @@ import { useI18n, type Translate } from '../../i18n'
 import { loadJson, saveJson } from '../../lib/storage'
 import { courses, COURSE_IDS } from './courses'
 import { gameStars } from './progress'
+import { lessonMeta } from './lessons/lessons'
+import { LessonCards } from './lessons/LessonPage'
 import { checkStep, emptyExperience, FLAG_REQS, NUMERIC_REQS, readyIndex, roadmap, type Experience, type RoadStep, type StepId } from './roadmap'
 import { Panel, StarsView } from './ui'
 
@@ -55,6 +57,19 @@ export function RyaSyllabus() {
           {COURSE_IDS.map((c) => (
             <CourseCard key={c} t={t} id={c} />
           ))}
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t('rya.lessons.title')}</h2>
+          <Link to="/rya/learn" className="text-sm font-medium text-sea-500 hover:underline">
+            {t('rya.lessons.all')} →
+          </Link>
+        </div>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t('rya.lessons.intro')}</p>
+        <div className="mt-3">
+          <LessonCards items={lessonMeta} />
         </div>
       </section>
 
