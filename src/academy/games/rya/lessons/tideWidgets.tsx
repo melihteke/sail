@@ -55,11 +55,20 @@ function Stat({ label, value, tone = 'plain' }: { label: string; value: string; 
 
 type StreamDir = 'fair' | 'foul' | 'cross'
 const PARTICLES = Array.from({ length: 46 }, (_, i) => ({ x: (i * 137.5) % 600, y: (i * 61) % 180 }))
+const DEG_R = Math.PI / 180
+
+/** Cross stream from the side: ground track for a given heading correction (degrees into the stream). */
+export function crossTrack(stw: number, rate: number, correction: number) {
+  const along = stw * Math.cos(correction * DEG_R)
+  const cross = rate - stw * Math.sin(correction * DEG_R)
+  return { along, cross, sog: Math.hypot(along, cross), trackDeg: (Math.atan2(cross, along) * 180) / Math.PI }
+}
 
 export function StreamWidget({ t }: { t: Translate }) {
   const [stw, setStw] = useState(5)
   const [rate, setRate] = useState(2)
   const [dir, setDir] = useState<StreamDir>('fair')
+  const [corr, setCorr] = useState(0)
   const animate = useMemo(() => !reducedMotion(), [])
   const clock = useClock(animate)
 
@@ -67,16 +76,25 @@ export function StreamWidget({ t }: { t: Translate }) {
   const H = 220
   const K = 9
   const possible = dir !== 'cross' || rate < stw
-  const crab = dir === 'cross' ? (possible ? (Math.asin(rate / stw) * 180) / Math.PI : 90) : 0
-  const sog = dir === 'fair' ? stw + rate : dir === 'foul' ? Math.max(0, stw - rate) : possible ? Math.sqrt(stw * stw - rate * rate) : 0
-  const hours = sog > 0.05 ? 18 / sog : Infinity
+  const need = possible ? (Math.asin(Math.min(1, rate / stw)) * 180) / Math.PI : 90
+  const ct = crossTrack(stw, rate, corr)
+  const sog = dir === 'fair' ? stw + rate : dir === 'foul' ? Math.max(0, stw - rate) : ct.sog
+  const progress = dir === 'cross' ? ct.along : sog
+  const hours = progress > 0.05 ? 18 / progress : Infinity
   const hm = Number.isFinite(hours) ? `${Math.floor(hours)} h ${String(Math.round((hours % 1) * 60)).padStart(2, '0')} min` : t('rya.lw.st.never')
 
   const vx = dir === 'fair' ? rate * K : dir === 'foul' ? -rate * K : 0
   const vy = dir === 'cross' ? rate * K : 0
   const span = W - 90
   const y0 = H / 2
-  const bx = 45 + (sog > 0.05 ? (animate ? mod(sog * K * clock, span) : span * 0.45) : 0)
+  const track = dir === 'cross' ? ct.trackDeg : 0
+  const tr = track * DEG_R
+  const pathLen = Math.min(span / Math.max(0.05, Math.cos(tr)), Math.abs(Math.sin(tr)) > 0.01 ? (H / 2 - 18) / Math.abs(Math.sin(tr)) : Infinity)
+  const dist = sog > 0.05 ? (animate ? mod(sog * K * clock, pathLen) : pathLen * 0.45) : 0
+  const bx = 45 + dist * Math.cos(tr)
+  const by = y0 + dist * Math.sin(tr)
+  const heading = dir === 'cross' ? corr : 0
+  const onLine = Math.abs(track) < 1.5
   const driftDeg = (Math.atan2(rate, stw) * 180) / Math.PI
 
   return (
@@ -89,6 +107,11 @@ export function StreamWidget({ t }: { t: Translate }) {
         ))}
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="mt-3 w-full rounded-lg bg-[#cfe9f7] dark:bg-[#0e3550]" role="img" aria-label={t('rya.lw.st.title')}>
+        <defs>
+          <marker id="st-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="#0b3a5c" />
+          </marker>
+        </defs>
         {PARTICLES.map((p, i) => {
           const x = mod(p.x + vx * clock, W)
           const y = 20 + mod(p.y + vy * clock, H - 40)
@@ -100,6 +123,12 @@ export function StreamWidget({ t }: { t: Translate }) {
           )
         })}
         <line x1={45} y1={y0} x2={W - 45} y2={y0} stroke="#0b3a5c" strokeWidth={1.5} strokeDasharray="6 5" opacity={0.6} />
+        {dir === 'cross' && Math.abs(corr) > 0.5 && (
+          <line x1={45} y1={y0} x2={45 + 260} y2={y0 + 260 * Math.tan(driftDeg * DEG_R)} stroke="#e11d48" strokeWidth={1} strokeDasharray="3 5" opacity={0.45} />
+        )}
+        {dir === 'cross' && (
+          <line x1={45} y1={y0} x2={45 + pathLen * Math.cos(tr)} y2={y0 + pathLen * Math.sin(tr)} stroke={onLine ? '#16a34a' : '#e11d48'} strokeWidth={2} strokeDasharray="5 4" opacity={0.85} />
+        )}
         <circle cx={45} cy={y0} r={7} fill="#f59e0b" stroke="#fff" strokeWidth={2} />
         <circle cx={W - 45} cy={y0} r={7} fill="#16a34a" stroke="#fff" strokeWidth={2} />
         <text x={45} y={y0 + 24} textAnchor="middle" fontSize={11} fill="#0b3a5c">
@@ -108,18 +137,10 @@ export function StreamWidget({ t }: { t: Translate }) {
         <text x={W - 45} y={y0 + 24} textAnchor="middle" fontSize={11} fill="#0b3a5c">
           B · 18 NM
         </text>
-        {dir === 'cross' && (
-          <line x1={45} y1={y0} x2={45 + 260} y2={y0 + 260 * Math.tan((driftDeg * Math.PI) / 180)} stroke="#e11d48" strokeWidth={1.5} strokeDasharray="4 4" opacity={0.8} />
-        )}
-        <g transform={`translate(${bx} ${y0}) rotate(${-crab})`}>
+        <g transform={`translate(${bx} ${by}) rotate(${-heading})`}>
           <line x1={0} y1={0} x2={46} y2={0} stroke="#0b3a5c" strokeWidth={1.5} markerEnd="url(#st-arrow)" opacity={0.7} />
           <path d="M16 0 C 10 -7 -6 -8 -13 -6 L -13 6 C -6 8 10 7 16 0 Z" fill="#ffffff" stroke="#0b3a5c" strokeWidth={2} />
         </g>
-        <defs>
-          <marker id="st-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M0 0 L10 5 L0 10 z" fill="#0b3a5c" />
-          </marker>
-        </defs>
         <g transform={`translate(${W - 70} 30)`}>
           <rect x={-46} y={-16} width={104} height={28} rx={6} fill="#ffffff" opacity={0.85} />
           <text x={6} y={3} textAnchor="middle" fontSize={11} fill="#0369a1" fontWeight={600}>
@@ -127,26 +148,46 @@ export function StreamWidget({ t }: { t: Translate }) {
           </text>
         </g>
       </svg>
-      <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{t('rya.lw.st.legend')}</p>
+      <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{t(dir === 'cross' ? 'rya.lw.st.legendCross' : 'rya.lw.st.legend')}</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <Slider label={t('rya.lw.st.stw')} value={stw} min={2} max={8} step={0.5} onChange={setStw} unit="kn" />
         <Slider label={t('rya.lw.st.rate')} value={rate} min={0} max={4} step={0.5} onChange={setRate} unit="kn" />
       </div>
+      {dir === 'cross' && (
+        <div className="mt-3 grid items-end gap-3 sm:grid-cols-[1fr_auto]">
+          <label className="block text-xs">
+            <span className="flex justify-between text-slate-600 dark:text-slate-300">
+              <span>{t('rya.lw.st.angle')}</span>
+              <span className="font-mono font-semibold">{corr}°</span>
+            </span>
+            <input type="range" min={0} max={60} step={1} value={corr} onChange={(e) => setCorr(Number(e.target.value))} className="w-full accent-rose-600" />
+          </label>
+          <button type="button" className="btn-secondary !px-3 !py-1 text-xs" disabled={!possible} onClick={() => setCorr(Math.round(need))}>
+            🎯 {t('rya.lw.st.showRight')}
+          </button>
+        </div>
+      )}
       <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
         <Stat label={t('rya.lw.st.sog')} value={`${n1(sog)} kn`} tone={sog > stw ? 'good' : sog < stw ? 'bad' : 'plain'} />
-        <Stat label={t('rya.lw.st.time')} value={hm} tone={sog > stw ? 'good' : sog < stw ? 'bad' : 'plain'} />
-        {dir === 'cross' && <Stat label={t('rya.lw.st.heading')} value={possible ? `${Math.round(crab)}°` : '–'} />}
+        <Stat label={t('rya.lw.st.time')} value={hm} tone={progress > stw ? 'good' : progress < stw ? 'bad' : 'plain'} />
+        {dir === 'cross' && <Stat label={t('rya.lw.st.heading')} value={possible ? `${Math.round(need)}°` : '–'} />}
       </div>
       {dir === 'cross' && (
-        <p className="mt-2 text-sm">
-          {possible ? (
-            <>
-              🧭 {t('rya.lw.st.crab', { deg: Math.round(crab) })} <span className="text-rose-700 dark:text-rose-300">{t('rya.lw.st.drift', { nm: n1(rate) })}</span>
-            </>
+        <div className="mt-2 space-y-1 text-sm">
+          {!possible ? (
+            <p className="text-rose-700 dark:text-rose-300">{t('rya.lw.st.tooStrong')}</p>
           ) : (
-            <span className="text-rose-700 dark:text-rose-300">{t('rya.lw.st.tooStrong')}</span>
+            <p className={`rounded px-2 py-1 font-medium ${onLine ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200' : 'bg-rose-50 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200'}`}>
+              {onLine ? `✔ ${t('rya.lw.st.onLine')}` : track > 0 ? `↘ ${t('rya.lw.st.offDown', { deg: Math.round(Math.abs(track)) })}` : `↗ ${t('rya.lw.st.offUp', { deg: Math.round(Math.abs(track)) })}`}
+            </p>
           )}
-        </p>
+          {possible && (
+            <p className="text-xs text-slate-600 dark:text-slate-300">
+              🧮 {t('rya.lw.st.formula', { r: n1(rate), s: n1(stw), q: (rate / stw).toFixed(2), deg: Math.round(need), r60: Math.round((rate / stw) * 60) })}
+            </p>
+          )}
+          {corr === 0 && <p className="text-xs text-rose-700 dark:text-rose-300">{t('rya.lw.st.drift', { nm: n1(rate) })}</p>}
+        </div>
       )}
     </Frame>
   )
@@ -498,6 +539,59 @@ export function rangeOnDay(day: number): number {
   return 2.0 + 2.2 * ((1 + Math.cos((4 * Math.PI * day) / MONTH)) / 2)
 }
 
+export const MOON_PHASES = ['new', 'waxCres', 'first', 'waxGib', 'full', 'wanGib', 'last', 'wanCres'] as const
+export function phaseIndex(day: number): number {
+  return Math.round(mod(day, MONTH) / (MONTH / 8)) % 8
+}
+
+/** Lit part of the Moon as seen from Earth (northern hemisphere). `age` in radians: 0 = new, π = full. */
+export function moonLitPath(cx: number, cy: number, r: number, age: number): string {
+  const a = mod(age, 2 * Math.PI)
+  const k = Math.cos(a)
+  const waxing = a < Math.PI
+  const rx = Math.abs(k) * r
+  return `M ${cx} ${cy - r} A ${r} ${r} 0 0 ${waxing ? 1 : 0} ${cx} ${cy + r} A ${rx.toFixed(2)} ${r} 0 0 ${k > 0 === waxing ? 0 : 1} ${cx} ${cy - r} Z`
+}
+
+const CRATERS = [
+  [-0.35, -0.3, 0.16],
+  [0.3, -0.1, 0.12],
+  [-0.05, 0.38, 0.2],
+  [0.42, 0.42, 0.09],
+  [-0.5, 0.25, 0.08],
+]
+
+function MoonFace({ cx, cy, r, age, id }: { cx: number; cy: number; r: number; age: number; id: string }) {
+  return (
+    <g>
+      <defs>
+        <clipPath id={`mf-${id}`}>
+          <circle cx={cx} cy={cy} r={r} />
+        </clipPath>
+        <radialGradient id={`mfl-${id}`} cx="40%" cy="35%" r="75%">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor="#cbd5e1" />
+        </radialGradient>
+      </defs>
+      <circle cx={cx} cy={cy} r={r} fill="#273449" />
+      <path d={moonLitPath(cx, cy, r, age)} fill={`url(#mfl-${id})`} />
+      <g clipPath={`url(#mf-${id})`} opacity={0.18}>
+        {CRATERS.map(([x, y, s], i) => (
+          <circle key={i} cx={cx + x * r} cy={cy + y * r} r={s * r} fill="#475569" />
+        ))}
+      </g>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="#94a3b8" strokeOpacity={0.35} />
+    </g>
+  )
+}
+
+const STARS = Array.from({ length: 60 }, (_, i) => ({ x: (i * 97.3) % 460, y: (i * 53.7) % 330, r: i % 7 === 0 ? 1.3 : 0.7, o: 0.3 + ((i * 37) % 60) / 100 }))
+const LAND = [
+  'M-22 -20 C-14 -30 0 -30 4 -20 C8 -12 0 -6 -6 -8 C-12 -10 -14 -2 -20 -4 C-28 -6 -28 -14 -22 -20 Z',
+  'M8 2 C16 -4 28 0 26 10 C24 20 14 30 6 26 C0 22 4 14 2 10 C0 6 2 4 8 2 Z',
+  'M-26 12 C-20 8 -12 14 -14 22 C-16 28 -24 28 -28 22 C-30 18 -30 14 -26 12 Z',
+]
+
 export function MoonWidget({ t }: { t: Translate }) {
   const [day, setDay] = useState(0)
   const [playing, setPlaying] = useState(false)
@@ -515,57 +609,151 @@ export function MoonWidget({ t }: { t: Translate }) {
     return () => cancelAnimationFrame(raf)
   }, [playing])
 
-  const phi = Math.PI + (2 * Math.PI * day) / MONTH
-  const E = { x: 250, y: 130 }
-  const moon = { x: E.x + Math.cos(phi) * 95, y: E.y - Math.sin(phi) * 95 }
-  const amp = (1 + 0.46 * Math.cos(2 * (phi - Math.PI))) / 1.46
+  const age = (2 * Math.PI * day) / MONTH
+  const phi = Math.PI + age
+  const E = { x: 260, y: 165 }
+  const R = 40
+  const ORB = 118
+  const moon = { x: E.x + Math.cos(phi) * ORB, y: E.y - Math.sin(phi) * ORB }
+  const amp = (1 + 0.46 * Math.cos(2 * age)) / 1.46
   const range = rangeOnDay(day)
-  const near = (d: number) => Math.min(Math.abs(day - d), MONTH - Math.abs(day - d)) < 2
-  const phase = near(0) ? 'new' : near(MONTH / 4) ? 'first' : near(MONTH / 2) ? 'full' : near((3 * MONTH) / 4) ? 'last' : 'between'
   const kind = range > 3.7 ? 'springs' : range < 2.5 ? 'neaps' : 'mid'
+  const pi = phaseIndex(day)
+  const lit = Math.round(((1 - Math.cos(age)) / 2) * 100)
+  const rot = (-phi * 180) / Math.PI
+  const bx = R + 12 + 24 * amp
+  const by = R + 7 - 3 * amp
   const curve = Array.from({ length: 49 }, (_, i) => {
     const h = 2.6 + (range / 2) * Math.cos((2 * Math.PI * (i / 2)) / 12.42)
-    return `${i ? 'L' : 'M'}${(430 + i * 3.1).toFixed(1)} ${(205 - h * 22).toFixed(1)}`
+    return `${i ? 'L' : 'M'}${(492 + i * 4).toFixed(1)} ${(300 - h * 15).toFixed(1)}`
   }).join(' ')
+  const kindColor = kind === 'springs' ? '#dc2626' : kind === 'neaps' ? '#2563eb' : '#0f172a'
 
   return (
     <Frame title={t('rya.lw.mo.title')}>
-      <svg viewBox="0 0 600 260" className="w-full rounded-lg bg-[#0b1d33]" role="img" aria-label={t('rya.lw.mo.title')}>
-        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-          <line key={i} x1={30} y1={130} x2={30 + Math.cos((i * Math.PI) / 4) * 22} y2={130 + Math.sin((i * Math.PI) / 4) * 22} stroke="#fbbf24" strokeWidth={2} />
+      <svg viewBox="0 0 720 330" className="w-full rounded-lg" role="img" aria-label={t('rya.lw.mo.title')}>
+        <defs>
+          <radialGradient id="mo-space" cx="35%" cy="50%" r="80%">
+            <stop offset="0%" stopColor="#13284a" />
+            <stop offset="100%" stopColor="#050b18" />
+          </radialGradient>
+          <radialGradient id="mo-sun" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#fffbea" />
+            <stop offset="35%" stopColor="#fde047" />
+            <stop offset="70%" stopColor="#f59e0b" stopOpacity={0.45} />
+            <stop offset="100%" stopColor="#f59e0b" stopOpacity={0} />
+          </radialGradient>
+          <radialGradient id="mo-ocean" cx="38%" cy="40%" r="70%">
+            <stop offset="0%" stopColor="#60a5fa" />
+            <stop offset="70%" stopColor="#1d4ed8" />
+            <stop offset="100%" stopColor="#1e3a8a" />
+          </radialGradient>
+          <radialGradient id="mo-bulge" cx="50%" cy="50%" r="50%">
+            <stop offset="55%" stopColor="#7dd3fc" stopOpacity={0.85} />
+            <stop offset="85%" stopColor="#38bdf8" stopOpacity={0.45} />
+            <stop offset="100%" stopColor="#38bdf8" stopOpacity={0} />
+          </radialGradient>
+          <linearGradient id="mo-night" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="#020617" stopOpacity={0} />
+            <stop offset="100%" stopColor="#020617" stopOpacity={0.7} />
+          </linearGradient>
+          <radialGradient id="mo-atmo" cx="50%" cy="50%" r="50%">
+            <stop offset="80%" stopColor="#93c5fd" stopOpacity={0} />
+            <stop offset="100%" stopColor="#93c5fd" stopOpacity={0.5} />
+          </radialGradient>
+          <clipPath id="mo-earth">
+            <circle cx={E.x} cy={E.y} r={R} />
+          </clipPath>
+        </defs>
+        <rect x={0} y={0} width={720} height={330} rx={10} fill="url(#mo-space)" />
+        {STARS.map((s, i) => (
+          <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#ffffff" opacity={s.o} />
         ))}
-        <circle cx={30} cy={130} r={14} fill="#fbbf24" />
-        <text x={30} y={165} textAnchor="middle" fontSize={10} fill="#fde68a">
+        <circle cx={34} cy={165} r={70} fill="url(#mo-sun)" />
+        <circle cx={34} cy={165} r={22} fill="#fde047" />
+        <text x={34} y={205} textAnchor="middle" fontSize={11} fill="#fde68a" fontWeight={600}>
           {t('rya.lw.mo.sun')}
         </text>
-        <circle cx={E.x} cy={E.y} r={95} fill="none" stroke="#334155" strokeDasharray="3 5" />
-        <ellipse cx={E.x} cy={E.y} rx={30 + 26 * amp} ry={30 + 4 * (1 - amp)} fill="#38bdf8" opacity={0.45} transform={`rotate(${(-phi * 180) / Math.PI} ${E.x} ${E.y})`} />
-        <circle cx={E.x} cy={E.y} r={26} fill="#1d4ed8" />
-        <circle cx={E.x - 6} cy={E.y - 5} r={9} fill="#16a34a" opacity={0.8} />
-        <text x={E.x} y={E.y + 48} textAnchor="middle" fontSize={10} fill="#bae6fd">
+        <circle cx={E.x} cy={E.y} r={ORB} fill="none" stroke="#64748b" strokeOpacity={0.5} strokeDasharray="2 6" />
+        <g transform={`rotate(${rot} ${E.x} ${E.y})`}>
+          <ellipse cx={E.x} cy={E.y} rx={bx} ry={by} fill="url(#mo-bulge)" />
+          <text x={E.x + bx + 6} y={E.y + 4} fontSize={10} fill="#bae6fd" fontWeight={700} transform={`rotate(${-rot} ${E.x + bx + 6} ${E.y})`}>
+            HW
+          </text>
+          <text x={E.x - bx - 6} y={E.y + 4} fontSize={10} fill="#bae6fd" fontWeight={700} textAnchor="end" transform={`rotate(${-rot} ${E.x - bx - 6} ${E.y})`}>
+            HW
+          </text>
+          <text x={E.x} y={E.y - by - 6} fontSize={9} fill="#94a3b8" textAnchor="middle" transform={`rotate(${-rot} ${E.x} ${E.y - by - 6})`}>
+            LW
+          </text>
+          <text x={E.x} y={E.y + by + 13} fontSize={9} fill="#94a3b8" textAnchor="middle" transform={`rotate(${-rot} ${E.x} ${E.y + by + 13})`}>
+            LW
+          </text>
+        </g>
+        <circle cx={E.x} cy={E.y} r={R} fill="url(#mo-ocean)" />
+        <g clipPath="url(#mo-earth)">
+          <g transform={`translate(${E.x} ${E.y}) rotate(${-day * 40})`}>
+            {LAND.map((d, i) => (
+              <path key={i} d={d} fill="#4d7c0f" stroke="#365314" strokeWidth={0.6} opacity={0.95} />
+            ))}
+            <circle cx={0} cy={0} r={7} fill="#f8fafc" opacity={0.9} />
+          </g>
+          <rect x={E.x - R} y={E.y - R} width={2 * R} height={2 * R} fill="url(#mo-night)" />
+        </g>
+        <circle cx={E.x} cy={E.y} r={R + 3} fill="url(#mo-atmo)" />
+        <text x={E.x} y={E.y + R + 34} textAnchor="middle" fontSize={11} fill="#bfdbfe" fontWeight={600}>
           {t('rya.lw.mo.earth')}
         </text>
-        <circle cx={moon.x} cy={moon.y} r={10} fill="#e2e8f0" />
-        <text x={moon.x} y={moon.y - 15} textAnchor="middle" fontSize={10} fill="#e2e8f0">
+        <line x1={E.x} y1={E.y} x2={moon.x} y2={moon.y} stroke="#e2e8f0" strokeOpacity={0.15} strokeDasharray="3 4" />
+        <circle cx={moon.x} cy={moon.y} r={11} fill="#273449" />
+        <path d={`M ${moon.x} ${moon.y - 11} A 11 11 0 0 0 ${moon.x} ${moon.y + 11} Z`} fill="#e2e8f0" />
+        <circle cx={moon.x} cy={moon.y} r={11} fill="none" stroke="#94a3b8" strokeOpacity={0.5} />
+        <text x={moon.x} y={moon.y - 17} textAnchor="middle" fontSize={11} fill="#e2e8f0" fontWeight={600}>
           {t('rya.lw.mo.moon')}
         </text>
-        <rect x={415} y={20} width={170} height={225} rx={8} fill="#ffffff" opacity={0.95} />
-        <text x={500} y={42} textAnchor="middle" fontSize={13} fontWeight={700} fill={kind === 'springs' ? '#b91c1c' : kind === 'neaps' ? '#1d4ed8' : '#0f172a'}>
+        <rect x={470} y={12} width={238} height={150} rx={10} fill="#0f172a" fillOpacity={0.75} stroke="#334155" />
+        <text x={589} y={32} textAnchor="middle" fontSize={11} fill="#cbd5e1" fontWeight={600}>
+          {t('rya.lw.mo.view')}
+        </text>
+        <MoonFace cx={589} cy={88} r={40} age={age} id="big" />
+        <text x={589} y={145} textAnchor="middle" fontSize={13} fill="#f8fafc" fontWeight={700}>
+          {t(`rya.lw.mo.ph.${MOON_PHASES[pi]}`)} · {t('rya.lw.mo.lit', { p: lit })}
+        </text>
+        <rect x={470} y={170} width={238} height={148} rx={10} fill="#ffffff" fillOpacity={0.96} />
+        <text x={589} y={192} textAnchor="middle" fontSize={14} fontWeight={700} fill={kindColor}>
           {t(`rya.lw.mo.${kind}`)}
         </text>
-        <text x={500} y={60} textAnchor="middle" fontSize={10} fill="#475569">
-          {t(`rya.lw.mo.ph.${phase}`)}
-        </text>
-        <text x={500} y={80} textAnchor="middle" fontSize={11} fill="#0f172a">
+        <text x={589} y={210} textAnchor="middle" fontSize={11} fill="#0f172a">
           {t('rya.lw.mo.range', { r: n1(range) })}
         </text>
-        <line x1={430} y1={205 - (2.6 + 2.1) * 22} x2={580} y2={205 - (2.6 + 2.1) * 22} stroke="#94a3b8" strokeDasharray="2 3" />
-        <line x1={430} y1={205 - (2.6 - 2.1) * 22} x2={580} y2={205 - (2.6 - 2.1) * 22} stroke="#94a3b8" strokeDasharray="2 3" />
-        <path d={curve} fill="none" stroke="#0284c7" strokeWidth={2} />
-        <text x={500} y={236} textAnchor="middle" fontSize={9} fill="#64748b">
+        <line x1={490} y1={300 - 4.7 * 15} x2={690} y2={300 - 4.7 * 15} stroke="#cbd5e1" strokeDasharray="2 3" />
+        <line x1={490} y1={300 - 0.5 * 15} x2={690} y2={300 - 0.5 * 15} stroke="#cbd5e1" strokeDasharray="2 3" />
+        <path d={curve} fill="none" stroke={kindColor} strokeWidth={2.2} />
+        <text x={589} y={313} textAnchor="middle" fontSize={9} fill="#64748b">
           {t('rya.lw.mo.day24')}
         </text>
       </svg>
+      <div className="mt-3">
+        <div className="mb-1 text-xs font-semibold text-slate-600 dark:text-slate-300">{t('rya.lw.mo.phases')}</div>
+        <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-8">
+          {MOON_PHASES.map((p, i) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => {
+                setPlaying(false)
+                setDay((i * MONTH) / 8)
+              }}
+              className={`flex flex-col items-center rounded-lg px-1 py-1.5 text-[10px] leading-tight transition ${i === pi ? 'bg-navy-900 text-white ring-2 ring-amber-400 dark:bg-sea-500' : 'bg-[#0f172a] text-slate-300 hover:bg-[#1e293b]'}`}
+            >
+              <svg viewBox="0 0 30 30" className="h-8 w-8">
+                <MoonFace cx={15} cy={15} r={12} age={(i * Math.PI) / 4} id={`p${i}`} />
+              </svg>
+              <span className="mt-1 text-center">{t(`rya.lw.mo.ph.${p}`)}</span>
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="mt-3 grid items-end gap-3 sm:grid-cols-[1fr_auto]">
         <Slider label={t('rya.lw.mo.dayOf')} value={day} min={0} max={29.5} step={0.5} onChange={(v) => (setPlaying(false), setDay(v))} unit="" />
         <button type="button" className="btn-primary !px-3 !py-1 text-xs" onClick={() => setPlaying((p) => !p)}>

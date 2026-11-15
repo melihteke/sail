@@ -535,8 +535,30 @@ export const lessonsTr: LessonSet = {
           },
           { widget: 'diamond' },
           { ex: { title: 'Saat 10:00’da akıntı ne?', lines: ['Bugün HW 13:00 → 10:00 = **HW −3**.', 'Tablo: yön 045°, sizigi 2,4 kn, kuadratür 1,2 kn.', 'Bugünkü fark 3,1 m: ortalama sizigi farkı 4,2 m ile kuadratür farkı 2,0 m’nin tam ortası → hız ≈ (2,4 + 1,2) ÷ 2 = **1,8 kn**.', 'Sonuç: su **045° yönüne 1,8 kn** ile akıyor.'] } },
-          { ex: { title: 'Yandan akıntı: düzeltmezsen ne olur?', lines: ['Teknen 5 kn, akıntı tam yandan 2 kn.', 'Hiç düzeltmezsen her saat **2 NM yana** sürüklenirsin – 3 saatte 6 NM!', 'Çizgide kalmak için pruvayı akıntıya doğru ≈ **24°** çevir (akıntı animasyonunda “Yandan” seç).', 'Yere göre hızın biraz düşer: ≈ **4,6 kn**.'] } },
-          { tip: '**60 kuralı**: düzeltme açısı ≈ akıntı ÷ tekne hızı × 60. Örnek: 2 ÷ 5 × 60 = **24°**. Kafadan hesap için yeterince iyi.' },
+          { ex: { title: 'Yandan akıntı: düzeltmezsen ne olur?', lines: ['Teknen 5 kn, akıntı tam yandan 2 kn.', 'Hiç düzeltmezsen her saat **2 NM yana** sürüklenirsin – 3 saatte 6 NM!', 'Çizgide kalmak için pruvayı akıntıya doğru ≈ **24°** çevir. Akıntı animasyonunda “Yandan”ı seç ve açı sürgüsüyle kendin dene: 0°’de aşağı sürüklenirsin, 24°’de tam çizgidesin, 40°’de fazla düzeltip yukarı çıkarsın.', 'Yere göre hızın biraz düşer: ≈ **4,6 kn**.'] } },
+          { p: '**Kaç derece vermeliyim? – hesaplama.** Fikir basit: tekne, akıntının seni yana ittiği hızı **tam karşılayacak** kadar akıntıya doğru dönmeli. Yani teknenin hızının “yana giden” parçası akıntıya eşit olmalı. Üç yol var – kolaydan zora:' },
+          {
+            steps: [
+              '**60 kuralı (kafadan):** açı ≈ akıntı ÷ tekne hızı × 60. Örnek: 2 kn akıntı, 5 kn tekne → 2 ÷ 5 = 0,4 → 0,4 × 60 = **24°**.',
+              '**Tam formül (hesap makinesiyle):** sin(açı) = akıntı ÷ tekne hızı → açı = arcsin(0,4) = **23,6°**. Yere göre hız = tekne hızı × cos(açı) = 5 × 0,92 ≈ **4,6 kn**.',
+              '**Haritada vektör üçgeni (Day Skipper yöntemi):** başlangıç noktasından 1 saatlik akıntıyı çiz (2 kn → 2 NM, akıntı yönünde). Bu okun ucundan pergeli tekne hızına (5 NM) aç ve gitmek istediğin çizgiyi kestiği yeri işaretle. Okun ucundan bu işarete giden çizginin yönü, **dümen tutacağın rotadır**.',
+              'Akıntı her saat değiştiği için hesabı **her saat** (ya da gelgit elmasının değeri değiştiğinde) yeniden yap.',
+            ],
+          },
+          {
+            table: {
+              head: ['Akıntı ÷ tekne hızı', '60 kuralı', 'Tam açı'],
+              rows: [
+                ['0,1 (örn. 0,5 ÷ 5)', '6°', '6°'],
+                ['0,2 (1 ÷ 5)', '12°', '12°'],
+                ['0,3 (1,5 ÷ 5)', '18°', '17°'],
+                ['0,4 (2 ÷ 5)', '24°', '24°'],
+                ['0,5 (2,5 ÷ 5)', '30°', '30°'],
+                ['0,6 (3 ÷ 5)', '36°', '37°'],
+              ],
+            },
+          },
+          { tip: '60 kuralı gündelik seyir için yeterince iyi. Akıntı tekne hızının yarısını geçerse yere göre hızın çok düşer – böyle durumlarda seyri akıntının zayıf olduğu saatlere kaydırmayı düşün.' },
         ],
       },
       {

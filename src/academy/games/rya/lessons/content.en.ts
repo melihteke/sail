@@ -535,8 +535,30 @@ export const lessonsEn: LessonSet = {
           },
           { widget: 'diamond' },
           { ex: { title: 'What is the stream at 10:00?', lines: ['HW today 13:00 → 10:00 = **HW −3**.', 'Table: set 045°, springs 2.4 kn, neaps 1.2 kn.', 'Today’s range is 3.1 m: exactly halfway between the mean spring range of 4.2 m and the mean neap range of 2.0 m → rate ≈ (2.4 + 1.2) ÷ 2 = **1.8 kn**.', 'Result: the water is flowing **towards 045° at 1.8 kn**.'] } },
-          { ex: { title: 'Cross stream: what if you do not correct?', lines: ['Your boat does 5 kn, the stream is 2 kn straight across.', 'Without correction you drift **2 NM sideways** every hour – 6 NM in 3 hours!', 'To stay on your line, point ≈ **24°** up into the stream (choose “Across” in the stream animation).', 'Your speed over the ground drops a little: ≈ **4.6 kn**.'] } },
-          { tip: '**Rule of 60**: correction angle ≈ stream ÷ boat speed × 60. Example: 2 ÷ 5 × 60 = **24°**. Good enough for mental arithmetic.' },
+          { ex: { title: 'Cross stream: what if you do not correct?', lines: ['Your boat does 5 kn, the stream is 2 kn straight across.', 'Without correction you drift **2 NM sideways** every hour – 6 NM in 3 hours!', 'To stay on your line, point ≈ **24°** up into the stream. Choose “Across” in the stream animation and try it with the angle slider: at 0° you are pushed down, at 24° you are right on the line, at 40° you over-correct and climb above it.', 'Your speed over the ground drops a little: ≈ **4.6 kn**.'] } },
+          { p: '**How many degrees? – the calculation.** The idea is simple: the boat has to turn into the stream just enough to **cancel** the speed at which the stream pushes you sideways. In other words, the “sideways part” of the boat’s speed must equal the stream. There are three ways – from easy to thorough:' },
+          {
+            steps: [
+              '**Rule of 60 (in your head):** angle ≈ stream ÷ boat speed × 60. Example: 2 kn stream, 5 kn boat → 2 ÷ 5 = 0.4 → 0.4 × 60 = **24°**.',
+              '**Exact formula (with a calculator):** sin(angle) = stream ÷ boat speed → angle = arcsin(0.4) = **23.6°**. Speed over the ground = boat speed × cos(angle) = 5 × 0.92 ≈ **4.6 kn**.',
+              '**Vector triangle on the chart (the Day Skipper method):** from your start point draw one hour of stream (2 kn → 2 NM in the direction of the set). From the end of that arrow, open the dividers to your boat speed (5 NM) and mark where they cut the line you want to follow. The direction from the end of the stream arrow to that mark is **the course to steer**.',
+              'The stream changes every hour, so redo the calculation **every hour** (or whenever the tidal diamond value changes).',
+            ],
+          },
+          {
+            table: {
+              head: ['Stream ÷ boat speed', 'Rule of 60', 'Exact angle'],
+              rows: [
+                ['0.1 (e.g. 0.5 ÷ 5)', '6°', '6°'],
+                ['0.2 (1 ÷ 5)', '12°', '12°'],
+                ['0.3 (1.5 ÷ 5)', '18°', '17°'],
+                ['0.4 (2 ÷ 5)', '24°', '24°'],
+                ['0.5 (2.5 ÷ 5)', '30°', '30°'],
+                ['0.6 (3 ÷ 5)', '36°', '37°'],
+              ],
+            },
+          },
+          { tip: 'The rule of 60 is good enough for everyday sailing. If the stream is more than half your boat speed, your speed over the ground drops a lot – then consider moving the passage to a time when the stream is weaker.' },
         ],
       },
       {

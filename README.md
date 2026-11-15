@@ -156,6 +156,7 @@ Pushing to `main` runs the tests and deploys. The admin panel's **Deploy site** 
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.7 | 2026-11-15 | Melih Teke | Tides lesson: redrawn Moon/Earth animation with Moon-phase view and phase strip; adjustable cross-stream correction angle with the calculation (rule of 60, arcsin, vector triangle). |
 | 1.6 | 2026-11-15 | Melih Teke | Tides & anchoring: kinds of current, Moon/springs-neaps animation, interactive tidal stream atlas and tidal diamond, scope table, guided tasks in the anchored-through-the-tide widget, step-by-step Anchor Bay guide. |
 | 1.5 | 2026-11-15 | Melih Teke | Tides lesson: richer tidal streams, tidal gates and tide & anchoring sections with animated stream, gate-planner and anchored-through-the-tide widgets. |
 | 1.4 | 2026-11-15 | Melih Teke | Added the 3D Rig Explorer (pull/ease every sail control line, see what moves) with a "Which line?" challenge, in Competent Crew and the sails lesson. |

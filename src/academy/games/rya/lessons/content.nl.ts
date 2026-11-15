@@ -535,8 +535,30 @@ export const lessonsNl: LessonSet = {
           },
           { widget: 'diamond' },
           { ex: { title: 'Wat is de stroom om 10:00?', lines: ['HW vandaag 13:00 → 10:00 = **HW −3**.', 'Tabel: richting 045°, springtij 2,4 kn, doodtij 1,2 kn.', 'Het verval van vandaag is 3,1 m: precies tussen het gemiddelde springverval van 4,2 m en het doodverval van 2,0 m → snelheid ≈ (2,4 + 1,2) ÷ 2 = **1,8 kn**.', 'Resultaat: het water stroomt **naar 045° met 1,8 kn**.'] } },
-          { ex: { title: 'Dwarsstroom: wat als je niet corrigeert?', lines: ['Je boot loopt 5 kn, de stroom is 2 kn recht dwars.', 'Zonder correctie drijf je elk uur **2 NM opzij** – 6 NM in 3 uur!', 'Om op je lijn te blijven stuur je ≈ **24°** de stroom in (kies “Dwars” in de stroomanimatie).', 'Je snelheid over de grond daalt iets: ≈ **4,6 kn**.'] } },
-          { tip: '**Zestigregel**: correctiehoek ≈ stroom ÷ bootsnelheid × 60. Voorbeeld: 2 ÷ 5 × 60 = **24°**. Goed genoeg voor hoofdrekenen.' },
+          { ex: { title: 'Dwarsstroom: wat als je niet corrigeert?', lines: ['Je boot loopt 5 kn, de stroom is 2 kn recht dwars.', 'Zonder correctie drijf je elk uur **2 NM opzij** – 6 NM in 3 uur!', 'Om op je lijn te blijven stuur je ≈ **24°** de stroom in. Kies “Dwars” in de stroomanimatie en probeer het met het hoekschuifje: bij 0° word je omlaag gezet, bij 24° zit je precies op de lijn, bij 40° corrigeer je te veel en klim je erboven.', 'Je snelheid over de grond daalt iets: ≈ **4,6 kn**.'] } },
+          { p: '**Hoeveel graden? – de berekening.** Het idee is eenvoudig: de boot moet net zoveel de stroom in sturen dat hij de snelheid waarmee de stroom je opzij duwt **precies opheft**. Het “zijwaartse deel” van de bootsnelheid moet dus gelijk zijn aan de stroom. Er zijn drie manieren – van makkelijk naar grondig:' },
+          {
+            steps: [
+              '**Zestigregel (uit het hoofd):** hoek ≈ stroom ÷ bootsnelheid × 60. Voorbeeld: 2 kn stroom, 5 kn boot → 2 ÷ 5 = 0,4 → 0,4 × 60 = **24°**.',
+              '**Exacte formule (met rekenmachine):** sin(hoek) = stroom ÷ bootsnelheid → hoek = arcsin(0,4) = **23,6°**. Snelheid over de grond = bootsnelheid × cos(hoek) = 5 × 0,92 ≈ **4,6 kn**.',
+              '**Vectordriehoek op de kaart (de Day Skipper-methode):** teken vanaf je startpunt één uur stroom (2 kn → 2 NM in de stroomrichting). Zet vanaf het eind van die pijl de passer op je bootsnelheid (5 NM) en markeer waar hij de lijn snijdt die je wilt volgen. De richting van het eind van de stroompijl naar die markering is **de te sturen koers**.',
+              'De stroom verandert elk uur, dus reken **elk uur** opnieuw (of zodra de waarde van de getijdiamant verandert).',
+            ],
+          },
+          {
+            table: {
+              head: ['Stroom ÷ bootsnelheid', 'Zestigregel', 'Exacte hoek'],
+              rows: [
+                ['0,1 (bijv. 0,5 ÷ 5)', '6°', '6°'],
+                ['0,2 (1 ÷ 5)', '12°', '12°'],
+                ['0,3 (1,5 ÷ 5)', '18°', '17°'],
+                ['0,4 (2 ÷ 5)', '24°', '24°'],
+                ['0,5 (2,5 ÷ 5)', '30°', '30°'],
+                ['0,6 (3 ÷ 5)', '36°', '37°'],
+              ],
+            },
+          },
+          { tip: 'De zestigregel is goed genoeg voor gewoon zeilen. Is de stroom meer dan de helft van je bootsnelheid, dan daalt je snelheid over de grond flink – overweeg dan de tocht te verschuiven naar een tijd met zwakkere stroom.' },
         ],
       },
       {

@@ -15,6 +15,7 @@ import { ASPECTS, LOOKOUT_LEVELS, TYPES } from './lookout/LookoutGame'
 import { checkClearing, decisionCorrect, simulatePassage } from './passage/passage'
 import { checkStep, emptyExperience, readyIndex, roadmap } from './roadmap'
 import { attempt, rigTasks } from './rig/rig'
+import { crossTrack, MOON_PHASES, phaseIndex } from './lessons/tideWidgets'
 import { judgeMove, MOVE_THRESHOLD, rigState, SAILING, STOWED, TASKS, taskStart } from './rig3d/rigModel'
 import { letFlyVerdict, turnAngle } from './tack/tack'
 import { CALL_CASES, CALL_TYPES, DISTRACTORS, MAYDAY_GROUPS, NATURES } from './vhf/VhfGame'
@@ -206,6 +207,23 @@ describe('Passage planning', () => {
     expect(decisionCorrect(25, 20, 'hold')).toBe(true)
     expect(decisionCorrect(15, 20, 'port')).toBe(true)
     expect(decisionCorrect(15, 20, 'hold')).toBe(false)
+  })
+})
+
+describe('Tide lesson widgets', () => {
+  it('holds a cross-stream line only with the arcsin correction', () => {
+    const need = (Math.asin(2 / 5) * 180) / Math.PI
+    expect(Math.abs(crossTrack(5, 2, need).trackDeg)).toBeLessThan(0.01)
+    expect(crossTrack(5, 2, 0).trackDeg).toBeGreaterThan(20)
+    expect(crossTrack(5, 2, 40).trackDeg).toBeLessThan(0)
+  })
+
+  it('names the Moon phases at the right days', () => {
+    expect(MOON_PHASES[phaseIndex(0)]).toBe('new')
+    expect(MOON_PHASES[phaseIndex(7.4)]).toBe('first')
+    expect(MOON_PHASES[phaseIndex(14.8)]).toBe('full')
+    expect(MOON_PHASES[phaseIndex(22.1)]).toBe('last')
+    expect(MOON_PHASES[phaseIndex(29.4)]).toBe('new')
   })
 })
 
