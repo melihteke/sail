@@ -102,20 +102,81 @@ function Roadmap({ t, selected, onSelect, here }: { t: Translate; selected: Step
     { from: 6, to: 6, key: 'rya.theory.oceanTheory', row: 1 },
   ]
   return (
-    <svg viewBox="0 0 1000 320" className="block min-w-[760px]" role="img" aria-label={t('rya.road.title')}>
-      <path d={path} fill="none" stroke="#1e9bd7" strokeWidth="4" strokeDasharray="10 8" opacity="0.6" />
-      <path d={path} fill="none" stroke="#0b3a5c" strokeWidth="4" strokeDasharray="1000" strokeDashoffset={1000 - (here / 6) * 1000} opacity="0.85" pathLength={1000} />
+    <svg viewBox="0 0 1000 320" className="rya-roadmap block min-w-[760px]" role="img" aria-label={t('rya.road.title')}>
+      <defs>
+        <radialGradient id="rm-sun" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#fde68a" />
+          <stop offset="60%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#fbbf24" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="rm-sea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#7cc4e4" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="#1e9bd7" stopOpacity="0.15" />
+        </linearGradient>
+        <path id="rm-wave" d={`M-120 0${' q10 -5 20 0 q10 5 20 0'.repeat(32)}`} />
+      </defs>
+
+      {/* sky */}
+      <g className="rm-sun dark:opacity-30">
+        <circle cx="52" cy="40" r="34" fill="url(#rm-sun)" className="rm-glow" />
+        <circle cx="52" cy="40" r="13" fill="#fcd34d" />
+      </g>
+      {[0, 1].map((c) => (
+        <g key={c} className={`rm-cloud rm-cloud-${c} opacity-80 dark:opacity-15`}>
+          <g transform={`translate(0 ${c ? 34 : 22}) scale(${c ? 0.7 : 1})`}>
+            <ellipse cx="0" cy="0" rx="30" ry="11" fill="#fff" />
+            <ellipse cx="16" cy="-7" rx="18" ry="11" fill="#fff" />
+            <ellipse cx="-14" cy="-4" rx="14" ry="8" fill="#fff" />
+          </g>
+        </g>
+      ))}
+      {[0, 1].map((g) => (
+        <g key={g} className={`rm-gull rm-gull-${g}`}>
+          <g transform={`translate(0 ${g ? 26 : 14})`}>
+            <path className="rm-wing" d="M-8 0 Q-4 -5 0 0 Q4 -5 8 0" fill="none" stroke="#334155" strokeWidth="1.5" strokeLinecap="round" />
+          </g>
+        </g>
+      ))}
+
+      {/* sea */}
+      <rect x="0" y="198" width="1000" height="30" fill="url(#rm-sea)" />
+      <g className="rm-waves-a" opacity="0.5">
+        <use href="#rm-wave" y="204" fill="none" stroke="#1e9bd7" strokeWidth="1.5" />
+      </g>
+      <g className="rm-waves-b" opacity="0.35">
+        <use href="#rm-wave" y="216" fill="none" stroke="#0b3a5c" strokeWidth="1.2" />
+      </g>
+
+      {/* route: still to go (flowing dashes) and already reached */}
+      <path d={path} fill="none" stroke="#1e9bd7" strokeWidth="4" strokeDasharray="10 8" opacity="0.6" className="rm-flow" />
+      <path
+        d={path}
+        fill="none"
+        stroke="#0b3a5c"
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeDasharray="1000"
+        strokeDashoffset={1000 - (here / 6) * 1000}
+        opacity="0.85"
+        pathLength={1000}
+        style={{ transition: 'stroke-dashoffset 1.2s ease-in-out' }}
+      />
       {roadmap.map((s, i) => {
         const x = NODE_X[i]
         const y = NODE_Y[i]
         const active = s.id === selected
         const available = !!s.path
+        const fill = available ? '#1e9bd7' : s.kind === 'exam' ? '#f59e0b' : '#94a3b8'
         return (
-          <g key={s.id} onClick={() => onSelect(s.id)} className="cursor-pointer" role="button" aria-label={t(stepKey(s.id, 'name'))}>
-            <circle cx={x} cy={y} r={active ? 24 : 20} fill={available ? '#1e9bd7' : s.kind === 'exam' ? '#f59e0b' : '#94a3b8'} stroke={active ? '#0b3a5c' : '#fff'} strokeWidth={active ? 4 : 3} />
-            <text x={x} y={y + 5} textAnchor="middle" fontSize="14" fontWeight="700" fill="#fff">
-              {i + 1}
-            </text>
+          <g key={s.id} onClick={() => onSelect(s.id)} className="rm-node cursor-pointer" role="button" aria-label={t(stepKey(s.id, 'name'))}>
+            {available && <circle cx={x} cy={y} r={22} fill="none" stroke={fill} strokeWidth="2" className="rm-pulse" style={{ animationDelay: `${i * 0.6}s` }} />}
+            {active && <circle cx={x} cy={y} r={31} fill="none" stroke="#0b3a5c" strokeWidth="1.5" strokeDasharray="4 5" className="rm-spin dark:stroke-sky-200" />}
+            <g className="rm-dot">
+              <circle cx={x} cy={y} r={active ? 24 : 20} fill={fill} stroke={active ? '#0b3a5c' : '#fff'} strokeWidth={active ? 4 : 3} />
+              <text x={x} y={y + 5} textAnchor="middle" fontSize="14" fontWeight="700" fill="#fff">
+                {i + 1}
+              </text>
+            </g>
             <text x={x} y={y - 34} textAnchor="middle" fontSize="13" fontWeight={active ? 700 : 600} className="fill-navy-900 dark:fill-white">
               {t(stepKey(s.id, 'short'))}
             </text>
@@ -125,10 +186,18 @@ function Roadmap({ t, selected, onSelect, here }: { t: Translate; selected: Step
           </g>
         )
       })}
-      <g transform={`translate(${NODE_X[here]} ${NODE_Y[here] - 62})`}>
-        <path d="M0 -14 L0 10 M0 -14 L12 6 L0 6 Z" stroke="#0b3a5c" strokeWidth="2" fill="#fff" />
-        <path d="M-12 10 L12 10 L8 16 L-8 16 Z" fill="#0b3a5c" />
+
+      {/* the boat sails to the step your experience reaches */}
+      <g style={{ transform: `translate(${NODE_X[here]}px, ${NODE_Y[here] - 62}px)`, transition: 'transform 1.2s ease-in-out' }}>
+        <g className="rm-bob">
+          <path d="M0 -15 L0 9 M0 -15 L13 6 L0 6 Z" stroke="#0b3a5c" strokeWidth="2" fill="#fff" strokeLinejoin="round" />
+          <path d="M0 -13 L-9 6 L0 6 Z" fill="#e3f3fb" stroke="#0b3a5c" strokeWidth="1.2" />
+          <path d="M0 -15 L5 -13 L0 -11" fill="#dc2626" />
+          <path d="M-14 9 L14 9 L9 16 L-9 16 Z" fill="#0b3a5c" />
+        </g>
+        <path d="M-20 19 q5 -3 10 0 t10 0 t10 0 t10 0" fill="none" stroke="#1e9bd7" strokeWidth="1.5" className="rm-wake" />
       </g>
+
       <line x1="40" x2="965" y1="240" y2="240" stroke="#94a3b8" strokeDasharray="3 5" />
       <text x="40" y="232" fontSize="11" className="fill-slate-500 dark:fill-slate-300">
         {t('rya.theory.track')}

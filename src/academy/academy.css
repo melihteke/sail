@@ -42,3 +42,143 @@
   }
 }
 
+
+/* RYA roadmap: slow, calm ambient motion. */
+.rya-roadmap .rm-cloud {
+  animation: rm-drift 110s linear infinite;
+}
+.rya-roadmap .rm-cloud-1 {
+  animation-duration: 150s;
+  animation-delay: -70s;
+}
+.rya-roadmap .rm-gull {
+  animation: rm-drift 70s linear infinite;
+  animation-delay: -20s;
+}
+.rya-roadmap .rm-gull-1 {
+  animation-duration: 90s;
+  animation-delay: -55s;
+}
+.rya-roadmap .rm-wing {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rm-flap 1.6s ease-in-out infinite;
+}
+.rya-roadmap .rm-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rm-glow 6s ease-in-out infinite;
+}
+.rya-roadmap .rm-waves-a {
+  animation: rm-wave 7s linear infinite;
+}
+.rya-roadmap .rm-waves-b {
+  animation: rm-wave 11s linear infinite reverse;
+}
+.rya-roadmap .rm-flow {
+  animation: rm-dash 3s linear infinite;
+}
+.rya-roadmap .rm-bob {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: rm-bob 3.4s ease-in-out infinite;
+}
+.rya-roadmap .rm-wake {
+  animation: rm-wake 3.4s ease-in-out infinite;
+}
+.rya-roadmap .rm-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rm-pulse 3.2s ease-out infinite;
+}
+.rya-roadmap .rm-spin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: rc-spin 18s linear infinite;
+}
+.rya-roadmap .rm-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.2s ease;
+}
+.rya-roadmap .rm-node:hover .rm-dot {
+  transform: scale(1.12);
+}
+
+@keyframes rm-drift {
+  from {
+    transform: translateX(-160px);
+  }
+  to {
+    transform: translateX(1160px);
+  }
+}
+@keyframes rm-flap {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(-0.4);
+  }
+}
+@keyframes rm-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.06);
+  }
+}
+@keyframes rm-wave {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(40px);
+  }
+}
+@keyframes rm-dash {
+  to {
+    stroke-dashoffset: -36;
+  }
+}
+@keyframes rm-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-3px) rotate(3deg);
+  }
+}
+@keyframes rm-wake {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+@keyframes rm-pulse {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  80%,
+  100% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rya-roadmap * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

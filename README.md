@@ -152,5 +152,6 @@ Pushing to `main` runs the tests and deploys. The admin panel's **Deploy site** 
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.3 | 2026-11-15 | Melih Teke | Animated RYA roadmap scene (sun, clouds, gulls, waves, sailing boat) with reduced-motion support. |
 | 1.2 | 2026-11-15 | Melih Teke | Added RYA topic lessons with worked examples, calculators and quick checks. |
 | 1.1 | 2026-11-15 | Melih Teke | Added the RYA courses section (syllabus roadmap, Competent Crew and Day Skipper games). |
