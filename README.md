@@ -43,11 +43,15 @@ media and handles the Google login of the admin panel.
     `public/academy/sextant`). Sun almanac values are computed in `src/academy/games/sextant/almanac.ts`.
   - **RYA courses** (`#/rya`): a syllabus page with a clickable roadmap from Start Yachting to Yachtmaster Ocean
     (prerequisites, what you can do afterwards, an "Am I ready?" sea-time calculator), plus game-based training for
-    **Competent Crew** (`#/rya/competent-crew`) and **Day Skipper** (`#/rya/day-skipper`). Each course has six
+    **Competent Crew** (`#/rya/competent-crew`) and **Day Skipper** (`#/rya/day-skipper`). Each course has six or seven
     games, a briefing, a quiz and an "I can…" checklist (stars and progress live in `localStorage`). The harbour
     handling and lines & fenders games share a small yacht physics model (`src/academy/core/yacht.ts`: prop walk,
     windage, stream, mooring lines and fendered contact). Source in `src/academy/games/rya`, texts in
     `src/academy/i18n/rya`. Coastal Skipper and the Yachtmaster levels are on the roadmap as "coming soon".
+  - **3D Rig Explorer** (`#/rya/competent-crew/rig3d`): a three.js yacht (loaded on demand) where you pull or ease the
+    halyard, mainsheet, traveller, kicker, topping lift, outhaul, reefing pennant, furling line and both jib sheets, with
+    clickable line names, camera presets and the moving parts highlighted, plus a "Which line?" challenge. The same
+    explorer is embedded in the sails lesson. Model in `src/academy/games/rya/rig3d/rigModel.ts`, scene in `scene.ts`.
   - **RYA topic lessons** (`#/rya/learn`): nine step-by-step lessons (sails, knots & lines, handling under power, tides,
     anchoring, collision rules, lights, passage planning & pilotage, distress & emergencies) with worked examples,
     calculators (rule of twelfths, scope, points of sail, lights viewer), a quick check and links to the games they
@@ -152,6 +156,7 @@ Pushing to `main` runs the tests and deploys. The admin panel's **Deploy site** 
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.4 | 2026-11-15 | Melih Teke | Added the 3D Rig Explorer (pull/ease every sail control line, see what moves) with a "Which line?" challenge, in Competent Crew and the sails lesson. |
 | 1.3 | 2026-11-15 | Melih Teke | Animated RYA roadmap scene (sun, clouds, gulls, waves, sailing boat) with reduced-motion support. |
 | 1.2 | 2026-11-15 | Melih Teke | Added RYA topic lessons with worked examples, calculators and quick checks. |
 | 1.1 | 2026-11-15 | Melih Teke | Added the RYA courses section (syllabus roadmap, Competent Crew and Day Skipper games). |

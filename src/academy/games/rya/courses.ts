@@ -44,6 +44,7 @@ export const courses: Record<CourseId, Course> = {
   'competent-crew': {
     id: 'competent-crew',
     games: [
+      { id: 'rig3d', icon: '🎛️', levels: ['challenge'] },
       { id: 'rig', icon: '⛵', levels: ['hoist-main', 'unfurl-jib', 'reef', 'drop-main', 'furl-jib'] },
       { id: 'tack', icon: '🔄', levels: ['tack', 'gybe'] },
       { id: 'knots', icon: '🪢', levels: ['jobs', 'cleat'] },
@@ -52,7 +53,7 @@ export const courses: Record<CourseId, Course> = {
       { id: 'vhf', icon: '📻', levels: ['dsc', 'mayday', 'which'] },
     ],
     briefing: [
-      { id: 'parts', game: 'rig' },
+      { id: 'parts', game: 'rig3d' },
       { id: 'ropes', game: 'knots' },
       { id: 'hoist', game: 'rig' },
       { id: 'reef', game: 'rig' },

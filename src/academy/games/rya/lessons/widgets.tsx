@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useMemo, useState, type ReactNode } from 'react'
 import { pointOfSail } from '../../../core/environment'
 import { norm180 } from '../../../core/units'
 import type { MessageKey } from '../../../i18n/en'
@@ -8,6 +8,8 @@ import { lightScreenOffset, visibleLights, type VesselType } from '../collision/
 import { TYPES } from '../lookout/LookoutGame'
 import { DirArrow } from '../ui'
 import { swingRadius, tideWindow, TWELFTHS, twelfthsHeight, type WidgetId } from './lessons'
+
+const Rig3DExplorer = lazy(() => import('../rig3d/Rig3D'))
 
 const fmt = (min: number) => `${String(Math.floor((((min % 1440) + 1440) % 1440) / 60)).padStart(2, '0')}:${String(Math.round(((min % 60) + 60) % 60)).padStart(2, '0')}`
 const n1 = (v: number) => v.toFixed(1)
@@ -40,6 +42,14 @@ function Num({ label, value, onChange, step = 0.1, min = 0, max = 100 }: { label
 
 export function LessonWidget({ id }: { id: WidgetId }) {
   const { t } = useI18n()
+  if (id === 'rig3d')
+    return (
+      <Frame title={t('rya.r3.widgetTitle')}>
+        <Suspense fallback={<p className="p-8 text-center text-sm text-slate-500">…</p>}>
+          <Rig3DExplorer />
+        </Suspense>
+      </Frame>
+    )
   if (id === 'twelfths') return <Twelfths t={t} />
   if (id === 'scope') return <Scope t={t} />
   if (id === 'points') return <Points t={t} />

@@ -7,7 +7,7 @@ import { lessonsTr } from './content.tr'
 export const LESSON_IDS = ['sails', 'ropes', 'power', 'tides', 'anchoring', 'colregs', 'lights', 'pilotage', 'safety'] as const
 export type LessonId = (typeof LESSON_IDS)[number]
 
-export type WidgetId = 'twelfths' | 'scope' | 'points' | 'lights'
+export type WidgetId = 'twelfths' | 'scope' | 'points' | 'lights' | 'rig3d'
 
 /** A content block. Text may contain **bold**. */
 export type Block =
@@ -45,7 +45,7 @@ export interface LessonMeta {
 }
 
 export const lessonMeta: LessonMeta[] = [
-  { id: 'sails', icon: '⛵', courses: ['competent-crew', 'day-skipper'], games: [{ course: 'competent-crew', game: 'rig' }, { course: 'competent-crew', game: 'tack' }, { course: 'day-skipper', game: 'buoy' }] },
+  { id: 'sails', icon: '⛵', courses: ['competent-crew', 'day-skipper'], games: [{ course: 'competent-crew', game: 'rig3d' }, { course: 'competent-crew', game: 'rig' }, { course: 'competent-crew', game: 'tack' }, { course: 'day-skipper', game: 'buoy' }] },
   { id: 'ropes', icon: '🪢', courses: ['competent-crew'], games: [{ course: 'competent-crew', game: 'knots' }, { course: 'competent-crew', game: 'lines' }] },
   { id: 'power', icon: '⚙️', courses: ['day-skipper'], games: [{ course: 'day-skipper', game: 'harbour' }] },
   { id: 'tides', icon: '🌊', courses: ['day-skipper'], games: [{ course: 'day-skipper', game: 'passage' }, { course: 'day-skipper', game: 'anchor' }] },

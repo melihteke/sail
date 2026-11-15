@@ -19,6 +19,8 @@ export const lessonsNl: LessonSet = {
             ],
           },
           { tip: 'Vuistregel: alles wat het zeil tegenhoudt (schoot, neerhouder) wordt **gevierd** voordat het zeil omhoog of omlaag gaat, en daarna weer **strakgezet**.' },
+          { widget: 'rig3d' },
+          { game: 'rig3d' },
         ],
       },
       {

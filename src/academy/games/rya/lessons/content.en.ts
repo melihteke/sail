@@ -19,6 +19,8 @@ export const lessonsEn: LessonSet = {
             ],
           },
           { tip: 'Rule of thumb: whatever stops the sail from moving freely (sheet, kicker) is **eased** before the sail goes up or down, and **tightened** again afterwards.' },
+          { widget: 'rig3d' },
+          { game: 'rig3d' },
         ],
       },
       {

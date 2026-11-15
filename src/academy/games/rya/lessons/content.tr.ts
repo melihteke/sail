@@ -19,6 +19,8 @@ export const lessonsTr: LessonSet = {
             ],
           },
           { tip: 'Pratik kural: yelkenin serbest hareketini engelleyen her şey (ıskota, kontra) yelken basılmadan ya da indirilmeden önce **laçka edilir**, sonra yeniden **gerilir**.' },
+          { widget: 'rig3d' },
+          { game: 'rig3d' },
         ],
       },
       {

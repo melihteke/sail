@@ -8,6 +8,7 @@ function load<K extends string>(factory: () => Promise<Record<K, ComponentType>>
 }
 
 const games: Record<string, LazyExoticComponent<ComponentType>> = {
+  rig3d: load(() => import('./rig3d/Rig3D'), 'Rig3DGame'),
   rig: load(() => import('./rig/RigGame'), 'RigGame'),
   tack: load(() => import('./tack/TackGame'), 'TackGame'),
   knots: load(() => import('./knots/KnotLab'), 'KnotLab'),

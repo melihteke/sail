@@ -15,6 +15,7 @@ import { ASPECTS, LOOKOUT_LEVELS, TYPES } from './lookout/LookoutGame'
 import { checkClearing, decisionCorrect, simulatePassage } from './passage/passage'
 import { checkStep, emptyExperience, readyIndex, roadmap } from './roadmap'
 import { attempt, rigTasks } from './rig/rig'
+import { judgeMove, MOVE_THRESHOLD, rigState, SAILING, STOWED, TASKS, taskStart } from './rig3d/rigModel'
 import { letFlyVerdict, turnAngle } from './tack/tack'
 import { CALL_CASES, CALL_TYPES, DISTRACTORS, MAYDAY_GROUPS, NATURES } from './vhf/VhfGame'
 
@@ -99,6 +100,49 @@ describe('Rig & Hoist sequences', () => {
     const hoist = rigTasks.find((x) => x.id === 'hoist-main')!
     expect(attempt(hoist, ['removeCover', 'removeTies', 'helmUp'], 'hoistHalyard')).toEqual({ ok: false, reason: 'early' })
     expect(attempt(hoist, ['removeCover', 'removeTies', 'helmUp', 'easeSheet', 'easeKicker'], 'hoistHalyard').ok).toBe(true)
+  })
+})
+
+describe('3D rig model', () => {
+  it('eased mainsheet lets the boom out to the wind and the main luffs; sheeting in fills it', () => {
+    const eased = rigState({ ...SAILING, mainsheet: 0 }, 60)
+    expect(eased.boomAngle).toBeCloseTo(60)
+    expect(eased.warnings).toContain('mainLuff')
+    const trimmed = rigState({ ...SAILING, mainsheet: 0.6 }, 60)
+    expect(trimmed.boomAngle).toBeLessThan(45)
+    expect(trimmed.warnings).not.toContain('mainLuff')
+  })
+
+  it('a loose kicker lets the boom lift', () => {
+    const base = { ...SAILING, mainsheet: 0.3 }
+    expect(rigState({ ...base, kicker: 0 }, 90).boomPitch).toBeGreaterThan(rigState({ ...base, kicker: 1 }, 90).boomPitch + 3)
+  })
+
+  it('with the main down the boom drops unless the topping lift holds it', () => {
+    expect(rigState({ ...STOWED, topping: 0 }, 50).warnings).toContain('boomDown')
+    expect(rigState(STOWED, 50).warnings).not.toContain('boomDown')
+  })
+
+  it('furling line rolls the jib away; the windward sheet backs it', () => {
+    expect(rigState({ ...SAILING, furling: 1 }, 50).jibUp).toBe(false)
+    const backed = rigState({ ...SAILING, jibLee: 0, jibWind: 1 }, 50)
+    expect(backed.jibAngle).toBeLessThan(0)
+    expect(backed.warnings).toContain('backed')
+  })
+
+  it('every challenge task can be done from its start position', () => {
+    for (const task of TASKS) {
+      const v = taskStart(task)[task.control] + task.dir * MOVE_THRESHOLD
+      expect(v >= 0 && v <= 1, task.id).toBe(true)
+    }
+  })
+
+  it('judges the line that moved most', () => {
+    const task = TASKS.find((x) => x.id === 'furlJib')!
+    const base = taskStart(task)
+    expect(judgeMove(task, base, { ...base, furling: base.furling + 0.05 })).toBeNull()
+    expect(judgeMove(task, base, { ...base, furling: base.furling + 0.3 })?.ok).toBe(true)
+    expect(judgeMove(task, base, { ...base, jibLee: base.jibLee - 0.3 })).toEqual({ control: 'jibLee', dir: -1, ok: false })
   })
 })
 
