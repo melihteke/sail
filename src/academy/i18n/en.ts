@@ -1,6 +1,7 @@
 import { raceEn } from './race/en'
 import { colregEn } from './colreg/en'
 import { celestialEn } from './celestial/en'
+import { ryaEn } from './rya/en'
 export const en = {
   'app.name': 'Sailing Academy',
   'app.tagline': 'Learn to think like a skipper, one module at a time.',
@@ -824,6 +825,7 @@ export const en = {
   ...celestialEn,
   ...colregEn,
   ...raceEn,
+  ...ryaEn,
 }
 
 export type MessageKey = keyof typeof en

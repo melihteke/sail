@@ -1,6 +1,7 @@
 import { raceTr } from './race/tr'
 import { colregTr } from './colreg/tr'
 import { celestialTr } from './celestial/tr'
+import { ryaTr } from './rya/tr'
 import type { Messages } from './en'
 
 export const tr: Messages = {
@@ -826,4 +827,5 @@ export const tr: Messages = {
   ...celestialTr,
   ...colregTr,
   ...raceTr,
+  ...ryaTr,
 }

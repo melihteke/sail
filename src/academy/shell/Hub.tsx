@@ -10,11 +10,19 @@ interface ModuleCard {
 }
 
 interface Section {
-  id: 'navigation' | 'marks' | 'rules' | 'handling' | 'celestial'
+  id: 'rya' | 'navigation' | 'marks' | 'rules' | 'handling' | 'celestial'
   modules: ModuleCard[]
 }
 
 const sections: Section[] = [
+  {
+    id: 'rya',
+    modules: [
+      { id: 'ryaSyllabus', path: '/rya', icon: '🎓' },
+      { id: 'ryaCompetentCrew', path: '/rya/competent-crew', icon: '🧑‍✈️' },
+      { id: 'ryaDaySkipper', path: '/rya/day-skipper', icon: '⚓' },
+    ],
+  },
   {
     id: 'navigation',
     modules: [

@@ -19,10 +19,12 @@ interface Props<T> {
   bestKey: string
   /** Show options in a 2-column grid. */
   columns?: 1 | 2
+  /** Called once when the last question is answered. */
+  onFinish?: (score: number, total: number) => void
 }
 
 /** Generic multiple-choice practice round with a persistent best score. */
-export function QuizRunner<T>({ makeItems, question, picture, options, answer, explanation, bestKey, columns = 1 }: Props<T>) {
+export function QuizRunner<T>({ makeItems, question, picture, options, answer, explanation, bestKey, columns = 1, onFinish }: Props<T>) {
   const { t } = useI18n()
   const [items, setItems] = useState(makeItems)
   const [qi, setQi] = useState(0)
@@ -65,6 +67,7 @@ export function QuizRunner<T>({ makeItems, question, picture, options, answer, e
   }
   const next = () => {
     const finished = qi + 1 >= items.length
+    if (finished) onFinish?.(score, items.length)
     if (finished && score > best) {
       setBest(score)
       saveJson(bestKey, score)

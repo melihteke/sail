@@ -21,6 +21,9 @@ const MobModule = load(() => import("./games/mob/MobModule"), "MobModule");
 const TrimModule = load(() => import("./games/trim/TrimModule"), "TrimModule");
 const SextantModule = load(() => import("./games/sextant/SextantModule"), "SextantModule");
 const RaceModule = load(() => import("./games/race/RaceModule"), "RaceModule");
+const RyaSyllabus = load(() => import("./games/rya/RyaSyllabus"), "RyaSyllabus");
+const CourseModule = load(() => import("./games/rya/CourseModule"), "CourseModule");
+const GameRoute = load(() => import("./games/rya/GameRoute"), "GameRoute");
 
 function AcademyLayout() {
   return (
@@ -51,6 +54,9 @@ export default function AcademyApp() {
             <Route path="sail-trim" element={<TrimModule />} />
             <Route path="sextant" element={<SextantModule />} />
             <Route path="race" element={<RaceModule />} />
+            <Route path="rya" element={<RyaSyllabus />} />
+            <Route path="rya/:course" element={<CourseModule />} />
+            <Route path="rya/:course/:game" element={<GameRoute />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

@@ -41,6 +41,13 @@ media and handles the Google login of the admin panel.
     only on that tab), a guided noon sight from index error to a fix on the map, an almanac guide, terms & units,
     other methods with an intercept calculator, and photo credits (Wikimedia Commons, files in
     `public/academy/sextant`). Sun almanac values are computed in `src/academy/games/sextant/almanac.ts`.
+  - **RYA courses** (`#/rya`): a syllabus page with a clickable roadmap from Start Yachting to Yachtmaster Ocean
+    (prerequisites, what you can do afterwards, an "Am I ready?" sea-time calculator), plus game-based training for
+    **Competent Crew** (`#/rya/competent-crew`) and **Day Skipper** (`#/rya/day-skipper`). Each course has six
+    games, a briefing, a quiz and an "I can…" checklist (stars and progress live in `localStorage`). The harbour
+    handling and lines & fenders games share a small yacht physics model (`src/academy/core/yacht.ts`: prop walk,
+    windage, stream, mooring lines and fendered contact). Source in `src/academy/games/rya`, texts in
+    `src/academy/i18n/rya`. Coastal Skipper and the Yachtmaster levels are on the roadmap as "coming soon".
 - **Languages:** English (default), Dutch and Turkish via the flag switcher. Site chrome uses `data-i18n` keys from
   `src/i18n/site.ts`; the academy has full dictionaries in `src/academy/i18n`. Choice is kept in `localStorage.lang`.
 - **Copy deterrent:** right-click, copy and text selection are blocked on public pages (not on `/admin`). It's
@@ -136,3 +143,9 @@ Pushing to `main` runs the tests and deploys. The admin panel's **Deploy site** 
 - Export the replay as a video (MP4/GIF)
 - Geotagged photos pinned on the route; privacy trim of track start/end
 - Water level and current (Rijkswaterstaat) for coastal sails
+
+## Revision History
+
+| Version | Date | Author | Changes |
+|---------|------|--------|---------|
+| 1.1 | 2026-11-15 | Melih Teke | Added the RYA courses section (syllabus roadmap, Competent Crew and Day Skipper games). |

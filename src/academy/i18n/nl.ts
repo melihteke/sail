@@ -1,6 +1,7 @@
 import { raceNl } from './race/nl'
 import { colregNl } from './colreg/nl'
 import { celestialNl } from './celestial/nl'
+import { ryaNl } from './rya/nl'
 import type { Messages } from './en'
 
 export const nl: Messages = {
@@ -826,4 +827,5 @@ export const nl: Messages = {
   ...celestialNl,
   ...colregNl,
   ...raceNl,
+  ...ryaNl,
 }
