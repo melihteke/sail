@@ -65,7 +65,7 @@ function RigExplorer({ value, setValue, snap = 0, compact = false, top }: Explor
   const [wind, setWind] = useState(50)
   const [fromStbd, setFromStbd] = useState(true)
   const [view, setView] = useState<ViewId>('side')
-  const [lineLabels, setLineLabels] = useState(true)
+  const [lineLabels, setLineLabels] = useState(() => typeof window === 'undefined' || window.innerWidth >= 640)
   const [partLabels, setPartLabels] = useState(false)
 
   useEffect(() => {
@@ -140,11 +140,11 @@ function RigExplorer({ value, setValue, snap = 0, compact = false, top }: Explor
     <div className="space-y-4">
       {top}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem]">
-        <div className="relative self-start overflow-hidden rounded-xl border border-slate-200 dark:border-white/10">
+        <div className="self-start">
+        <div className="relative overflow-hidden rounded-xl border border-slate-200 dark:border-white/10">
           <div ref={host} className={`relative w-full cursor-grab active:cursor-grabbing ${compact ? 'aspect-[4/3]' : 'aspect-[16/11]'}`} role="img" aria-label={t('rya.r3.canvas')} />
           {failed && <p className="absolute inset-0 grid place-items-center bg-white/90 p-4 text-sm text-slate-700">{t('rya.r3.noWebgl')}</p>}
-          <p className="pointer-events-none absolute left-2 top-2 rounded bg-white/80 px-2 py-0.5 text-xs text-slate-700">{t('rya.r3.drag')}</p>
-          <div className="absolute right-2 top-2 flex flex-wrap justify-end gap-1">
+          <div className="absolute right-2 top-2 z-10 flex flex-wrap justify-end gap-1">
             {VIEW_IDS.map((vw) => (
               <button
                 key={vw}
@@ -160,7 +160,7 @@ function RigExplorer({ value, setValue, snap = 0, compact = false, top }: Explor
             ))}
           </div>
           {s.warnings.length > 0 && (
-            <ul className="pointer-events-none absolute bottom-2 left-2 right-2 space-y-1 text-xs">
+            <ul className="pointer-events-none absolute bottom-2 left-2 right-2 z-10 space-y-1 text-xs">
               {s.warnings.map((w) => (
                 <li key={w} className="w-fit rounded bg-amber-100/95 px-2 py-0.5 font-medium text-amber-900">
                   ⚠️ {t(k(`rya.r3.w.${w}`))}
@@ -168,6 +168,8 @@ function RigExplorer({ value, setValue, snap = 0, compact = false, top }: Explor
               ))}
             </ul>
           )}
+        </div>
+        <p className="mt-1.5 text-center text-xs text-slate-500 dark:text-slate-400">🖐️ {t('rya.r3.drag')}</p>
         </div>
         <div className="space-y-3">
           <Panel className="text-sm">
