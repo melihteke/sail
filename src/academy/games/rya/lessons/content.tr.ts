@@ -410,6 +410,8 @@ export const lessonsTr: LessonSet = {
             ],
           },
           { ex: { title: 'Şu anki derinlik', lines: ['Harita derinliği 2,0 m, gelgit yüksekliği 3,0 m.', 'Derinlik = 2,0 + 3,0 = **5,0 m**.', '1,5 m kuruyan bir sığlık, gelgit yüksekliği 3,8 m: derinlik = 3,8 − 1,5 = **2,3 m**.'] } },
+          { p: '**Neden olur?** Ay (ve daha az ölçüde Güneş) denizi kendine doğru çeker. Bu çekim okyanusta iki “su tepesi” oluşturur: biri Ay’a bakan tarafta, biri tam karşı tarafta. Dünya kendi etrafında dönerken her kıyı bu iki tepeden geçer – bu yüzden günde **iki yüksek su** ve **iki alçak su** olur. Güneş ve Ay aynı hizadaysa çekimleri toplanır (**sizigi**, büyük fark); dik açıdaysa birbirlerini zayıflatır (**kuadratür**, küçük fark).' },
+          { widget: 'moon' },
         ],
       },
       {
@@ -473,18 +475,42 @@ export const lessonsTr: LessonSet = {
       {
         h: 'Gelgit akıntıları',
         blocks: [
-          { p: 'Gelgit yükselip alçalırken deniz suyu bir yerden başka bir yere taşınır: buna **gelgit akıntısı** denir. Akıntının yönü suyun **gittiği** yöndür (**set**), hızı knot cinsindendir (**rate**). 5 kn giden bir yat için 2 kn akıntı, hızının yaklaşık **yüzde 40**’ı demektir – yani seyrin süresini belirleyen en önemli şeylerden biridir.' },
+          { p: '**Akıntı nedir?** Akıntı, suyun yatay olarak bir yerden başka bir yere **akmasıdır** – denizin içindeki bir nehir gibi. Tekne suyun içinde ilerler; su da hareket ediyorsa tekne onunla birlikte taşınır. Denizde dört tür akıntıyla karşılaşırsın:' },
+          {
+            table: {
+              head: ['Akıntı türü', 'Neden olur?', 'Örnek'],
+              rows: [
+                ['Gelgit akıntısı', 'Ay ve Güneş’in çekimiyle deniz yükselip alçalırken suyun kıyıya gelip gitmesi', 'Manş Denizi, Hollanda kıyıları – yaklaşık 6 saatte bir yön değiştirir'],
+                ['Okyanus akıntısı', 'Sürekli esen rüzgârlar, sıcaklık ve tuzluluk farkı, Dünya’nın dönmesi', 'Gulf Stream – hep aynı yöne akar'],
+                ['Rüzgâr akıntısı', 'Günlerce aynı yönden esen rüzgârın yüzey suyunu sürüklemesi', 'Fırtınadan sonra kıyı boyunca 0,5–1 kn'],
+                ['Nehir ve boğaz akıntısı', 'Nehir suyu ya da iki deniz arasındaki seviye ve tuzluluk farkı', 'İstanbul Boğazı – Karadeniz’den Marmara’ya'],
+              ],
+            },
+          },
+          { p: '**Gelgit akıntısı neden olur?** Kıyıda deniz 4 m yükselecekse, o kadar suyun açık denizden kıyıya **gelmesi** gerekir; deniz alçalırken aynı su **geri gider**. İşte bu gelip giden su gelgit akıntısıdır. Deniz yükselirken akana **yükselen akıntı (flood)**, alçalırken akana **alçalan akıntı (ebb)** denir. Yön değiştirdiği kısa sakin ana **durgun su (slack)** denir.' },
           {
             list: [
-              '**Akıntı da on ikiler kuralı gibi davranır**: HW ve LW civarında zayıftır (**durgun su / slack**), gelgitin ortasında (3. ve 4. saat) en kuvvetlidir.',
-              '**Sizigi (springs)** (yeni ay ve dolunay civarı): büyük gelgit farkı, kuvvetli akıntı. **Kuadratür (neaps)** (yarım ay): küçük fark, zayıf akıntı – kabaca yarısı.',
-              '**Gelgit atlası** ya da haritadaki **gelgit elmasları** (◊ içinde harf), HW’den önceki ve sonraki her saat için yön ve hızı verir.',
-              '**Yere göre hız (SOG)** = tekne hızı ± akıntı. Lehte akıntı eklenir, aleyhte akıntı çıkarılır; yandan akıntı tekneyi rotasından **sürükler**.',
+              'Akıntının yönü suyun **gittiği** yöndür (**set**; 090° = doğuya akıyor). Hızı knot cinsindendir (**rate**). Dikkat: rüzgârda tersidir – rüzgâr **geldiği** yönle söylenir.',
+              '**On ikiler kuralı gibi davranır**: HW ve LW civarında zayıf, gelgitin ortasında (3. ve 4. saat) en kuvvetli.',
+              '**Sizigi** (yeni ay ve dolunay civarı) = kuvvetli akıntı; **kuadratür** (yarım ay) = zayıf akıntı, kabaca yarısı. “Gelgit nedir?” bölümündeki Ay animasyonuna bak.',
+              '**Yere göre hız (SOG)** = tekne hızı ± akıntı. Lehte eklenir, aleyhte çıkarılır; yandan akıntı tekneyi rotasından **sürükler**.',
             ],
           },
           { widget: 'stream' },
           { ex: { title: 'Lehte mi aleyhte mi?', lines: ['Durgun suda 5 kn ile 18 NM = **3 sa 36 dk**.', 'Ortalama 2 kn lehte akıntıyla: 5 + 2 = 7 kn → yaklaşık **2 sa 35 dk**.', '2 kn aleyhte akıntıyla: 5 − 2 = 3 kn → **6 saat**!', 'Aynı seyir, yalnızca çıkış saati farklı: **3,5 saat fark**.'] } },
-          { p: '**Gelgit elmasını okumak.** Haritada ◊ içinde bir harf görürsün. Haritanın kenarındaki tabloda o harfin sütunu, referans limanın HW’sinden önceki ve sonraki her saat için akıntıyı verir:' },
+          { p: '**Akıntı bilgisi nereden gelir?** İki kaynak var: geniş bir bölgeyi gösteren **gelgit akıntı atlası** ve haritada belirli noktalar için **gelgit elmasları**. İkisi de saatleri bir **referans limanın** (standard port) yüksek suyuna göre verir – örneğin “Dover’da HW’den 3 saat önce”. Yani önce gelgit tablosundan o limanın bugünkü HW saatini bulursun.' },
+          { p: '**1) Gelgit akıntı atlası** ayrı, ince bir kitapçıktır (İngiltere’de Admiralty “Tidal Stream Atlas” serisi; Reeds gibi seyir almanaklarında da aynı sayfalar bulunur). İçinde **13 sayfa** vardır: HW’den 6 saat önceden 6 saat sonrasına kadar **her saat için bir harita**. Her haritada oklar vardır: **okun yönü** = suyun gittiği yön, **okun kalınlığı ve uzunluğu** = hız. Okun yanındaki **“14,26”** gibi sayılar knotun onda biridir: **kuadratürde 1,4 kn, sizigide 2,6 kn**. Aşağıdaki animasyon, gerçek bir atlas sayfasıyla aynı mantıkla çizilmiş basit bir örnektir.' },
+          {
+            steps: [
+              'Gelgit tablosundan referans limanın bugünkü HW saatini bul (örneğin 13:00).',
+              'Seyir saatin HW’den kaç saat önce ya da sonra? (10:00 → HW−3). Atlasın o sayfasını aç.',
+              'Gideceğin yerdeki oku bul: yönünü ve “nn,ss” sayılarını oku.',
+              'Bugün sizigi mi kuadratür mü? O sayıyı al; aradaysa ikisinin arasını kullan.',
+            ],
+          },
+          { widget: 'atlas' },
+          { ex: { title: 'Atlastan akıntı okumak', lines: ['Bugün HW 13:00, sen saat 10:00’da A noktasındasın → **HW−3** sayfası.', 'A’daki ok doğuya bakıyor, yanında **“14,26”** yazıyor.', 'Bugün sizigi → **2,6 kn doğuya**. Kuadratür olsaydı **1,4 kn**.', 'Aynı yerde HW+3 sayfasında ok **batıya** döner: akıntı ters yöne akar. HW sayfasında ise yalnızca bir daire vardır: durgun su.'] } },
+          { p: '**2) Gelgit elması**, haritada **mor bir ◊ içindeki harftir** (A, B, C…). Haritanın kenarında bir tablo bulunur: her harf için bir sütun, her saat (HW−6 … HW+6) için bir satır. Her satırda **yön** ve iki hız vardır: **Sp** (sizigi) ve **Np** (kuadratür). Elmas tek bir noktayı anlatır, bu yüzden atlastan daha kesindir; atlas ise bütün bölgeyi bir bakışta gösterir. Bir elmas tablosunun bir bölümü:' },
           {
             table: {
               head: ['Saat', 'Yön (set)', 'Sizigi (kn)', 'Kuadratür (kn)'],
@@ -492,7 +518,7 @@ export const lessonsTr: LessonSet = {
                 ['HW −3', '045°', '2,4', '1,2'],
                 ['HW −2', '050°', '2,0', '1,0'],
                 ['HW −1', '060°', '1,0', '0,5'],
-                ['HW', '—', '0,2', '0,1'],
+                ['HW', '140°', '0,2', '0,1'],
                 ['HW +1', '220°', '1,0', '0,5'],
                 ['HW +2', '230°', '2,1', '1,0'],
                 ['HW +3', '225°', '2,5', '1,3'],
@@ -501,14 +527,15 @@ export const lessonsTr: LessonSet = {
           },
           {
             steps: [
-              'Referans limanda bugünkü HW saatini bul.',
-              'Seyir saatin HW’den kaç saat önce ya da sonra? Tablodaki o satıra git.',
-              'Bugün sizigi mi kuadratür mü? Gelgit farkına bak; aradaysa iki hızın arasını al.',
+              'Haritada rotana en yakın elması bul (örneğin ◊A).',
+              'Seyir saatin HW’den kaç saat önce ya da sonra? Tabloda o satıra git.',
+              'Gelgit tablosundan bugünkü farkı (HW − LW) bul: sizigiye mi kuadratüre mi yakın? Aradaysa iki hızın arasını al.',
               'Yönü ve hızı not et: su **o yöne doğru** akıyor.',
             ],
           },
-          { ex: { title: 'Saat 10:00’da akıntı ne?', lines: ['Bugün HW 13:00 → 10:00 = **HW −3**.', 'Tablo: yön 045°, sizigi 2,4 kn, kuadratür 1,2 kn.', 'Bugünkü gelgit farkı sizigi ile kuadratürün tam ortasında → hız ≈ (2,4 + 1,2) ÷ 2 = **1,8 kn**.', 'Sonuç: su **045° yönüne 1,8 kn** ile akıyor.'] } },
-          { ex: { title: 'Yandan akıntı: düzeltmezsen ne olur?', lines: ['Teknen 5 kn, akıntı tam yandan 2 kn.', 'Hiç düzeltmezsen her saat **2 NM yana** sürüklenirsin – 3 saatte 6 NM!', 'Çizgide kalmak için pruvayı akıntıya doğru ≈ **24°** çevir (animasyonda “Yandan” seç).', 'Yere göre hızın biraz düşer: ≈ **4,6 kn**.'] } },
+          { widget: 'diamond' },
+          { ex: { title: 'Saat 10:00’da akıntı ne?', lines: ['Bugün HW 13:00 → 10:00 = **HW −3**.', 'Tablo: yön 045°, sizigi 2,4 kn, kuadratür 1,2 kn.', 'Bugünkü fark 3,1 m: ortalama sizigi farkı 4,2 m ile kuadratür farkı 2,0 m’nin tam ortası → hız ≈ (2,4 + 1,2) ÷ 2 = **1,8 kn**.', 'Sonuç: su **045° yönüne 1,8 kn** ile akıyor.'] } },
+          { ex: { title: 'Yandan akıntı: düzeltmezsen ne olur?', lines: ['Teknen 5 kn, akıntı tam yandan 2 kn.', 'Hiç düzeltmezsen her saat **2 NM yana** sürüklenirsin – 3 saatte 6 NM!', 'Çizgide kalmak için pruvayı akıntıya doğru ≈ **24°** çevir (akıntı animasyonunda “Yandan” seç).', 'Yere göre hızın biraz düşer: ≈ **4,6 kn**.'] } },
           { tip: '**60 kuralı**: düzeltme açısı ≈ akıntı ÷ tekne hızı × 60. Örnek: 2 ÷ 5 × 60 = **24°**. Kafadan hesap için yeterince iyi.' },
         ],
       },
@@ -552,6 +579,19 @@ export const lessonsTr: LessonSet = {
         h: 'Gelgit ve demirleme',
         blocks: [
           { p: 'Demirdeyken deniz bütün gece yükselip alçalır, yani **derinlik sürekli değişir**. Demirlemeden önce iki soruyu cevapla: **Yüksek suda** zincirim yeterli mi? **Alçak suda** omurgamın altında hâlâ su var mı?' },
+          { p: '**Kalibre nedir?** Kalibre = **zincir boyu ÷ su derinliği**. 4 : 1 demek, “her 1 m derinlik için 4 m zincir” demektir. Zincir ne kadar uzunsa demire gelen çekiş o kadar yatay olur ve demir o kadar iyi tutar. Hesapta her zaman **yüksek sudaki** derinliği kullan: gecenin en derin anında yeterliyse gece boyunca hep yeterlidir.' },
+          {
+            table: {
+              head: ['Durum', 'Kalibre', 'HW derinliği 6 m ise zincir'],
+              rows: [
+                ['Tam zincir, sakin hava, kısa mola', 'en az 4 : 1', '24 m'],
+                ['Tam zincir, gece kalınacak ya da rüzgâr artabilir', '5 : 1', '30 m'],
+                ['Tam zincir, kuvvetli rüzgâr', '7 : 1', '42 m'],
+                ['Halat + birkaç metre zincir', '6 : 1 – 8 : 1', '36 – 48 m'],
+              ],
+            },
+          },
+          { tip: '7 : 1’den fazlası çoğu zaman gereksizdir: salınım dairen büyür ve komşu teknelere çarparsın. Demir Koyu oyununda üç yıldız için **4 : 1 ile 7 : 1 arası** gerekir.' },
           {
             steps: [
               'Gelgit tablosundan gece boyunca **HW** ve **LW** yüksekliklerini bul.',
@@ -561,10 +601,11 @@ export const lessonsTr: LessonSet = {
             ],
           },
           { widget: 'tideanchor' },
+          { p: '**Animasyon nasıl kullanılır?** Üç sürgü var: **harita derinliği**, **zincir** ve **zaman**. ▶ düğmesiyle 12 saati oynatabilir ya da zaman sürgüsünü elle kaydırabilirsin. Resmin altındaki **pratik görevleri** sırayla yap: her görev tamamlanınca kendiliğinden ✔ olur; takılırsan 💡 ipucunu oku.' },
           { ex: { title: 'Tuzak 1: alçak suda demirleyip yüksek suda taramak', lines: ['Harita derinliği 3,0 m. Akşam LW’de (0,6 m) demirliyorsun: derinlik 3,6 m.', '“4 kat yeter” diye 4 × 3,6 ≈ **15 m** zincir veriyorsun.', 'Gece yarısı HW (4,2 m): derinlik 7,2 m → kalibre 15 ÷ 7,2 ≈ **2 : 1** → rüzgâr artınca **demir tarar**!', 'Doğrusu: HW derinliğini kullan → 4 × 7,2 ≈ **30 m** zincir.'] } },
           { ex: { title: 'Tuzak 2: yüksek suda demirleyip alçak suda oturmak', lines: ['Harita derinliği yalnızca 0,5 m. HW’de (4,2 m) derinlik 4,7 m – “bol bol su var” gibi görünüyor.', 'Gece LW (0,6 m): derinlik 0,5 + 0,6 = **1,1 m**. Su çekimin 1,8 m.', 'Sonuç: **karaya oturursun** – üstelik gece yarısı, eğilmiş bir teknede.', 'Doğrusu: LW derinliğini kontrol et → 1,1 − 1,8 < 0,5 m → burası **uygun değil**.'] } },
           { warn: 'Demirledikten sonra bir **demir alarmı** kur (plotter ya da telefon uygulaması) ve rüzgâr ya da gelgit dönünce konumunu kontrol et.' },
-          { tip: 'Animasyonda önce ▶ ile 12 saati oynat, sonra zinciri ve harita derinliğini değiştirerek iki tuzağı kendin bul. Ayrıntılar için **Demirleme** dersine, pratik için **Demir Koyu** oyununa bak.' },
+          { tip: 'Ayrıntılar için **Demirleme** dersine bak; orada Demir Koyu oyunu adım adım anlatılıyor. Sonra **Demir Koyu** oyununda dene.' },
           { game: 'anchor' },
         ],
       },
@@ -640,13 +681,36 @@ export const lessonsTr: LessonSet = {
       {
         h: 'Demir Koyu oyununda',
         blocks: [
+          { p: '**Oyunun amacı:** bir koyda gece demirlemek. Sabaha kadar 12 saat geçer; bu sırada gelgit iner çıkar ve rüzgâr döner. Demir **taramamalı**, tekne **karaya oturmamalı** ve dönerken **kayaya ya da başka bir tekneye** değmemeli.' },
+          {
+            steps: [
+              'Üstten bir koy seç: **Akdeniz koyu** (gelgit yok, rüzgâr döner), **Gelgitli koy** (3,6 m gelgit farkı) ya da **Kalabalık demir yeri** (4 tekne, 2 kaya).',
+              'Yandaki kutuyu oku: **şimdiki gelgit** (gecenin en yükseği), **en düşük gelgit** ve **rüzgâr tahmini**.',
+              'Fareyi haritada gezdir: her noktanın **harita derinliği** görünür. Altı çizili sayılar kurur.',
+              'Yeterince derin bir nokta seç: harita derinliği ≥ 1,8 (su çekimi) + 0,5 (pay) − en düşük gelgit. Kıyıdan biraz uzak dur – tekne dönerken bir daire çizer.',
+              'Haritaya **tıkla**: demir oraya düşer. Kutuda **şu anki derinlik** yazar.',
+              'Zincir sürgüsünü ayarla: en az **4 ×** şu anki derinlik, en fazla **7 ×**. Kalibre sürgünün altında yazar.',
+              'Mavi **salınım dairesi** kıyıya, kayaya ya da turuncu kesikli dairelere **değmemeli**. Değiyorsa başka bir nokta seç ya da zinciri biraz kısalt.',
+              '**Geceyi oynat** düğmesine bas ve izle.',
+            ],
+          },
+          {
+            table: {
+              head: ['Koy', 'Gelgit (şimdi / en düşük)', 'Önerilen harita derinliği', 'Zincir'],
+              rows: [
+                ['Akdeniz koyu', '0,3 / 0,1 m', '5,5 – 7 m', '25 m'],
+                ['Gelgitli koy', '4,2 / 0,6 m', '3,5 – 4,5 m', '35 m'],
+                ['Kalabalık demir yeri', '3,0 / 0,4 m', '≈ 3 m', '25 m'],
+              ],
+            },
+          },
+          { ex: { title: 'Gelgitli koy, adım adım', lines: ['Gelgit şimdi 4,2 m, gece en düşük 0,6 m. Su çekimi 1,8 m.', 'En az harita derinliği: 1,8 + 0,5 − 0,6 = **1,7 m**. Daire büyük olacağı için ≈ **4 m** olan bir yer seçiyorum.', 'Şu anki derinlik: 4 + 4,2 = **8,2 m** → zincir en az 4 × 8,2 ≈ 33 m → **35 m** (en fazla 7 × 8,2 ≈ 57 m).', 'Salınım yarıçapı ≈ 35 + 5 = **40 m**. Bu daire kayaya ya da diğer teknenin dairesine değmiyorsa → Geceyi oynat → ⭐⭐⭐'] } },
           {
             list: [
-              'Harita derinliğini okumak için fareyi haritanın üstünde gezdir; altı çizili iskandiller kurur.',
-              'Kutu şu anki gelgiti, bu geceki en düşük gelgiti ve gece boyunca rüzgâr yönlerini gösterir. Teknen her zaman demirin **rüzgâraltında** durur.',
-              'Kalibre **4 : 1**’in altındaysa yaklaşık 3 saat sonra rüzgâr artınca demir tarar.',
-              'Mavi daire senin salınım alanın; turuncu kesikli daireler diğer teknelerin – çakışmamalılar.',
-              'Üç yıldız: kalibre 4 ile 7 : 1 arasında **ve** bütün gece omurga altında en az 0,5 m.',
+              '**Demir taradı** → kalibre 4 : 1’in altında. Zinciri artır.',
+              '**Karaya oturdu** → dairenin bir yerinde alçak suda yeterli su yok. Daha derin bir yer seç.',
+              '**Kayaya ya da tekneye çarptı** → salınım dairen kayaya ya da başka bir dairenin içine girdi. Yer değiştir ya da zinciri biraz kısalt (ama 4 : 1’in altına inme).',
+              '**İki yıldız** → güvendesin ama kalibre 7 : 1’den fazla ya da omurga altı bir an 0,5 m’nin altına indi.',
             ],
           },
           { game: 'anchor' },

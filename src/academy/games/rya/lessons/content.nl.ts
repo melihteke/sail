@@ -410,6 +410,8 @@ export const lessonsNl: LessonSet = {
             ],
           },
           { ex: { title: 'De diepte op dit moment', lines: ['Kaartdiepte 2,0 m, waterhoogte 3,0 m.', 'Diepte = 2,0 + 3,0 = **5,0 m**.', 'Een bank die 1,5 m droogvalt, waterhoogte 3,8 m: diepte = 3,8 − 1,5 = **2,3 m**.'] } },
+          { p: '**Waarom gebeurt het?** De maan (en in mindere mate de zon) trekt de zee naar zich toe. Daardoor ontstaan twee “waterbulten” in de oceaan: één aan de kant van de maan en één aan de andere kant. Doordat de aarde draait, gaat elke kust door beide bulten – daarom is het twee keer per dag **hoogwater** en twee keer **laagwater**. Staan zon en maan op één lijn, dan tellen hun krachten op (**springtij**, groot verval); staan ze haaks, dan werken ze elkaar deels tegen (**doodtij**, klein verval).' },
+          { widget: 'moon' },
         ],
       },
       {
@@ -473,18 +475,42 @@ export const lessonsNl: LessonSet = {
       {
         h: 'Getijstromen',
         blocks: [
-          { p: 'Terwijl het getij stijgt en daalt, wordt zeewater van de ene plek naar de andere verplaatst: dat is de **getijstroom**. De richting is waar het water **naartoe** gaat (de **set**), de snelheid is in knopen (de **rate**). Voor een jacht dat 5 kn loopt, is 2 kn stroom ongeveer **40 %** van de snelheid – een van de grootste factoren voor hoe lang een tocht duurt.' },
+          { p: '**Wat is stroming?** Stroming is water dat zijdelings van de ene plek naar de andere **beweegt** – zoals een rivier in de zee. Een boot vaart door het water; beweegt het water zelf, dan neemt het de boot mee. Op zee kom je vier soorten stroming tegen:' },
+          {
+            table: {
+              head: ['Soort stroming', 'Waardoor?', 'Voorbeeld'],
+              rows: [
+                ['Getijstroom', 'Water dat naar en van de kust stroomt terwijl de zee door de aantrekking van maan en zon stijgt en daalt', 'Het Kanaal, de Nederlandse kust – keert ongeveer elke 6 uur'],
+                ['Oceaanstroming', 'Vaste winden, verschil in temperatuur en zoutgehalte, de draaiing van de aarde', 'Golfstroom – stroomt altijd dezelfde kant op'],
+                ['Windstroom', 'Dagenlang wind uit één richting die het oppervlaktewater meesleept', '0,5–1 kn langs de kust na een storm'],
+                ['Rivier- en zeestraatstroming', 'Rivierwater, of verschil in waterstand en zoutgehalte tussen twee zeeën', 'Bosporus – van de Zwarte Zee naar de Zee van Marmara'],
+              ],
+            },
+          },
+          { p: '**Waarom is er getijstroom?** Als de zee aan de kust 4 m moet stijgen, moet er zoveel water vanuit open zee **binnenkomen**; als het daalt, **gaat** hetzelfde water **weer weg**. Dat bewegende water is de getijstroom. De stroom bij stijgend water heet **vloed**, bij dalend water **eb**. Het korte rustige moment waarop hij keert heet **kentering** (stil water).' },
           {
             list: [
-              '**Stroom gedraagt zich als de twaalfdenregel**: zwak rond HW en LW (**stil water / kentering**), het sterkst midden in het getij (3e en 4e uur).',
-              '**Springtij** (rond nieuwe en volle maan): groot verval, sterke stroom. **Doodtij** (halve maan): klein verval, zwakke stroom – ongeveer de helft.',
-              'De **stroomatlas** of de **getijdiamanten** op de kaart (een letter in een ◊) geven richting en snelheid voor elk uur voor en na HW.',
+              'De richting van stroom is waar het water **naartoe** gaat (de **set**; 090° = stroomt naar het oosten). De snelheid is in knopen (de **rate**). Let op: bij wind is het omgekeerd – wind wordt genoemd naar waar hij **vandaan** komt.',
+              '**Hij gedraagt zich als de twaalfdenregel**: zwak rond HW en LW, het sterkst midden in het getij (3e en 4e uur).',
+              '**Springtij** (rond nieuwe en volle maan) = sterke stroom; **doodtij** (halve maan) = zwakke stroom, ongeveer de helft. Zie de maananimatie bij “Wat is het getij?”.',
               '**Snelheid over de grond (SOG)** = bootsnelheid ± stroom. Meestroom telt op, tegenstroom trekt af; dwarsstroom **duwt** je van je lijn.',
             ],
           },
           { widget: 'stream' },
           { ex: { title: 'Mee of tegen?', lines: ['In stil water: 18 NM met 5 kn = **3 u 36 min**.', 'Met gemiddeld 2 kn mee: 5 + 2 = 7 kn → ongeveer **2 u 35 min**.', 'Met 2 kn tegen: 5 − 2 = 3 kn → **6 uur**!', 'Dezelfde tocht, alleen een andere vertrektijd: **3½ uur verschil**.'] } },
-          { p: '**Een getijdiamant lezen.** Op de kaart zie je een letter in een ◊. De tabel in de kaartrand geeft in de kolom van die letter de stroom voor elk uur voor en na HW in de referentiehaven:' },
+          { p: '**Waar komt stroominformatie vandaan?** Twee bronnen: de **stroomatlas**, die een heel gebied laat zien, en **getijdiamanten** voor bepaalde punten op de kaart. Beide geven de tijd ten opzichte van hoogwater in een **referentiehaven** (standaardhaven) – bijvoorbeeld “3 uur voor HW Dover”. Je zoekt dus eerst in de getijtafel de HW-tijd van vandaag in die haven op.' },
+          { p: '**1) De stroomatlas** is een apart, dun boekje (in het VK de Admiralty-reeks “Tidal Stream Atlas”; almanakken zoals Reeds bevatten dezelfde pagina’s). Er staan **13 pagina’s** in: **voor elk uur een kaartje**, van 6 uur voor HW tot 6 uur na HW. Op elk kaartje staan pijlen: de **richting van de pijl** = waar het water naartoe gaat, de **dikte en lengte** = de snelheid. Getallen als **“14,26”** naast een pijl zijn tienden van een knoop: **1,4 kn bij doodtij, 2,6 kn bij springtij**. De animatie hieronder is een eenvoudige tekening die precies werkt als een echte atlaspagina.' },
+          {
+            steps: [
+              'Zoek in de getijtafel de HW-tijd van vandaag in de referentiehaven (bijvoorbeeld 13:00).',
+              'Hoeveel uur voor of na HW is jouw tijd? (10:00 → HW−3). Sla die pagina van de atlas open.',
+              'Zoek de pijl waar je zult zijn: lees de richting en de getallen “nn,ss”.',
+              'Springtij of doodtij vandaag? Neem dat getal; zit het ertussen, neem dan een waarde ertussen.',
+            ],
+          },
+          { widget: 'atlas' },
+          { ex: { title: 'Stroom aflezen uit de atlas', lines: ['HW is vandaag 13:00 en je bent om 10:00 bij A → pagina **HW−3**.', 'De pijl bij A wijst naar het oosten en er staat **“14,26”** bij.', 'Vandaag springtij → **2,6 kn naar het oosten**. Bij doodtij zou het **1,4 kn** zijn.', 'Op dezelfde plek wijst de pijl op pagina HW+3 naar het **westen**: de stroom loopt de andere kant op. Op de HW-pagina staat alleen een cirkel: stil water.'] } },
+          { p: '**2) Een getijdiamant** is een **letter in een paarse ◊** op de kaart (A, B, C…). In de kaartrand staat een tabel: een kolom per letter, een rij per uur (HW−6 … HW+6). Elke rij geeft de **richting** en twee snelheden: **Sp** (springtij) en **Np** (doodtij). Een diamant beschrijft één punt en is dus nauwkeuriger dan de atlas; de atlas toont het hele gebied in één oogopslag. Een deel van een diamanttabel:' },
           {
             table: {
               head: ['Tijd', 'Richting (set)', 'Springtij (kn)', 'Doodtij (kn)'],
@@ -492,7 +518,7 @@ export const lessonsNl: LessonSet = {
                 ['HW −3', '045°', '2,4', '1,2'],
                 ['HW −2', '050°', '2,0', '1,0'],
                 ['HW −1', '060°', '1,0', '0,5'],
-                ['HW', '—', '0,2', '0,1'],
+                ['HW', '140°', '0,2', '0,1'],
                 ['HW +1', '220°', '1,0', '0,5'],
                 ['HW +2', '230°', '2,1', '1,0'],
                 ['HW +3', '225°', '2,5', '1,3'],
@@ -501,14 +527,15 @@ export const lessonsNl: LessonSet = {
           },
           {
             steps: [
-              'Zoek de HW-tijd van vandaag in de referentiehaven.',
-              'Hoeveel uur voor of na HW is jouw tijd? Ga naar die rij.',
-              'Springtij of doodtij vandaag? Kijk naar het verval; zit het ertussen, neem dan een snelheid ertussen.',
+              'Zoek op de kaart de diamant die het dichtst bij je route ligt (bijvoorbeeld ◊A).',
+              'Hoeveel uur voor of na HW is jouw tijd? Ga naar die rij in de tabel.',
+              'Zoek in de getijtafel het verval van vandaag (HW − LW): dichter bij springtij of doodtij? Zit het ertussen, neem dan een snelheid ertussen.',
               'Noteer richting en snelheid: het water stroomt **naar** die richting.',
             ],
           },
-          { ex: { title: 'Wat is de stroom om 10:00?', lines: ['HW vandaag 13:00 → 10:00 = **HW −3**.', 'Tabel: richting 045°, springtij 2,4 kn, doodtij 1,2 kn.', 'Het verval van vandaag zit precies tussen spring- en doodtij → snelheid ≈ (2,4 + 1,2) ÷ 2 = **1,8 kn**.', 'Resultaat: het water stroomt **naar 045° met 1,8 kn**.'] } },
-          { ex: { title: 'Dwarsstroom: wat als je niet corrigeert?', lines: ['Je boot loopt 5 kn, de stroom is 2 kn recht dwars.', 'Zonder correctie drijf je elk uur **2 NM opzij** – 6 NM in 3 uur!', 'Om op je lijn te blijven stuur je ≈ **24°** de stroom in (kies “Dwars” in de animatie).', 'Je snelheid over de grond daalt iets: ≈ **4,6 kn**.'] } },
+          { widget: 'diamond' },
+          { ex: { title: 'Wat is de stroom om 10:00?', lines: ['HW vandaag 13:00 → 10:00 = **HW −3**.', 'Tabel: richting 045°, springtij 2,4 kn, doodtij 1,2 kn.', 'Het verval van vandaag is 3,1 m: precies tussen het gemiddelde springverval van 4,2 m en het doodverval van 2,0 m → snelheid ≈ (2,4 + 1,2) ÷ 2 = **1,8 kn**.', 'Resultaat: het water stroomt **naar 045° met 1,8 kn**.'] } },
+          { ex: { title: 'Dwarsstroom: wat als je niet corrigeert?', lines: ['Je boot loopt 5 kn, de stroom is 2 kn recht dwars.', 'Zonder correctie drijf je elk uur **2 NM opzij** – 6 NM in 3 uur!', 'Om op je lijn te blijven stuur je ≈ **24°** de stroom in (kies “Dwars” in de stroomanimatie).', 'Je snelheid over de grond daalt iets: ≈ **4,6 kn**.'] } },
           { tip: '**Zestigregel**: correctiehoek ≈ stroom ÷ bootsnelheid × 60. Voorbeeld: 2 ÷ 5 × 60 = **24°**. Goed genoeg voor hoofdrekenen.' },
         ],
       },
@@ -552,6 +579,19 @@ export const lessonsNl: LessonSet = {
         h: 'Getij en ankeren',
         blocks: [
           { p: 'Voor anker stijgt en daalt de zee de hele nacht, dus de **diepte verandert steeds**. Beantwoord voor je gaat slapen twee vragen: is mijn ketting bij **hoogwater** lang genoeg? Staat er bij **laagwater** nog water onder mijn kiel?' },
+          { p: '**Wat is scope?** Scope = **kettinglengte ÷ waterdiepte**. 4 : 1 betekent “4 m ketting voor elke meter diepte”. Hoe langer de ketting, hoe vlakker de trek op het anker en hoe beter het houdt. Gebruik altijd de diepte bij **hoogwater**: is het genoeg op het diepste moment van de nacht, dan is het de hele nacht genoeg.' },
+          {
+            table: {
+              head: ['Situatie', 'Scope', 'Ketting bij 6 m diepte bij HW'],
+              rows: [
+                ['Alleen ketting, rustig weer, korte stop', 'minstens 4 : 1', '24 m'],
+                ['Alleen ketting, de nacht blijven of de wind kan toenemen', '5 : 1', '30 m'],
+                ['Alleen ketting, harde wind', '7 : 1', '42 m'],
+                ['Lijn met een paar meter ketting', '6 : 1 – 8 : 1', '36 – 48 m'],
+              ],
+            },
+          },
+          { tip: 'Meer dan 7 : 1 heeft meestal geen zin: je zwaaicirkel wordt groter en je raakt je buren. In het spel Ankerbaai heb je voor drie sterren **tussen 4 : 1 en 7 : 1** nodig.' },
           {
             steps: [
               'Zoek in de getijtafel de **HW**- en **LW**-hoogtes voor de nacht.',
@@ -561,10 +601,11 @@ export const lessonsNl: LessonSet = {
             ],
           },
           { widget: 'tideanchor' },
+          { p: '**Zo gebruik je de animatie:** er zijn drie schuifjes: **kaartdiepte**, **ketting** en **tijd**. Druk op ▶ om de 12 uur af te spelen, of sleep zelf aan de tijd. Doe de **oefenopdrachten** onder de tekening op volgorde: elke opdracht krijgt vanzelf een ✔; kom je vast te zitten, lees dan de 💡 tip.' },
           { ex: { title: 'Valkuil 1: ankeren bij laagwater, krabben bij hoogwater', lines: ['Kaartdiepte 3,0 m. Je ankert ’s avonds bij LW (0,6 m): diepte 3,6 m.', '“Vier keer is genoeg”, dus je steekt 4 × 3,6 ≈ **15 m** ketting.', 'Om middernacht HW (4,2 m): diepte 7,2 m → scope 15 ÷ 7,2 ≈ **2 : 1** → als de wind toeneemt, **krabt het anker**!', 'Goed: gebruik de diepte bij HW → 4 × 7,2 ≈ **30 m** ketting.'] } },
           { ex: { title: 'Valkuil 2: ankeren bij hoogwater, droogvallen bij laagwater', lines: ['Kaartdiepte maar 0,5 m. Bij HW (4,2 m) is de diepte 4,7 m – het lijkt “water genoeg”.', '’s Nachts LW (0,6 m): diepte 0,5 + 0,6 = **1,1 m**. Je diepgang is 1,8 m.', 'Resultaat: **je loopt aan de grond** – midden in de nacht, op een scheve boot.', 'Goed: controleer de diepte bij LW → 1,1 − 1,8 < 0,5 m → deze plek is **niet geschikt**.'] } },
           { warn: 'Zet na het ankeren een **ankeralarm** (plotter of telefoon-app) en controleer je positie als de wind of het getij keert.' },
-          { tip: 'Speel in de animatie eerst met ▶ de 12 uur af, en verander dan ketting en kaartdiepte om beide valkuilen zelf te vinden. Meer details in de les **Ankeren**; oefenen kan in **Ankerbaai**.' },
+          { tip: 'Meer details in de les **Ankeren**; daar wordt het spel Ankerbaai stap voor stap uitgelegd. Probeer het daarna in **Ankerbaai**.' },
           { game: 'anchor' },
         ],
       },
@@ -640,13 +681,36 @@ export const lessonsNl: LessonSet = {
       {
         h: 'In het spel Ankerbaai',
         blocks: [
+          { p: '**Het doel:** een nacht voor anker liggen in een baai. Tot de ochtend gaan er 12 uur voorbij; ondertussen gaat het getij op en neer en draait de wind. Het anker mag **niet krabben**, de boot mag **niet aan de grond** lopen en mag bij het zwaaien **geen rots of andere boot** raken.' },
+          {
+            steps: [
+              'Kies bovenaan een baai: **Mediterrane baai** (geen getij, de wind draait), **Getijdenbaai** (3,6 m verval) of **Drukke ankerplaats** (4 boten, 2 rotsen).',
+              'Lees het kader: **waterhoogte nu** (de hoogste van de nacht), **laagste waterhoogte vannacht** en de **windverwachting**.',
+              'Beweeg de muis over de kaart: je ziet de **kaartdiepte** van elk punt. Onderstreepte getallen vallen droog.',
+              'Kies een plek die diep genoeg is: kaartdiepte ≥ 1,8 (diepgang) + 0,5 (marge) − laagste waterhoogte. Blijf wat van de kust af – de boot zwaait in een cirkel rond.',
+              '**Klik** op de kaart: daar gaat het anker naar beneden. Het kader toont de **diepte nu**.',
+              'Zet het kettingschuifje: minstens **4 ×** de diepte nu, hooguit **7 ×**. De scope staat onder het schuifje.',
+              'De blauwe **zwaaicirkel** mag de kust, een rots of de oranje stippelcirkels **niet raken**. Doet hij dat wel, kies dan een andere plek of steek iets minder ketting.',
+              'Druk op **Speel de nacht af** en kijk.',
+            ],
+          },
+          {
+            table: {
+              head: ['Baai', 'Getij (nu / laagste)', 'Aanbevolen kaartdiepte', 'Ketting'],
+              rows: [
+                ['Mediterrane baai', '0,3 / 0,1 m', '5,5 – 7 m', '25 m'],
+                ['Getijdenbaai', '4,2 / 0,6 m', '3,5 – 4,5 m', '35 m'],
+                ['Drukke ankerplaats', '3,0 / 0,4 m', '≈ 3 m', '25 m'],
+              ],
+            },
+          },
+          { ex: { title: 'Getijdenbaai, stap voor stap', lines: ['Waterhoogte nu 4,2 m, laagste vannacht 0,6 m. Diepgang 1,8 m.', 'Minimale kaartdiepte: 1,8 + 0,5 − 0,6 = **1,7 m**. Omdat de cirkel groot wordt, kies ik een plek van ≈ **4 m**.', 'Diepte nu: 4 + 4,2 = **8,2 m** → ketting minstens 4 × 8,2 ≈ 33 m → **35 m** (hooguit 7 × 8,2 ≈ 57 m).', 'Zwaaistraal ≈ 35 + 5 = **40 m**. Raakt die cirkel geen rots en geen cirkel van een andere boot → Speel de nacht af → ⭐⭐⭐'] } },
           {
             list: [
-              'Beweeg de muis over de kaart om de kaartdiepte te lezen; onderstreepte dieptecijfers vallen droog.',
-              'Het kader toont de waterhoogte nu, het laagste water vannacht en de windrichtingen door de nacht. Je boot ligt altijd **benedenwinds** van het anker.',
-              'Verhouding onder **4 : 1** → het anker krabt als de wind na ongeveer 3 uur toeneemt.',
-              'De blauwe cirkel is jouw zwaairuimte; de oranje gestippelde cirkels horen bij de andere boten – ze mogen niet overlappen.',
-              'Drie sterren: verhouding tussen 4 en 7 : 1 **en** de hele nacht minstens 0,5 m onder de kiel.',
+              '**Het anker krabde** → scope onder 4 : 1. Steek meer ketting.',
+              '**Aan de grond** → ergens in je cirkel staat bij laagwater te weinig water. Kies een diepere plek.',
+              '**Rots of boot geraakt** → je zwaaicirkel kwam bij een rots of in een andere cirkel. Verplaats, of steek iets minder ketting (maar niet onder 4 : 1).',
+              '**Twee sterren** → je lag veilig, maar de scope was meer dan 7 : 1 of het water onder de kiel zakte even onder 0,5 m.',
             ],
           },
           { game: 'anchor' },

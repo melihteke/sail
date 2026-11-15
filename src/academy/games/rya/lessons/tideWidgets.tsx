@@ -307,6 +307,8 @@ export function GateWidget({ t }: { t: Translate }) {
 /* ---------------- Anchored through a tide (side view) ---------------- */
 
 const TA = { lw: 0.6, hw: 4.2, draft: 1.8 }
+const TASK_IDS = ['play', 'fix', 'ground', 'safe'] as const
+type TaskId = (typeof TASK_IDS)[number]
 /** Height of tide `h` hours after HW (HW → LW at +6 → HW at +12). */
 export function heightAfterHw(h: number): number {
   return twelfthsHeight(TA.lw, TA.hw, h <= 6 ? 6 + h : h - 6)
@@ -317,6 +319,7 @@ export function TideAnchorWidget({ t }: { t: Translate }) {
   const [chain, setChain] = useState(20)
   const [hour, setHour] = useState(0)
   const [playing, setPlaying] = useState(false)
+  const [done, setDone] = useState<TaskId[]>([])
 
   useEffect(() => {
     if (!playing) return
@@ -345,6 +348,16 @@ export function TideAnchorWidget({ t }: { t: Translate }) {
   const hwScope = chain / (charted + TA.hw)
   const lwKeel = charted + TA.lw - TA.draft
   const warn = keel <= 0 ? 'aground' : keel < 0.5 ? 'shallow' : scope < 4 ? 'drag' : 'ok'
+
+  useEffect(() => {
+    const now: TaskId[] = []
+    if (hour >= 11.9) now.push('play')
+    if (hwScope >= 4) now.push('fix')
+    if (keel <= 0) now.push('ground')
+    if (done.includes('ground') && hwScope >= 4 && hwScope <= 7 && lwKeel >= 0.5) now.push('safe')
+    const add = now.filter((x) => !done.includes(x))
+    if (add.length) setDone((d) => [...d, ...add.filter((x) => !d.includes(x))])
+  }, [hour, hwScope, keel, lwKeel, done])
 
   const W = 640
   const BED = 240
@@ -450,6 +463,340 @@ export function TideAnchorWidget({ t }: { t: Translate }) {
         {warn === 'ok' ? '✔' : '⚠️'} {t(`rya.lw.ta.${warn}`)}
       </p>
       <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{t('rya.lw.ta.worst', { scope: n1(hwScope), keel: n1(lwKeel) })}</p>
+      <div className="mt-3 rounded-lg border border-sea-500/30 bg-white/80 p-3 dark:bg-white/5">
+        <div className="flex items-center justify-between text-sm font-semibold">
+          <span>🎯 {t('rya.lw.ta.tasks')}</span>
+          <span className="text-xs text-slate-500">
+            {done.length} / {TASK_IDS.length}
+          </span>
+        </div>
+        <ol className="mt-2 space-y-1.5 text-sm">
+          {TASK_IDS.map((id, i) => {
+            const ok = done.includes(id)
+            const current = !ok && TASK_IDS.findIndex((x) => !done.includes(x)) === i
+            return (
+              <li key={id} className={`flex gap-2 rounded px-1 ${current ? 'bg-amber-50 dark:bg-amber-500/10' : ''}`}>
+                <span className={ok ? 'text-emerald-600' : 'text-slate-400'}>{ok ? '✔' : `${i + 1}.`}</span>
+                <span className={ok ? 'text-slate-500 line-through' : ''}>
+                  {t(`rya.lw.ta.task.${id}`)}
+                  {current && <span className="mt-0.5 block text-xs text-amber-800 dark:text-amber-200">💡 {t(`rya.lw.ta.hint.${id}`)}</span>}
+                </span>
+              </li>
+            )
+          })}
+        </ol>
+        {done.length === TASK_IDS.length && <p className="mt-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">🎉 {t('rya.lw.ta.allDone')}</p>}
+      </div>
+    </Frame>
+  )
+}
+
+/* ---------------- Why tides happen: Moon, Sun, springs and neaps ---------------- */
+
+const MONTH = 29.5
+export function rangeOnDay(day: number): number {
+  return 2.0 + 2.2 * ((1 + Math.cos((4 * Math.PI * day) / MONTH)) / 2)
+}
+
+export function MoonWidget({ t }: { t: Translate }) {
+  const [day, setDay] = useState(0)
+  const [playing, setPlaying] = useState(false)
+  useEffect(() => {
+    if (!playing) return
+    let raf = 0
+    let last = performance.now()
+    const tick = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000)
+      last = now
+      setDay((d) => (d + dt * 2.4) % MONTH)
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [playing])
+
+  const phi = Math.PI + (2 * Math.PI * day) / MONTH
+  const E = { x: 250, y: 130 }
+  const moon = { x: E.x + Math.cos(phi) * 95, y: E.y - Math.sin(phi) * 95 }
+  const amp = (1 + 0.46 * Math.cos(2 * (phi - Math.PI))) / 1.46
+  const range = rangeOnDay(day)
+  const near = (d: number) => Math.min(Math.abs(day - d), MONTH - Math.abs(day - d)) < 2
+  const phase = near(0) ? 'new' : near(MONTH / 4) ? 'first' : near(MONTH / 2) ? 'full' : near((3 * MONTH) / 4) ? 'last' : 'between'
+  const kind = range > 3.7 ? 'springs' : range < 2.5 ? 'neaps' : 'mid'
+  const curve = Array.from({ length: 49 }, (_, i) => {
+    const h = 2.6 + (range / 2) * Math.cos((2 * Math.PI * (i / 2)) / 12.42)
+    return `${i ? 'L' : 'M'}${(430 + i * 3.1).toFixed(1)} ${(205 - h * 22).toFixed(1)}`
+  }).join(' ')
+
+  return (
+    <Frame title={t('rya.lw.mo.title')}>
+      <svg viewBox="0 0 600 260" className="w-full rounded-lg bg-[#0b1d33]" role="img" aria-label={t('rya.lw.mo.title')}>
+        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+          <line key={i} x1={30} y1={130} x2={30 + Math.cos((i * Math.PI) / 4) * 22} y2={130 + Math.sin((i * Math.PI) / 4) * 22} stroke="#fbbf24" strokeWidth={2} />
+        ))}
+        <circle cx={30} cy={130} r={14} fill="#fbbf24" />
+        <text x={30} y={165} textAnchor="middle" fontSize={10} fill="#fde68a">
+          {t('rya.lw.mo.sun')}
+        </text>
+        <circle cx={E.x} cy={E.y} r={95} fill="none" stroke="#334155" strokeDasharray="3 5" />
+        <ellipse cx={E.x} cy={E.y} rx={30 + 26 * amp} ry={30 + 4 * (1 - amp)} fill="#38bdf8" opacity={0.45} transform={`rotate(${(-phi * 180) / Math.PI} ${E.x} ${E.y})`} />
+        <circle cx={E.x} cy={E.y} r={26} fill="#1d4ed8" />
+        <circle cx={E.x - 6} cy={E.y - 5} r={9} fill="#16a34a" opacity={0.8} />
+        <text x={E.x} y={E.y + 48} textAnchor="middle" fontSize={10} fill="#bae6fd">
+          {t('rya.lw.mo.earth')}
+        </text>
+        <circle cx={moon.x} cy={moon.y} r={10} fill="#e2e8f0" />
+        <text x={moon.x} y={moon.y - 15} textAnchor="middle" fontSize={10} fill="#e2e8f0">
+          {t('rya.lw.mo.moon')}
+        </text>
+        <rect x={415} y={20} width={170} height={225} rx={8} fill="#ffffff" opacity={0.95} />
+        <text x={500} y={42} textAnchor="middle" fontSize={13} fontWeight={700} fill={kind === 'springs' ? '#b91c1c' : kind === 'neaps' ? '#1d4ed8' : '#0f172a'}>
+          {t(`rya.lw.mo.${kind}`)}
+        </text>
+        <text x={500} y={60} textAnchor="middle" fontSize={10} fill="#475569">
+          {t(`rya.lw.mo.ph.${phase}`)}
+        </text>
+        <text x={500} y={80} textAnchor="middle" fontSize={11} fill="#0f172a">
+          {t('rya.lw.mo.range', { r: n1(range) })}
+        </text>
+        <line x1={430} y1={205 - (2.6 + 2.1) * 22} x2={580} y2={205 - (2.6 + 2.1) * 22} stroke="#94a3b8" strokeDasharray="2 3" />
+        <line x1={430} y1={205 - (2.6 - 2.1) * 22} x2={580} y2={205 - (2.6 - 2.1) * 22} stroke="#94a3b8" strokeDasharray="2 3" />
+        <path d={curve} fill="none" stroke="#0284c7" strokeWidth={2} />
+        <text x={500} y={236} textAnchor="middle" fontSize={9} fill="#64748b">
+          {t('rya.lw.mo.day24')}
+        </text>
+      </svg>
+      <div className="mt-3 grid items-end gap-3 sm:grid-cols-[1fr_auto]">
+        <Slider label={t('rya.lw.mo.dayOf')} value={day} min={0} max={29.5} step={0.5} onChange={(v) => (setPlaying(false), setDay(v))} unit="" />
+        <button type="button" className="btn-primary !px-3 !py-1 text-xs" onClick={() => setPlaying((p) => !p)}>
+          {playing ? `⏸ ${t('rya.lw.ta.pause')}` : `▶ ${t('rya.lw.mo.play')}`}
+        </button>
+      </div>
+      <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">{t('rya.lw.mo.explain')}</p>
+    </Frame>
+  )
+}
+
+/* ---------------- A tidal stream atlas page ---------------- */
+
+const ATLAS_ARROWS: { x: number; y: number; f: number; bend: number; id?: string }[] = [
+  { x: 70, y: 150, f: 0.6, bend: 0 },
+  { x: 160, y: 140, f: 0.8, bend: -6 },
+  { x: 300, y: 150, f: 1.0, bend: 0, id: 'A' },
+  { x: 420, y: 140, f: 1.15, bend: 8 },
+  { x: 530, y: 120, f: 0.8, bend: 14 },
+  { x: 110, y: 230, f: 0.5, bend: 6 },
+  { x: 230, y: 245, f: 0.6, bend: 0 },
+  { x: 470, y: 240, f: 0.6, bend: -8 },
+  { x: 560, y: 225, f: 0.5, bend: -12 },
+]
+
+/** Spring rate (kn, + = east-going) at the atlas page `h` hours from HW. */
+export function atlasSpring(h: number, f: number): number {
+  return Math.round(2.6 * f * Math.sin((Math.PI * (h + 6)) / 6) * 10) / 10
+}
+export const neapOf = (spring: number) => Math.round(Math.abs(spring) * 0.55 * 10) / 10
+const two = (v: number) => String(Math.round(Math.abs(v) * 10)).padStart(2, '0')
+
+export function AtlasWidget({ t }: { t: Translate }) {
+  const [h, setH] = useState(-3)
+  const [springs, setSprings] = useState(true)
+  const [playing, setPlaying] = useState(false)
+  useEffect(() => {
+    if (!playing) return
+    const id = window.setInterval(() => setH((x) => (x >= 6 ? -6 : x + 1)), 1100)
+    return () => window.clearInterval(id)
+  }, [playing])
+  const a = atlasSpring(h, 1)
+  const aNeap = neapOf(a)
+  const slack = Math.abs(a) < 0.3
+  const pageLabel = h === 0 ? 'HW' : `HW ${h > 0 ? '+' : '−'}${Math.abs(h)}`
+
+  return (
+    <Frame title={t('rya.lw.at.title')}>
+      <svg viewBox="0 0 600 320" className="w-full rounded-lg bg-[#fdfbf3] dark:bg-[#f5f1e3]" role="img" aria-label={t('rya.lw.at.title')}>
+        <path d="M0 0 H600 V70 Q520 95 450 80 Q380 60 320 90 Q250 110 180 85 Q100 60 0 95 Z" fill="#e8d9a8" stroke="#a08850" />
+        <path d="M200 205 Q260 175 340 190 Q400 200 420 215 Q390 240 320 238 Q240 236 200 205 Z" fill="#e8d9a8" stroke="#a08850" />
+        <path d="M0 290 Q120 270 240 300 Q380 320 600 285 V320 H0 Z" fill="#e8d9a8" stroke="#a08850" />
+        <text x={310} y={215} textAnchor="middle" fontSize={10} fill="#7c6a3a">
+          {t('rya.lw.at.island')}
+        </text>
+        <rect x={8} y={8} width={210} height={44} rx={6} fill="#ffffff" stroke="#0b3a5c" />
+        <text x={18} y={27} fontSize={14} fontWeight={700} fill="#0b3a5c">
+          {pageLabel}
+        </text>
+        <text x={18} y={44} fontSize={10} fill="#475569">
+          {t(h === 0 ? 'rya.lw.at.pageHw' : h < 0 ? 'rya.lw.at.pageBefore' : 'rya.lw.at.pageAfter', { n: Math.abs(h) })}
+        </text>
+        {ATLAS_ARROWS.map((p, i) => {
+          const sp = atlasSpring(h, p.f)
+          const np = neapOf(sp)
+          if (Math.abs(sp) < 0.25)
+            return (
+              <g key={i}>
+                <circle cx={p.x} cy={p.y} r={4} fill="none" stroke="#7c3aed" strokeWidth={1.5} />
+                {p.id && (
+                  <text x={p.x} y={p.y - 9} textAnchor="middle" fontSize={10} fontWeight={700} fill="#7c3aed">
+                    {p.id}
+                  </text>
+                )}
+              </g>
+            )
+          const dir = (sp > 0 ? 0 : 180) + p.bend
+          const len = 18 + Math.abs(sp) * 16
+          const w = 1 + Math.abs(sp) * 1.4
+          return (
+            <g key={i} transform={`translate(${p.x} ${p.y})`}>
+              <g transform={`rotate(${dir})`}>
+                <line x1={-len / 2} y1={0} x2={len / 2 - 6} y2={0} stroke="#7c3aed" strokeWidth={w} strokeLinecap="round" />
+                <path d={`M${len / 2} 0 L${len / 2 - 9} ${-4 - w / 2} L${len / 2 - 9} ${4 + w / 2} Z`} fill="#7c3aed" />
+              </g>
+              <text y={-8 - w} textAnchor="middle" fontSize={10} fill="#4c1d95">
+                <tspan fontWeight={springs ? 400 : 700} fill={springs ? '#6b7280' : '#4c1d95'}>
+                  {two(np)}
+                </tspan>
+                ,
+                <tspan fontWeight={springs ? 700 : 400} fill={springs ? '#4c1d95' : '#6b7280'}>
+                  {two(sp)}
+                </tspan>
+              </text>
+              {p.id && (
+                <text y={18 + w} textAnchor="middle" fontSize={11} fontWeight={700} fill="#b91c1c">
+                  {p.id}
+                </text>
+              )}
+            </g>
+          )
+        })}
+      </svg>
+      <div className="mt-3 grid items-end gap-3 sm:grid-cols-[1fr_auto]">
+        <label className="block text-xs">
+          <span className="flex justify-between text-slate-600 dark:text-slate-300">
+            <span>{t('rya.lw.at.page')}</span>
+            <span className="font-mono font-semibold">{pageLabel}</span>
+          </span>
+          <input type="range" min={-6} max={6} step={1} value={h} onChange={(e) => (setPlaying(false), setH(Number(e.target.value)))} className="w-full accent-violet-600" />
+        </label>
+        <div className="flex flex-wrap gap-1">
+          {[true, false].map((s) => (
+            <button key={String(s)} type="button" onClick={() => setSprings(s)} className={`rounded-full px-3 py-1 text-xs font-medium ${springs === s ? 'bg-violet-700 text-white' : 'bg-white dark:bg-white/10'}`}>
+              {t(s ? 'rya.lw.at.springs' : 'rya.lw.at.neaps')}
+            </button>
+          ))}
+          <button type="button" className="btn-primary !px-3 !py-1 text-xs" onClick={() => setPlaying((p) => !p)}>
+            {playing ? `⏸ ${t('rya.lw.ta.pause')}` : `▶ ${t('rya.lw.at.play')}`}
+          </button>
+        </div>
+      </div>
+      <p className="mt-2 rounded-lg bg-white/70 px-2 py-1 text-sm dark:bg-white/5">
+        <b>A:</b>{' '}
+        {slack
+          ? t('rya.lw.at.slack')
+          : t('rya.lw.at.read', { label: `${two(aNeap)},${two(a)}`, dir: a > 0 ? '090°' : '270°', neap: n1(aNeap), spring: n1(Math.abs(a)), today: n1(springs ? Math.abs(a) : aNeap) })}
+      </p>
+    </Frame>
+  )
+}
+
+/* ---------------- A tidal diamond on the chart ---------------- */
+
+export const DIAMOND: { set: number; sp: number; np: number }[] = [
+  { set: 30, sp: 0.6, np: 0.3 },
+  { set: 35, sp: 1.4, np: 0.7 },
+  { set: 40, sp: 2.1, np: 1.0 },
+  { set: 45, sp: 2.4, np: 1.2 },
+  { set: 50, sp: 2.0, np: 1.0 },
+  { set: 60, sp: 1.0, np: 0.5 },
+  { set: 140, sp: 0.2, np: 0.1 },
+  { set: 220, sp: 1.0, np: 0.5 },
+  { set: 230, sp: 2.1, np: 1.0 },
+  { set: 225, sp: 2.5, np: 1.3 },
+  { set: 220, sp: 2.0, np: 1.0 },
+  { set: 215, sp: 1.2, np: 0.6 },
+  { set: 200, sp: 0.4, np: 0.2 },
+]
+export const SPRING_RANGE = 4.2
+export const NEAP_RANGE = 2.0
+export function diamondRate(row: { sp: number; np: number }, range: number): number {
+  const f = (range - NEAP_RANGE) / (SPRING_RANGE - NEAP_RANGE)
+  return Math.max(0, row.np + (row.sp - row.np) * f)
+}
+
+export function DiamondWidget({ t }: { t: Translate }) {
+  const [h, setH] = useState(-3)
+  const [range, setRange] = useState(3.1)
+  const row = DIAMOND[h + 6]
+  const rate = diamondRate(row, range)
+  const rad = (row.set * Math.PI) / 180
+  const D = { x: 140, y: 110 }
+  const len = 14 + rate * 22
+  const tip = { x: D.x + Math.sin(rad) * len, y: D.y - Math.cos(rad) * len }
+  const hl = (k: number) => (k === 0 ? 'HW' : `HW ${k > 0 ? '+' : '−'}${Math.abs(k)}`)
+
+  return (
+    <Frame title={t('rya.lw.di.title')}>
+      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_15rem]">
+        <svg viewBox="0 0 280 220" className="w-full rounded-lg bg-[#fdfbf3] dark:bg-[#f5f1e3]" role="img" aria-label={t('rya.lw.di.title')}>
+          <path d="M0 0 H280 V40 Q200 70 140 45 Q70 20 0 55 Z" fill="#e8d9a8" stroke="#a08850" />
+          {[
+            [40, 90, '8'],
+            [230, 80, '12'],
+            [60, 170, '15'],
+            [210, 180, '18'],
+            [140, 200, '21'],
+          ].map(([x, y, d]) => (
+            <text key={`${x}`} x={x as number} y={y as number} fontSize={10} fill="#334155">
+              {d}
+            </text>
+          ))}
+          <text x={8} y={214} fontSize={9} fill="#64748b">
+            N ↑
+          </text>
+          <line x1={D.x} y1={D.y} x2={tip.x} y2={tip.y} stroke="#0284c7" strokeWidth={2 + rate} strokeLinecap="round" />
+          <circle cx={tip.x} cy={tip.y} r={3 + rate / 2} fill="#0284c7" />
+          <path d={`M${D.x} ${D.y - 11} L${D.x + 9} ${D.y} L${D.x} ${D.y + 11} L${D.x - 9} ${D.y} Z`} fill="#ffffff" stroke="#a21caf" strokeWidth={2} />
+          <text x={D.x} y={D.y + 4} textAnchor="middle" fontSize={11} fontWeight={700} fill="#a21caf">
+            A
+          </text>
+          <text x={tip.x + 6} y={tip.y - 6} fontSize={11} fontWeight={700} fill="#0369a1">
+            {n1(rate)} kn
+          </text>
+        </svg>
+        <div className="overflow-hidden rounded-lg border border-fuchsia-300 bg-white text-xs dark:bg-white/5">
+          <div className="bg-fuchsia-50 px-2 py-1 font-semibold text-fuchsia-800 dark:bg-fuchsia-500/10 dark:text-fuchsia-200">◊A 50°10′N 001°20′W</div>
+          <table className="w-full text-center">
+            <thead className="text-slate-500">
+              <tr>
+                <th className="px-1 py-0.5 text-left">{t('rya.lw.di.hour')}</th>
+                <th>{t('rya.lw.di.dir')}</th>
+                <th>Sp</th>
+                <th>Np</th>
+              </tr>
+            </thead>
+            <tbody>
+              {DIAMOND.map((r, i) => {
+                const k = i - 6
+                return (
+                  <tr key={k} onClick={() => setH(k)} className={`cursor-pointer ${k === h ? 'bg-sky-100 font-semibold dark:bg-sky-500/20' : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}>
+                    <td className="px-1 text-left">{hl(k)}</td>
+                    <td>{String(r.set).padStart(3, '0')}°</td>
+                    <td>{n1(r.sp)}</td>
+                    <td>{n1(r.np)}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <Slider label={t('rya.lw.di.hourPick')} value={h} min={-6} max={6} step={1} onChange={setH} unit="h" />
+        <Slider label={t('rya.lw.di.range')} value={range} min={1.5} max={5} step={0.1} onChange={setRange} unit="m" />
+      </div>
+      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{t('rya.lw.di.ranges', { sp: n1(SPRING_RANGE), np: n1(NEAP_RANGE) })}</p>
+      <p className="mt-2 rounded-lg bg-white/70 px-2 py-1 text-sm dark:bg-white/5">
+        {t('rya.lw.di.calc', { hour: hl(h), dir: String(row.set).padStart(3, '0'), sp: n1(row.sp), np: n1(row.np), range: n1(range), rate: n1(rate) })}
+      </p>
     </Frame>
   )
 }

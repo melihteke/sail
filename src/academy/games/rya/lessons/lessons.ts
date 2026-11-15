@@ -7,7 +7,7 @@ import { lessonsTr } from './content.tr'
 export const LESSON_IDS = ['sails', 'ropes', 'power', 'tides', 'anchoring', 'colregs', 'lights', 'pilotage', 'safety'] as const
 export type LessonId = (typeof LESSON_IDS)[number]
 
-export type WidgetId = 'twelfths' | 'scope' | 'points' | 'lights' | 'rig3d' | 'stream' | 'gate' | 'tideanchor'
+export type WidgetId = 'twelfths' | 'scope' | 'points' | 'lights' | 'rig3d' | 'stream' | 'gate' | 'tideanchor' | 'moon' | 'atlas' | 'diamond'
 
 /** A content block. Text may contain **bold**. */
 export type Block =

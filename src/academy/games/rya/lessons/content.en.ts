@@ -410,6 +410,8 @@ export const lessonsEn: LessonSet = {
             ],
           },
           { ex: { title: 'Depth right now', lines: ['Charted depth 2.0 m, height of tide 3.0 m.', 'Depth = 2.0 + 3.0 = **5.0 m**.', 'A bank that dries 1.5 m, height of tide 3.8 m: depth = 3.8 − 1.5 = **2.3 m**.'] } },
+          { p: '**Why does it happen?** The Moon (and, less strongly, the Sun) pulls the sea towards it. This creates two “humps” of water in the ocean: one on the side facing the Moon and one on the opposite side. As the Earth turns, every coast passes through both humps – so there are **two high waters** and **two low waters** a day. When Sun and Moon are in line their pulls add up (**springs**, big range); at right angles they partly cancel out (**neaps**, small range).' },
+          { widget: 'moon' },
         ],
       },
       {
@@ -473,18 +475,42 @@ export const lessonsEn: LessonSet = {
       {
         h: 'Tidal streams',
         blocks: [
-          { p: 'As the tide rises and falls, sea water is moved from one place to another: this is the **tidal stream**. Its direction is where the water is **going to** (the **set**), its speed is in knots (the **rate**). For a yacht doing 5 kn, a 2 kn stream is about **40 %** of its speed – one of the biggest factors in how long a passage takes.' },
+          { p: '**What is a current?** A current is water **moving** sideways from one place to another – like a river in the sea. A boat moves through the water; if the water itself moves, it carries the boat with it. At sea you meet four kinds of current:' },
+          {
+            table: {
+              head: ['Kind of current', 'Why it happens', 'Example'],
+              rows: [
+                ['Tidal stream', 'Water flowing to and from the coast as the sea rises and falls under the pull of Moon and Sun', 'English Channel, Dutch coast – changes direction about every 6 hours'],
+                ['Ocean current', 'Steady winds, differences in temperature and saltiness, the turning of the Earth', 'Gulf Stream – always flows the same way'],
+                ['Wind-driven current', 'Days of wind from one direction dragging the surface water along', '0.5–1 kn along the coast after a gale'],
+                ['River and strait current', 'River water, or a difference in level and saltiness between two seas', 'Bosphorus – from the Black Sea to the Sea of Marmara'],
+              ],
+            },
+          },
+          { p: '**Why is there a tidal stream?** If the sea is going to rise 4 m at the coast, that much water has to **come in** from the open sea; when it falls, the same water **goes back out**. That moving water is the tidal stream. The stream while the tide rises is the **flood**, while it falls the **ebb**. The short quiet moment when it turns is **slack water**.' },
           {
             list: [
-              '**Streams behave like the rule of twelfths**: weak around HW and LW (**slack water**), strongest in the middle of the tide (3rd and 4th hours).',
-              '**Springs** (around new and full moon): big range, strong streams. **Neaps** (half moon): small range, weak streams – roughly half.',
-              'The **tidal stream atlas** or the **tidal diamonds** on the chart (a letter in a ◊) give the direction and rate for every hour before and after HW.',
+              'The direction of a stream is where the water is **going to** (the **set**; 090° = flowing east). Its speed is in knots (the **rate**). Careful: wind is the other way round – wind is named after where it **comes from**.',
+              '**It behaves like the rule of twelfths**: weak around HW and LW, strongest in the middle of the tide (3rd and 4th hours).',
+              '**Springs** (around new and full moon) = strong streams; **neaps** (half moon) = weak streams, roughly half. See the Moon animation in “What is the tide?”.',
               '**Speed over the ground (SOG)** = boat speed ± stream. A fair stream adds, a foul stream subtracts; a cross stream **pushes** you off your line.',
             ],
           },
           { widget: 'stream' },
           { ex: { title: 'Fair or foul?', lines: ['In still water, 18 NM at 5 kn = **3 h 36 min**.', 'With 2 kn fair on average: 5 + 2 = 7 kn → about **2 h 35 min**.', 'With 2 kn foul: 5 − 2 = 3 kn → **6 hours**!', 'Same passage, only a different departure time: **3½ hours difference**.'] } },
-          { p: '**Reading a tidal diamond.** On the chart you see a letter in a ◊. The table in the chart margin gives, in that letter’s column, the stream for every hour before and after HW at the reference port:' },
+          { p: '**Where does stream information come from?** Two sources: the **tidal stream atlas**, which shows a whole area, and **tidal diamonds** for particular spots on the chart. Both give the time relative to high water at a **reference (standard) port** – for example “3 hours before HW Dover”. So first you look up today’s HW time at that port in the tide table.' },
+          { p: '**1) The tidal stream atlas** is a separate, thin booklet (in the UK the Admiralty “Tidal Stream Atlas” series; nautical almanacs such as Reeds contain the same pages). It has **13 pages**: **one chartlet for every hour** from 6 hours before HW to 6 hours after. Each chartlet has arrows: the **direction of the arrow** = where the water is going, the **thickness and length** = the speed. Numbers like **“14,26”** next to an arrow are tenths of a knot: **1.4 kn at neaps, 2.6 kn at springs**. The animation below is a simple drawing that works exactly like a real atlas page.' },
+          {
+            steps: [
+              'Look up today’s HW time at the reference port in the tide table (for example 13:00).',
+              'How many hours before or after HW is your time? (10:00 → HW−3). Open that page of the atlas.',
+              'Find the arrow where you will be: read its direction and the “nn,ss” numbers.',
+              'Springs or neaps today? Take that number; if it is in between, use a value in between.',
+            ],
+          },
+          { widget: 'atlas' },
+          { ex: { title: 'Reading the stream from the atlas', lines: ['HW today is 13:00 and you are at A at 10:00 → page **HW−3**.', 'The arrow at A points east and is marked **“14,26”**.', 'Springs today → **2.6 kn towards the east**. At neaps it would be **1.4 kn**.', 'At the same spot on the HW+3 page the arrow points **west**: the stream runs the other way. On the HW page there is only a circle: slack water.'] } },
+          { p: '**2) A tidal diamond** is a **letter in a magenta ◊** on the chart (A, B, C…). In the chart margin there is a table: one column per letter, one row per hour (HW−6 … HW+6). Each row gives the **direction** and two rates: **Sp** (springs) and **Np** (neaps). A diamond describes one spot, so it is more precise than the atlas; the atlas shows the whole area at a glance. Part of a diamond table:' },
           {
             table: {
               head: ['Time', 'Set', 'Springs (kn)', 'Neaps (kn)'],
@@ -492,7 +518,7 @@ export const lessonsEn: LessonSet = {
                 ['HW −3', '045°', '2.4', '1.2'],
                 ['HW −2', '050°', '2.0', '1.0'],
                 ['HW −1', '060°', '1.0', '0.5'],
-                ['HW', '—', '0.2', '0.1'],
+                ['HW', '140°', '0.2', '0.1'],
                 ['HW +1', '220°', '1.0', '0.5'],
                 ['HW +2', '230°', '2.1', '1.0'],
                 ['HW +3', '225°', '2.5', '1.3'],
@@ -501,14 +527,15 @@ export const lessonsEn: LessonSet = {
           },
           {
             steps: [
-              'Find today’s HW time at the reference port.',
-              'How many hours before or after HW is your time? Go to that row.',
-              'Springs or neaps today? Look at the range; if it is in between, take a rate in between.',
+              'Find the diamond closest to your route on the chart (for example ◊A).',
+              'How many hours before or after HW is your time? Go to that row in the table.',
+              'Find today’s range (HW − LW) in the tide table: closer to springs or to neaps? If in between, take a rate in between.',
               'Note the set and rate: the water is flowing **towards** that direction.',
             ],
           },
-          { ex: { title: 'What is the stream at 10:00?', lines: ['HW today 13:00 → 10:00 = **HW −3**.', 'Table: set 045°, springs 2.4 kn, neaps 1.2 kn.', 'Today’s range is halfway between springs and neaps → rate ≈ (2.4 + 1.2) ÷ 2 = **1.8 kn**.', 'Result: the water is flowing **towards 045° at 1.8 kn**.'] } },
-          { ex: { title: 'Cross stream: what if you do not correct?', lines: ['Your boat does 5 kn, the stream is 2 kn straight across.', 'Without correction you drift **2 NM sideways** every hour – 6 NM in 3 hours!', 'To stay on your line, point ≈ **24°** up into the stream (choose “Across” in the animation).', 'Your speed over the ground drops a little: ≈ **4.6 kn**.'] } },
+          { widget: 'diamond' },
+          { ex: { title: 'What is the stream at 10:00?', lines: ['HW today 13:00 → 10:00 = **HW −3**.', 'Table: set 045°, springs 2.4 kn, neaps 1.2 kn.', 'Today’s range is 3.1 m: exactly halfway between the mean spring range of 4.2 m and the mean neap range of 2.0 m → rate ≈ (2.4 + 1.2) ÷ 2 = **1.8 kn**.', 'Result: the water is flowing **towards 045° at 1.8 kn**.'] } },
+          { ex: { title: 'Cross stream: what if you do not correct?', lines: ['Your boat does 5 kn, the stream is 2 kn straight across.', 'Without correction you drift **2 NM sideways** every hour – 6 NM in 3 hours!', 'To stay on your line, point ≈ **24°** up into the stream (choose “Across” in the stream animation).', 'Your speed over the ground drops a little: ≈ **4.6 kn**.'] } },
           { tip: '**Rule of 60**: correction angle ≈ stream ÷ boat speed × 60. Example: 2 ÷ 5 × 60 = **24°**. Good enough for mental arithmetic.' },
         ],
       },
@@ -552,6 +579,19 @@ export const lessonsEn: LessonSet = {
         h: 'Tide and anchoring',
         blocks: [
           { p: 'At anchor the sea rises and falls all night, so the **depth keeps changing**. Before you settle, answer two questions: at **high water**, is my chain long enough? At **low water**, is there still water under my keel?' },
+          { p: '**What is scope?** Scope = **length of chain ÷ depth of water**. 4 : 1 means “4 m of chain for every 1 m of depth”. The longer the chain, the more horizontal the pull on the anchor and the better it holds. Always use the depth at **high water**: if it is enough at the deepest moment of the night, it is enough all night.' },
+          {
+            table: {
+              head: ['Situation', 'Scope', 'Chain if the HW depth is 6 m'],
+              rows: [
+                ['All chain, calm weather, short stop', 'at least 4 : 1', '24 m'],
+                ['All chain, staying the night or the wind may increase', '5 : 1', '30 m'],
+                ['All chain, strong wind', '7 : 1', '42 m'],
+                ['Rope with a few metres of chain', '6 : 1 – 8 : 1', '36 – 48 m'],
+              ],
+            },
+          },
+          { tip: 'More than 7 : 1 is usually pointless: your swinging circle grows and you hit your neighbours. In the Anchor Bay game, three stars needs **between 4 : 1 and 7 : 1**.' },
           {
             steps: [
               'From the tide table, find the **HW** and **LW** heights for the night.',
@@ -561,10 +601,11 @@ export const lessonsEn: LessonSet = {
             ],
           },
           { widget: 'tideanchor' },
+          { p: '**How to use the animation:** there are three sliders: **charted depth**, **chain** and **time**. Press ▶ to play the 12 hours, or drag the time slider yourself. Do the **practice tasks** under the picture in order: each one ticks itself ✔ when done; if you get stuck, read the 💡 hint.' },
           { ex: { title: 'Trap 1: anchor at low water, drag at high water', lines: ['Charted depth 3.0 m. You anchor in the evening at LW (0.6 m): depth 3.6 m.', '“Four times is enough”, so you let out 4 × 3.6 ≈ **15 m** of chain.', 'At midnight HW (4.2 m): depth 7.2 m → scope 15 ÷ 7.2 ≈ **2 : 1** → when the wind picks up, **the anchor drags**!', 'Correct: use the depth at HW → 4 × 7.2 ≈ **30 m** of chain.'] } },
           { ex: { title: 'Trap 2: anchor at high water, ground at low water', lines: ['Charted depth only 0.5 m. At HW (4.2 m) the depth is 4.7 m – it looks like “plenty of water”.', 'At night LW (0.6 m): depth 0.5 + 0.6 = **1.1 m**. Your draught is 1.8 m.', 'Result: **you go aground** – in the middle of the night, on a heeling boat.', 'Correct: check the depth at LW → 1.1 − 1.8 < 0.5 m → this spot is **no good**.'] } },
           { warn: 'After anchoring, set an **anchor alarm** (plotter or phone app) and check your position when the wind or the tide turns.' },
-          { tip: 'In the animation, first press ▶ to play the 12 hours, then change the chain and charted depth to find both traps yourself. For details see the **Anchoring** lesson; to practise, play **Anchor Bay**.' },
+          { tip: 'For details see the **Anchoring** lesson; it explains the Anchor Bay game step by step. Then try it in **Anchor Bay**.' },
           { game: 'anchor' },
         ],
       },
@@ -640,13 +681,36 @@ export const lessonsEn: LessonSet = {
       {
         h: 'In the Anchor Bay game',
         blocks: [
+          { p: '**The goal:** anchor for the night in a bay. Twelve hours pass until morning; meanwhile the tide goes down and up and the wind goes round. The anchor must **not drag**, the boat must **not go aground**, and while swinging it must **not touch a rock or another boat**.' },
+          {
+            steps: [
+              'Choose a bay at the top: **Mediterranean cove** (no tide, the wind goes round), **Tidal bay** (3.6 m range) or **Crowded anchorage** (4 boats, 2 rocks).',
+              'Read the box: **height of tide now** (the highest of the night), **lowest tide tonight** and the **wind forecast**.',
+              'Move the mouse over the chart: you see the **charted depth** of every point. Underlined numbers dry out.',
+              'Pick a spot that is deep enough: charted depth ≥ 1.8 (draught) + 0.5 (margin) − lowest tide. Keep away from the shore – the boat swings round in a circle.',
+              '**Click** the chart: the anchor goes down there. The box shows the **depth now**.',
+              'Set the chain slider: at least **4 ×** the depth now, at most **7 ×**. The scope is shown under the slider.',
+              'The blue **swinging circle** must **not touch** the shore, a rock or the orange dashed circles. If it does, choose another spot or shorten the chain a little.',
+              'Press **Play the night** and watch.',
+            ],
+          },
+          {
+            table: {
+              head: ['Bay', 'Tide (now / lowest)', 'Suggested charted depth', 'Chain'],
+              rows: [
+                ['Mediterranean cove', '0.3 / 0.1 m', '5.5 – 7 m', '25 m'],
+                ['Tidal bay', '4.2 / 0.6 m', '3.5 – 4.5 m', '35 m'],
+                ['Crowded anchorage', '3.0 / 0.4 m', '≈ 3 m', '25 m'],
+              ],
+            },
+          },
+          { ex: { title: 'Tidal bay, step by step', lines: ['Tide now 4.2 m, lowest tonight 0.6 m. Draught 1.8 m.', 'Minimum charted depth: 1.8 + 0.5 − 0.6 = **1.7 m**. Because the circle will be big, I pick a spot of ≈ **4 m**.', 'Depth now: 4 + 4.2 = **8.2 m** → chain at least 4 × 8.2 ≈ 33 m → **35 m** (at most 7 × 8.2 ≈ 57 m).', 'Swinging radius ≈ 35 + 5 = **40 m**. If that circle touches no rock and no other boat’s circle → Play the night → ⭐⭐⭐'] } },
           {
             list: [
-              'Move the mouse over the chart to read the charted depth; underlined soundings dry.',
-              'The box shows the tide now, the lowest tide tonight and the wind directions through the night. Your boat always lies **downwind** of the anchor.',
-              'Scope below **4 : 1** → the anchor drags when the wind freshens after about 3 hours.',
-              'The blue circle is your swinging room; the dashed orange circles belong to the other boats – they must not overlap.',
-              'Three stars: scope between 4 and 7 : 1 **and** at least 0.5 m under the keel all night.',
+              '**The anchor dragged** → scope below 4 : 1. Let out more chain.',
+              '**Aground** → somewhere in your circle there is not enough water at low water. Choose a deeper spot.',
+              '**Hit a rock or a boat** → your swinging circle reached a rock or another circle. Move, or shorten the chain a little (but not below 4 : 1).',
+              '**Two stars** → you were safe, but the scope was more than 7 : 1 or the water under the keel dipped below 0.5 m.',
             ],
           },
           { game: 'anchor' },

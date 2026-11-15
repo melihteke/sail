@@ -9,7 +9,7 @@ import { TYPES } from '../lookout/LookoutGame'
 import { DirArrow } from '../ui'
 import { Frame, Num } from './frame'
 import { swingRadius, tideWindow, TWELFTHS, twelfthsHeight, type WidgetId } from './lessons'
-import { GateWidget, StreamWidget, TideAnchorWidget } from './tideWidgets'
+import { AtlasWidget, DiamondWidget, GateWidget, MoonWidget, StreamWidget, TideAnchorWidget } from './tideWidgets'
 
 const Rig3DExplorer = lazy(() => import('../rig3d/Rig3D'))
 
@@ -26,6 +26,9 @@ export function LessonWidget({ id }: { id: WidgetId }) {
         </Suspense>
       </Frame>
     )
+  if (id === 'moon') return <MoonWidget t={t} />
+  if (id === 'atlas') return <AtlasWidget t={t} />
+  if (id === 'diamond') return <DiamondWidget t={t} />
   if (id === 'stream') return <StreamWidget t={t} />
   if (id === 'gate') return <GateWidget t={t} />
   if (id === 'tideanchor') return <TideAnchorWidget t={t} />
