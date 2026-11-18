@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useI18n } from '../../../i18n'
 import { BlockView, rich } from '../lessons/LessonPage'
 import { metaOf, type Block } from '../lessons/lessons'
@@ -9,8 +9,8 @@ import { AlmanacWidget } from './widgets'
 
 const isChapter = (v: string | null): v is ChapterId => (CHAPTER_IDS as readonly string[]).includes(v ?? '')
 
-/** "Almanac training" tab of the Day Skipper course: one chapter at a time. */
-export function AlmanacTraining() {
+/** Stand-alone Day Skipper lesson: end-to-end passage planning with the almanac, one chapter at a time. */
+export function PassagePlanningPage() {
   const { t, lang } = useI18n()
   const a = almanacTexts[lang]
   const [search, setSearch] = useSearchParams()
@@ -18,7 +18,7 @@ export function AlmanacTraining() {
   const ch: ChapterId = isChapter(req) ? req : 'start'
   const idx = CHAPTER_IDS.indexOf(ch)
   const go = (id: ChapterId) => {
-    setSearch({ tab: 'almanac', ch: id }, { replace: true })
+    setSearch({ ch: id }, { replace: true })
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
   }
   const chapter = a.chapters[ch]
@@ -26,9 +26,12 @@ export function AlmanacTraining() {
   const prev = CHAPTER_IDS[idx - 1]
   const next = CHAPTER_IDS[idx + 1]
   return (
-    <div>
-      <h2 className="text-2xl font-bold tracking-tight text-navy-900 dark:text-white">📘 {a.title}</h2>
-      <p className="mt-1 max-w-3xl text-slate-600 dark:text-slate-300">{a.intro}</p>
+    <div className="mx-auto max-w-6xl px-4 py-8">
+      <Link to="/rya/day-skipper" className="text-sm text-sea-500 hover:underline">
+        ← {t('rya.course.day-skipper.title')}
+      </Link>
+      <h1 className="mt-2 text-3xl font-bold tracking-tight text-navy-900 dark:text-white">🧭 {a.title}</h1>
+      <p className="mt-2 max-w-3xl text-slate-600 dark:text-slate-300">{a.intro}</p>
       <div className="mt-2 rounded-lg border-l-4 border-rose-500 bg-rose-50 px-3 py-1.5 text-xs dark:bg-rose-500/10">⚠️ {a.ui.disclaimer}</div>
 
       <div className="mt-5 grid gap-6 lg:grid-cols-[14rem_minmax(0,1fr)]">

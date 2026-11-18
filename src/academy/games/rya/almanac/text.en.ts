@@ -1,7 +1,7 @@
 import type { AlmanacText } from './text'
 
 export const almanacEn: AlmanacText = {
-  title: 'Almanac training: an end-to-end passage plan',
+  title: 'End-to-end passage planning with the almanac',
   intro:
     'Two harbours in a fictional area, their tide tables and a tidal stream atlas – then a step-by-step passage plan the RYA Day Skipper way: HW/LW, the depth gate, tidal streams, departure time, waypoints and course to steer.',
   chapters: {

@@ -1,7 +1,7 @@
 import type { AlmanacText } from './text'
 
 export const almanacNl: AlmanacText = {
-  title: 'Almanaktraining: een tochtplan van begin tot eind',
+  title: 'Tochtplanning van begin tot eind met de almanak',
   intro:
     'Twee havens in een fictief vaargebied, hun getijtafels en een getijstroomatlas – en dan stap voor stap een tochtplan zoals bij RYA Day Skipper: HW/LW, de dieptepoort, getijstromen, vertrektijd, waypoints en de te sturen koers.',
   chapters: {

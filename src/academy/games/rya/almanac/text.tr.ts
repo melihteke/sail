@@ -1,7 +1,7 @@
 import type { AlmanacText } from './text'
 
 export const almanacTr: AlmanacText = {
-  title: 'Almanak eğitimi: uçtan uca seyir planı',
+  title: 'Almanakla uçtan uca seyir planlama',
   intro:
     'Kurgusal bir bölgede iki liman, gelgit tabloları ve akıntı atlası ile RYA Day Skipper usulü adım adım seyir planı: HW/LW değerleri, derinlik kapısı, akıntılar, kalkış saati, waypointler ve Course to Steer.',
   chapters: {

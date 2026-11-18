@@ -389,7 +389,9 @@ export const ryaCoreNl: Record<keyof typeof ryaCoreEn, string> = {
   'rya.stbd': 'stuurboord',
 
   'rya.tab.lessons': 'Lessen',
-  'rya.tab.almanac': 'Almanaktraining',
+  'rya.pp.title': 'Tochtplanning van begin tot eind met de almanak',
+  'rya.pp.summary': 'Twee fictieve havens, hun getijtafels en stroomatlas, en dan stap voor stap een volledig tochtplan: HW/LW, dieptepoort, stromen, vertrektijd, waypoints en te sturen koers.',
+  'rya.pp.badge': 'Grote les · 10 hoofdstukken · oefenen',
   'rya.lessons.title': 'Lessen per onderwerp',
   'rya.lessons.intro': 'Stap-voor-stap uitleg met uitgewerkte voorbeelden en rekenhulpen. Lees een les, doe de korte test en speel daarna de bijbehorende spellen.',
   'rya.lessons.open': 'Lees de les',

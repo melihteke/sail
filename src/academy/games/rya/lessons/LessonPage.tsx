@@ -49,6 +49,27 @@ export function LessonCards({ items }: { items: LessonMeta[] }) {
   )
 }
 
+/** Featured card for the stand-alone "end-to-end passage planning" lesson. */
+export function PassagePlanCard() {
+  const { t } = useI18n()
+  return (
+    <Link
+      to="/rya/learn/passage-planning"
+      className="mb-4 flex flex-col gap-3 rounded-xl border-2 border-sea-500/50 bg-gradient-to-r from-sky-50 to-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center dark:from-sea-500/10 dark:to-navy-900/60"
+    >
+      <span className="text-4xl" aria-hidden>
+        🧭
+      </span>
+      <div className="flex-1">
+        <div className="text-xs font-semibold uppercase tracking-wide text-sea-500">{t('rya.pp.badge')}</div>
+        <h3 className="mt-0.5 text-lg font-semibold">{t('rya.pp.title')}</h3>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{t('rya.pp.summary')}</p>
+      </div>
+      <div className="text-sm font-medium text-sea-500">📖 {t('rya.lessons.open')} →</div>
+    </Link>
+  )
+}
+
 export function LessonIndex() {
   const { t } = useI18n()
   return (
@@ -59,6 +80,7 @@ export function LessonIndex() {
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-navy-900 dark:text-white">{t('rya.lessons.title')}</h1>
       <p className="mt-2 max-w-3xl text-slate-600 dark:text-slate-300">{t('rya.lessons.intro')}</p>
       <div className="mt-6">
+        <PassagePlanCard />
         <LessonCards items={lessonMeta} />
       </div>
     </div>
