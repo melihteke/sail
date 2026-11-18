@@ -389,6 +389,7 @@ export const ryaCoreTr: Record<keyof typeof ryaCoreEn, string> = {
   'rya.stbd': 'sancak',
 
   'rya.tab.lessons': 'Konu anlatımı',
+  'rya.tab.almanac': 'Almanak eğitimi',
   'rya.lessons.title': 'Konu anlatımları',
   'rya.lessons.intro': 'Çözümlü örnekler ve hesaplayıcılarla adım adım açıklamalar. Bir dersi oku, kısa testi çöz, sonra ilgili oyunları oyna.',
   'rya.lessons.open': 'Dersi oku',

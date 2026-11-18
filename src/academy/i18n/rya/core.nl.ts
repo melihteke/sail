@@ -389,6 +389,7 @@ export const ryaCoreNl: Record<keyof typeof ryaCoreEn, string> = {
   'rya.stbd': 'stuurboord',
 
   'rya.tab.lessons': 'Lessen',
+  'rya.tab.almanac': 'Almanaktraining',
   'rya.lessons.title': 'Lessen per onderwerp',
   'rya.lessons.intro': 'Stap-voor-stap uitleg met uitgewerkte voorbeelden en rekenhulpen. Lees een les, doe de korte test en speel daarna de bijbehorende spellen.',
   'rya.lessons.open': 'Lees de les',

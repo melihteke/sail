@@ -394,6 +394,7 @@ export const ryaCoreEn = {
   'rya.stbd': 'starboard',
 
   'rya.tab.lessons': 'Lessons',
+  'rya.tab.almanac': 'Almanac training',
   'rya.lessons.title': 'Topic lessons',
   'rya.lessons.intro': 'Step-by-step explanations with worked examples and calculators. Read a lesson, try the quick check, then play the games that go with it.',
   'rya.lessons.open': 'Read the lesson',

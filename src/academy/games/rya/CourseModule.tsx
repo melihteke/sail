@@ -9,9 +9,10 @@ import { courses, isCourse, type Course, type CourseId } from './courses'
 import { gameStars } from './progress'
 import { lessonsForCourse } from './lessons/lessons'
 import { LessonCards } from './lessons/LessonPage'
+import { AlmanacTraining } from './almanac/AlmanacTraining'
 import { Panel, StarsView, TabBar } from './ui'
 
-const TABS = ['lessons', 'games', 'briefing', 'quiz', 'checklist'] as const
+const TABS = ['lessons', 'almanac', 'games', 'briefing', 'quiz', 'checklist'] as const
 type Tab = (typeof TABS)[number]
 
 export function CourseModule() {
@@ -24,7 +25,8 @@ function CoursePage({ course }: { course: Course }) {
   const { t } = useI18n()
   const [search, setSearch] = useSearchParams()
   const req = search.get('tab')
-  const tab: Tab = (TABS as readonly string[]).includes(req ?? '') ? (req as Tab) : 'lessons'
+  const tabs = TABS.filter((k) => k !== 'almanac' || course.id === 'day-skipper')
+  const tab: Tab = (tabs as readonly string[]).includes(req ?? '') ? (req as Tab) : 'lessons'
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <Link to="/rya" className="text-sm text-sea-500 hover:underline">
@@ -33,7 +35,7 @@ function CoursePage({ course }: { course: Course }) {
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-navy-900 dark:text-white">{t(`rya.course.${course.id}.title`)}</h1>
       <p className="mt-2 max-w-3xl text-slate-600 dark:text-slate-300">{t(`rya.course.${course.id}.intro`)}</p>
       <div className="mt-6">
-        <TabBar tabs={TABS} value={tab} onChange={(k) => setSearch({ tab: k }, { replace: true })} label={(k) => t(`rya.tab.${k}`)} />
+        <TabBar tabs={tabs} value={tab} onChange={(k) => setSearch({ tab: k }, { replace: true })} label={(k) => t(`rya.tab.${k}`)} />
       </div>
       <div className="mt-6">
         {tab === 'lessons' && (
@@ -42,6 +44,7 @@ function CoursePage({ course }: { course: Course }) {
             <LessonCards items={lessonsForCourse(course.id)} />
           </>
         )}
+        {tab === 'almanac' && <AlmanacTraining />}
         {tab === 'games' && <Games t={t} course={course} />}
         {tab === 'briefing' && <Briefing t={t} course={course} />}
         {tab === 'quiz' && <CourseQuiz t={t} course={course} />}

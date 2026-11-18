@@ -155,7 +155,7 @@ function LessonPage({ id }: { id: LessonId }) {
   )
 }
 
-function BlockView({ b, t, meta }: { b: Block; t: Translate; meta: LessonMeta }) {
+export function BlockView({ b, t, meta }: { b: Block; t: Translate; meta: LessonMeta }) {
   if ('p' in b) return <p>{rich(b.p)}</p>
   if ('list' in b)
     return (
@@ -199,8 +199,8 @@ function BlockView({ b, t, meta }: { b: Block; t: Translate; meta: LessonMeta })
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr>
-              {b.table.head.map((h) => (
-                <th key={h} className="border-b-2 border-slate-300 px-2 py-1.5 text-left font-semibold dark:border-white/20">
+              {b.table.head.map((h, i) => (
+                <th key={i} className="border-b-2 border-slate-300 px-2 py-1.5 text-left font-semibold dark:border-white/20">
                   {h}
                 </th>
               ))}
