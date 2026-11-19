@@ -1,6 +1,15 @@
 import type { ryaCoreEn } from './core.en'
 
 export const ryaCoreNl: Record<keyof typeof ryaCoreEn, string> = {
+  'hub.rya.badge': 'Curriculum · RYA',
+  'hub.rya.intro': 'Een opleidingstraject, geen losse onderwerpen: volg de RYA-stappen op volgorde. Elke cursus heeft lessen, spellen, een briefing, een quiz en een “Ik kan…”-checklist.',
+  'hub.rya.step': 'Stap {n}',
+  'hub.rya.level1': 'Beginner · geen ervaring nodig',
+  'hub.rya.level2': 'Na Competent Crew · overdag schipperen',
+  'hub.rya.start': 'Start de cursus',
+  'hub.rya.roadmap': 'Het hele pad naar Yachtmaster Ocean',
+  'hub.topics': 'Onderwerpmodules',
+  'hub.topicsIntro': 'Oefen één onderwerp tegelijk – los of naast een cursus.',
   'hub.section.rya': 'RYA-opleidingen',
   'game.ryaSyllabus.title': 'RYA-syllabus & routekaart',
   'game.ryaSyllabus.desc': 'Het pad van Competent Crew naar Yachtmaster Ocean: wat elke stap vraagt en wat je daarna kunt.',

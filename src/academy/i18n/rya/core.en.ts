@@ -1,5 +1,14 @@
 /** RYA syllabus, course pages, briefings, quizzes and checklists. */
 export const ryaCoreEn = {
+  'hub.rya.badge': 'Curriculum · RYA',
+  'hub.rya.intro': 'A structured course path, not single topics: follow the RYA steps in order. Each course has lessons, games, a briefing, a quiz and an “I can…” checklist.',
+  'hub.rya.step': 'Step {n}',
+  'hub.rya.level1': 'Beginner · no experience needed',
+  'hub.rya.level2': 'After Competent Crew · skipper by day',
+  'hub.rya.start': 'Start the course',
+  'hub.rya.roadmap': 'Whole path to Yachtmaster Ocean',
+  'hub.topics': 'Topic modules',
+  'hub.topicsIntro': 'Practise one subject at a time – use them on their own or alongside a course.',
   'hub.section.rya': 'RYA courses',
   'game.ryaSyllabus.title': 'RYA Syllabus & roadmap',
   'game.ryaSyllabus.desc': 'The path from Competent Crew to Yachtmaster Ocean: what each step asks for and what you can do after it.',

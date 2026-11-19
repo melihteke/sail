@@ -123,6 +123,9 @@ function Table({ head, rows, highlight, compact }: { head: ReactNode[]; rows: Re
 
 const Mono = ({ children }: { children: ReactNode }) => <span className="font-mono">{children}</span>
 
+/** Scrolls sideways on narrow screens so drawings keep a readable size. */
+const Wide = ({ children }: { children: ReactNode }) => <div className="-mx-1 overflow-x-auto px-1 pb-1">{children}</div>
+
 /** "HHMM UT · HHMM local" for tidal scenarios, local time only otherwise. */
 function useBoth() {
   const { s, u } = useAlmanac()
@@ -403,7 +406,7 @@ export function ScenarioChart({ showLegs = true, showDiamonds = true, stream, cl
   const degLat = Math.floor((B.latMin + B.latMax) / 2 / 60)
   const degLon = Math.floor(Math.abs((B.lonMin + B.lonMax) / 2) / 60)
   return (
-    <svg viewBox={`-34 -6 ${CW + 40} ${CH + 30}`} className={`w-full rounded-lg bg-[#eef6fb] ${className}`} role="img" aria-label={st.chartTitle}>
+    <svg viewBox={`-34 -6 ${CW + 40} ${CH + 30}`} className={`w-full min-w-[34rem] rounded-lg bg-[#eef6fb] ${className}`} role="img" aria-label={st.chartTitle}>
       <defs>
         <clipPath id={`clip-${s.id}`}>
           <rect x={0} y={0} width={CW} height={CH} />
@@ -591,7 +594,9 @@ function ChartWidget() {
           </label>
         ))}
       </div>
-      <ScenarioChart showLegs={showLegs} showDiamonds={showD} stream={streams ? (s.tidal ? { hour, range } : 'current') : undefined} />
+      <Wide>
+        <ScenarioChart showLegs={showLegs} showDiamonds={showD} stream={streams ? (s.tidal ? { hour, range } : 'current') : undefined} />
+      </Wide>
       {streams && s.tidal && (
         <div className="mt-2">
           <Slider label={u.chart.hour} value={hour} min={-6} max={6} step={1} onChange={setHour} show={`${hourLabel(hour)} ${s.tidal.standard.name} · ${n(range)} m`} />
@@ -637,7 +642,8 @@ function LevelsWidget() {
   const x0 = 120
   return (
     <Frame title={u.levels.title}>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full rounded-lg bg-[#f8fbff]" role="img" aria-label={u.levels.title}>
+      <Wide>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[32rem] rounded-lg bg-[#f8fbff]" role="img" aria-label={u.levels.title}>
         <rect x={x0} y={ySea} width={W - x0} height={H - ySea} fill="#bae6fd" opacity={0.75} />
         <line x1={x0} x2={W} y1={ySea} y2={ySea} stroke="#0284c7" strokeWidth={2} />
         <path d={`M${x0} ${y(-deep)} L255 ${y(-deep)} L305 ${y(-0.5)} L335 ${y(bank)} L395 ${y(bank)} L425 ${y(-0.4)} L470 ${y(-0.2)} L545 ${y(3.5)} L600 ${y(6.6)} L${W} ${y(6.8)} L${W} ${H} L${x0} ${H} Z`} fill="#e7d7a6" stroke="#8a7440" />
@@ -693,6 +699,7 @@ function LevelsWidget() {
           </marker>
         </defs>
       </svg>
+      </Wide>
       <div className="mt-2">
         <Slider label={u.levels.hot} value={hot} min={0} max={5.6} step={0.1} onChange={setHot} show={`${n(hot)} m`} />
       </div>
@@ -802,7 +809,8 @@ function CurveWidget({ which }: { which: 'std' | 'gate' }) {
         <span className="text-slate-500">{u.curve.pickDay}</span>
         <Pills items={days} value={day} onChange={setDay} label={(d) => `${d} ${u.months[s.month - 1]}`} />
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full rounded-lg bg-white dark:bg-white/90" role="img" aria-label={fill(u.curve.title, { port })}>
+      <Wide>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[30rem] rounded-lg bg-white dark:bg-white/90" role="img" aria-label={fill(u.curve.title, { port })}>
         {w && <rect x={x(w.open)} y={pad.t} width={x(w.close) - x(w.open)} height={H - pad.t - pad.b} fill="#bbf7d0" opacity={0.7} />}
         {Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step).map((h) => (
           <g key={h}>
@@ -840,6 +848,7 @@ function CurveWidget({ which }: { which: 'std' | 'gate' }) {
         <line x1={x(t)} x2={x(t)} y1={pad.t} y2={H - pad.b} stroke="#f59e0b" strokeWidth={1.5} />
         <circle cx={x(t)} cy={y(hNow)} r={4} fill="#f59e0b" />
       </svg>
+      </Wide>
       <div className="mt-2">
         <Slider label={u.curve.pickTime} value={t} min={0} max={1435} step={5} onChange={setT} show={both(t)} />
       </div>
@@ -1025,7 +1034,9 @@ function AtlasWidget() {
   const main = mainTide(s, s.planDay)
   return (
     <Frame title={u.atlas.title}>
-      <ScenarioChart showLegs={false} showDiamonds stream={{ hour, range: main.range }} />
+      <Wide>
+        <ScenarioChart showLegs={false} showDiamonds stream={{ hour, range: main.range }} />
+      </Wide>
       <div className="mt-2">
         <Slider label={fill(u.atlas.hour, { port: s.tidal!.standard.name })} value={hour} min={-6} max={6} step={1} onChange={setHour} show={hourLabel(hour)} />
       </div>
@@ -1154,7 +1165,7 @@ function Timeline({ plan }: { plan: PassagePlan }) {
   const main = mainTide(s, plan.day)
   const fair = fairHours(s, plan.day)
   return (
-    <svg viewBox={`0 0 ${W} 92`} className="w-full rounded-lg bg-white dark:bg-white/90" role="img" aria-label={u.departure.timeline}>
+    <svg viewBox={`0 0 ${W} 92`} className="w-full min-w-[30rem] rounded-lg bg-white dark:bg-white/90" role="img" aria-label={u.departure.timeline}>
       {fair.map((k) => (
         <rect key={k} x={x(main.hw.t + k * 60 - 30)} y={8} width={x(main.hw.t + k * 60 + 30) - x(main.hw.t + k * 60 - 30)} height={16} fill="#bae6fd" />
       ))}
@@ -1205,7 +1216,9 @@ function DepartureWidget() {
     <Frame title={fill(u.departure.title, { date: dateOf(s, u) })}>
       <Slider label={u.departure.depart} value={dep} min={s.departRange[0]} max={s.departRange[1]} step={15} onChange={setDep} show={both(dep)} />
       <div className="mt-2">
-        <Timeline plan={plan} />
+        <Wide>
+          <Timeline plan={plan} />
+        </Wide>
       </div>
       <div className="mt-2 grid gap-2 text-sm sm:grid-cols-3">
         <div className="rounded-lg bg-white px-3 py-2 dark:bg-white/5">

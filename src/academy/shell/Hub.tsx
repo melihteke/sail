@@ -10,19 +10,17 @@ interface ModuleCard {
 }
 
 interface Section {
-  id: 'rya' | 'navigation' | 'marks' | 'rules' | 'handling' | 'celestial'
+  id: 'navigation' | 'marks' | 'rules' | 'handling' | 'celestial'
   modules: ModuleCard[]
 }
 
+/** RYA courses in the order they are taken. */
+const COURSES = [
+  { id: 'ryaCompetentCrew', path: '/rya/competent-crew', icon: '🧑‍✈️', level: 'hub.rya.level1' },
+  { id: 'ryaDaySkipper', path: '/rya/day-skipper', icon: '⚓', level: 'hub.rya.level2' },
+] as const
+
 const sections: Section[] = [
-  {
-    id: 'rya',
-    modules: [
-      { id: 'ryaSyllabus', path: '/rya', icon: '🎓' },
-      { id: 'ryaCompetentCrew', path: '/rya/competent-crew', icon: '🧑‍✈️' },
-      { id: 'ryaDaySkipper', path: '/rya/day-skipper', icon: '⚓' },
-    ],
-  },
   {
     id: 'navigation',
     modules: [
@@ -65,6 +63,11 @@ export function Hub() {
     <div className="mx-auto max-w-5xl px-4 py-10">
       <h1 className="text-3xl font-bold tracking-tight text-navy-900 dark:text-white">{t('hub.title')}</h1>
       <p className="mt-2 max-w-2xl text-slate-600 dark:text-slate-300">{t('hub.intro')}</p>
+      <Curriculum />
+      <div className="mt-10 border-t border-slate-200 pt-6 dark:border-white/10">
+        <h2 className="text-xl font-bold tracking-tight text-navy-900 dark:text-white">{t('hub.topics')}</h2>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{t('hub.topicsIntro')}</p>
+      </div>
       {sections.map((s) => (
         <section key={s.id} className="mt-8">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t(`hub.section.${s.id}`)}</h2>
@@ -104,5 +107,52 @@ export function Hub() {
         </section>
       ))}
     </div>
+  )
+}
+
+function Curriculum() {
+  const { t } = useI18n()
+  return (
+    <section className="mt-8 overflow-hidden rounded-2xl bg-gradient-to-br from-navy-900 via-navy-700 to-sky-800 p-5 text-white shadow-lg sm:p-7">
+      <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide">🎓 {t('hub.rya.badge')}</div>
+      <h2 className="mt-3 text-2xl font-bold tracking-tight">{t('hub.section.rya')}</h2>
+      <p className="mt-1 max-w-2xl text-sm text-sky-100">{t('hub.rya.intro')}</p>
+      <ol className="mt-5 grid items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+        {COURSES.map((c, i) => (
+          <li key={c.id} className="contents">
+            {i > 0 && (
+              <span className="self-center justify-self-center text-2xl text-sky-200" aria-hidden>
+                <span className="md:hidden">↓</span>
+                <span className="hidden md:inline">→</span>
+              </span>
+            )}
+            <Link to={c.path} className="flex flex-col rounded-xl bg-white p-5 text-navy-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-navy-900 dark:text-white dark:ring-1 dark:ring-white/15">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sea-500 text-sm font-bold text-white">{i + 1}</span>
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-sea-500">{t('hub.rya.step', { n: i + 1 })}</div>
+                  <h3 className="text-lg font-semibold leading-tight">
+                    <span aria-hidden>{c.icon}</span> {t(`game.${c.id}.title` as MessageKey)}
+                  </h3>
+                </div>
+              </div>
+              <div className="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">{t(c.level)}</div>
+              <p className="mt-2 flex-1 text-sm text-slate-600 dark:text-slate-300">{t(`game.${c.id}.desc` as MessageKey)}</p>
+              <div className="mt-4 text-sm font-semibold text-sea-500">{t('hub.rya.start')} →</div>
+            </Link>
+          </li>
+        ))}
+      </ol>
+      <Link to="/rya" className="mt-4 flex items-center gap-3 rounded-xl bg-white/10 px-4 py-3 ring-1 ring-white/20 transition hover:bg-white/20">
+        <span className="text-2xl" aria-hidden>
+          🗺️
+        </span>
+        <span className="flex-1">
+          <span className="block font-semibold">{t('game.ryaSyllabus.title')}</span>
+          <span className="block text-xs text-sky-100">{t('hub.rya.roadmap')}</span>
+        </span>
+        <span aria-hidden>→</span>
+      </Link>
+    </section>
   )
 }

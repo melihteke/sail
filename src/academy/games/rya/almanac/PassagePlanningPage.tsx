@@ -71,26 +71,26 @@ function GuidedLesson() {
       <p className="mt-2 max-w-3xl text-slate-600 dark:text-slate-300">{st.summary}</p>
       <div className="mt-2 rounded-lg border-l-4 border-rose-500 bg-rose-50 px-3 py-1.5 text-xs dark:bg-rose-500/10">⚠️ {a.ui.disclaimer}</div>
 
-      <div className="mt-5 grid gap-6 lg:grid-cols-[14rem_minmax(0,1fr)]">
-        <nav aria-label={a.ui.chapters} className="lg:sticky lg:top-20 lg:self-start">
+      <div className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[14rem_minmax(0,1fr)]">
+        <nav aria-label={a.ui.chapters} className="min-w-0 lg:sticky lg:top-20 lg:self-start">
           <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{a.ui.chapters}</div>
-          <ol className="mt-2 flex gap-1 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible">
+          <ol className="mt-2 flex flex-wrap gap-1 lg:flex-col">
             {CHAPTER_IDS.map((id, i) => (
-              <li key={id} className="shrink-0">
+              <li key={id} className="lg:w-full">
                 <button
                   type="button"
                   onClick={() => go(id)}
-                  className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm ${id === ch ? 'bg-navy-900 font-semibold text-white dark:bg-sea-500' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5'}`}
+                  className={`flex w-full items-center gap-1.5 rounded-lg px-2 py-1 text-left text-xs sm:text-sm lg:gap-2 lg:py-1.5 ${id === ch ? 'bg-navy-900 font-semibold text-white dark:bg-sea-500' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5'}`}
                 >
                   <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${id === ch ? 'bg-white/20' : 'bg-slate-200 dark:bg-white/10'}`}>{i}</span>
-                  <span className="whitespace-nowrap lg:whitespace-normal">{a.chapters[id].short}</span>
+                  <span>{a.chapters[id].short}</span>
                 </button>
               </li>
             ))}
           </ol>
         </nav>
 
-        <article>
+        <article className="min-w-0">
           <div className="text-xs font-semibold uppercase tracking-wide text-sea-500">
             {idx} / {CHAPTER_IDS.length - 1}
           </div>

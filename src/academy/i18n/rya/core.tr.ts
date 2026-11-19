@@ -1,6 +1,15 @@
 import type { ryaCoreEn } from './core.en'
 
 export const ryaCoreTr: Record<keyof typeof ryaCoreEn, string> = {
+  'hub.rya.badge': 'Müfredat · RYA',
+  'hub.rya.intro': 'Tek tek konular değil, sıralı bir eğitim yolu: RYA adımlarını sırayla izle. Her kursun dersleri, oyunları, brifingi, quiz’i ve “Yapabiliyorum…” kontrol listesi var.',
+  'hub.rya.step': '{n}. adım',
+  'hub.rya.level1': 'Başlangıç · deneyim gerekmez',
+  'hub.rya.level2': 'Competent Crew’den sonra · gündüz kaptanlık',
+  'hub.rya.start': 'Kursa başla',
+  'hub.rya.roadmap': 'Yachtmaster Ocean’a kadar tüm yol',
+  'hub.topics': 'Konu modülleri',
+  'hub.topicsIntro': 'Tek bir konuyu çalış – tek başına ya da bir kursla birlikte kullan.',
   'hub.section.rya': 'RYA eğitimleri',
   'game.ryaSyllabus.title': 'RYA müfredatı ve yol haritası',
   'game.ryaSyllabus.desc': 'Competent Crew’den Yachtmaster Ocean’a uzanan yol: her adım ne ister, sonrasında neler yapabilirsin.',
