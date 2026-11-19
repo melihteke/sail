@@ -4,7 +4,7 @@ import { uiNl } from './ui.nl'
 export const almanacNl: AlmanacText = {
   title: 'Tochtplanning van begin tot eind met de almanak',
   intro:
-    'Twee havens in een fictief vaargebied, hun getijtafels en een getijstroomatlas – en dan stap voor stap een tochtplan zoals bij RYA Day Skipper: HW/LW, de dieptepoort, getijstromen, vertrektijd, waypoints en de te sturen koers.',
+    'Een volledig tochtplan op de manier van RYA Day Skipper, met de almanak: HW en LW, dieptepoorten, getijstromen en stroming, vertrektijd, waypoints en te sturen koers.',
   chapters: {
     start: {
       title: 'Beginnen: wat is een almanak en wat gaan we doen?',
@@ -761,10 +761,6 @@ export const almanacNl: AlmanacText = {
               ],
             },
           ],
-        },
-        {
-          h: 'Meer scenario’s: dezelfde methode, nieuw water',
-          blocks: [{ p: 'Klaar voor meer? Elk scenario hieronder heeft een eigen kaart, almanakpagina’s en een volledig uitgewerkt plan: een windpark voor een Nederlands aandoende kust, een verkeersscheidingsstelsel met een drempel bij de jachthaven, en de Bosporus langs Kız Kulesi, waar bijna geen getij is maar wel een sterke stroming.' }, { aw: 'scenarios' }],
         },
       ],
     },

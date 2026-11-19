@@ -4,7 +4,7 @@ import { uiTr } from './ui.tr'
 export const almanacTr: AlmanacText = {
   title: 'Almanakla uçtan uca seyir planlama',
   intro:
-    'Kurgusal bir bölgede iki liman, gelgit tabloları ve akıntı atlası ile RYA Day Skipper usulü adım adım seyir planı: HW/LW değerleri, derinlik kapısı, akıntılar, kalkış saati, waypointler ve Course to Steer.',
+    'Almanakla RYA Day Skipper usulü eksiksiz bir seyir planı: HW ve LW değerleri, derinlik kapıları, gelgit akıntıları ve akıntılar, kalkış saati, waypointler ve Course to Steer.',
   chapters: {
     start: {
       title: 'Başlarken: almanak nedir, bu derste ne yapacağız?',
@@ -761,10 +761,6 @@ export const almanacTr: AlmanacText = {
               ],
             },
           ],
-        },
-        {
-          h: 'Diğer senaryolar: aynı yöntem, yeni sular',
-          blocks: [{ p: 'Daha fazlasına hazır mısın? Aşağıdaki her senaryonun kendi haritası, almanak sayfaları ve tam çözümlü planı var: Hollanda tarzı bir kıyıda rüzgâr santrali, marina eşikli bir trafik ayırım şeridi geçişi ve gelgitin neredeyse olmadığı ama akıntının çok güçlü olduğu Kız Kulesi üzerinden Boğaz.' }, { aw: 'scenarios' }],
         },
       ],
     },

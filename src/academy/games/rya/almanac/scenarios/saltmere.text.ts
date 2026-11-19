@@ -4,9 +4,9 @@ import type { ScenarioText } from '../text'
 /** Saltmere Sound texts used by the widgets of the main lesson. */
 export const saltmereText: Record<Lang, ScenarioText> = {
   en: {
-    title: 'Saltmere Sound: Port Halyard → Gannet Cove',
-    short: 'Saltmere Sound',
-    summary: 'The main lesson’s fictional area.',
+    title: 'Tidal gate and drying bar: Port Halyard → Gannet Cove',
+    short: 'Tidal gate',
+    summary: 'The full guided lesson: tidal terms, tide tables, a secondary port, tidal streams, a drying bar and a tidal race – every step of the plan explained.',
     chartTitle: 'Saltmere Sound – training chart (fictional)',
     legend: [
       'Magenta square: waypoint (WPT) · magenta line: leg (°T and miles)',
@@ -36,9 +36,9 @@ export const saltmereText: Record<Lang, ScenarioText> = {
     gateNote: 'The entrance bar dries 0.6 m (underlined 0̲6 on the chart).',
   },
   tr: {
-    title: 'Saltmere Sound: Port Halyard → Gannet Cove',
-    short: 'Saltmere Sound',
-    summary: 'Ana dersin kurgusal bölgesi.',
+    title: 'Gelgit kapısı ve bar: Port Halyard → Gannet Cove',
+    short: 'Gelgit kapısı',
+    summary: 'Tam rehberli ders: gelgit terimleri, gelgit tabloları, ikincil liman, akıntılar, kuruyan bir bar ve bir race – planın her adımı anlatılıyor.',
     chartTitle: 'Saltmere Sound – eğitim haritası (kurgusal)',
     legend: [
       'Mor kare: waypoint (WPT) · mor çizgi: leg (°T ve mil)',
@@ -68,9 +68,9 @@ export const saltmereText: Record<Lang, ScenarioText> = {
     gateNote: 'Giriş barı 0,6 m kurur (haritada altı çizili 0̲6).',
   },
   nl: {
-    title: 'Saltmere Sound: Port Halyard → Gannet Cove',
-    short: 'Saltmere Sound',
-    summary: 'Het fictieve gebied van de hoofdles.',
+    title: 'Getijpoort en drempel: Port Halyard → Gannet Cove',
+    short: 'Getijpoort',
+    summary: 'De volledige begeleide les: getijtermen, getijtafels, een secundaire haven, getijstromen, een droogvallende drempel en een race – elke stap van het plan uitgelegd.',
     chartTitle: 'Saltmere Sound – oefenkaart (fictief)',
     legend: [
       'Magenta vierkant: waypoint (WPT) · magenta lijn: leg (°T en mijlen)',

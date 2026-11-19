@@ -160,11 +160,12 @@ export const uiEn: AlmanacUi = {
   },
   check: { title: 'Test yourself', intro: 'A quick revision of the almanac work.', correct: 'Correct!', wrong: 'Not quite.', score: '{score}/{max} correct' },
   sc: {
-    more: 'More scenarios',
-    moreIntro: 'Same method, new waters: each scenario has its own chart, almanac pages and a full worked plan you can change.',
-    open: 'Open the scenario',
-    back: 'Back to the lesson',
-    backMain: 'End-to-end passage planning',
+    pick: 'Choose a scenario',
+    pickIntro: 'Four scenarios, one method. Start with scenario 1 – a guided lesson that explains every step – then try the others: each has its own chart, almanac pages, a worked plan you can change and practice questions.',
+    open: 'Open',
+    back: 'All scenarios',
+    guided: 'Start here · guided lesson, 10 chapters',
+    worked: 'Worked plan · practice',
     h: {
       brief: 'The task',
       almanac: 'Almanac pages',

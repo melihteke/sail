@@ -160,11 +160,12 @@ export const uiTr: AlmanacUi = {
   },
   check: { title: 'Kendini sına', intro: 'Almanak bilgilerini hızlıca tekrar et.', correct: 'Doğru!', wrong: 'Yanlış.', score: '{score}/{max} doğru' },
   sc: {
-    more: 'Diğer senaryolar',
-    moreIntro: 'Aynı yöntem, yeni sular: her senaryonun kendi haritası, almanak sayfaları ve değiştirip deneyebileceğin tam bir çözümlü planı var.',
-    open: 'Senaryoyu aç',
-    back: 'Derse dön',
-    backMain: 'Almanakla uçtan uca seyir planlama',
+    pick: 'Bir senaryo seç',
+    pickIntro: 'Dört senaryo, tek yöntem. Her adımı anlatan rehberli ders olan 1. senaryo ile başla, sonra diğerlerini dene: her birinin kendi haritası, almanak sayfaları, değiştirip deneyebileceğin çözümlü bir planı ve alıştırmaları var.',
+    open: 'Aç',
+    back: 'Tüm senaryolar',
+    guided: 'Buradan başla · rehberli ders, 10 bölüm',
+    worked: 'Çözümlü plan · alıştırma',
     h: {
       brief: 'Görev',
       almanac: 'Almanak sayfaları',

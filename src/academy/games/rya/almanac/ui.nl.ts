@@ -160,11 +160,12 @@ export const uiNl: AlmanacUi = {
   },
   check: { title: 'Test jezelf', intro: 'Een snelle herhaling van het almanakwerk.', correct: 'Goed!', wrong: 'Niet helemaal.', score: '{score}/{max} goed' },
   sc: {
-    more: 'Meer scenario’s',
-    moreIntro: 'Dezelfde methode, nieuw water: elk scenario heeft een eigen kaart, almanakpagina’s en een volledig uitgewerkt plan dat je kunt aanpassen.',
-    open: 'Open het scenario',
-    back: 'Terug naar de les',
-    backMain: 'Tochtplanning van begin tot eind',
+    pick: 'Kies een scenario',
+    pickIntro: 'Vier scenario’s, één methode. Begin met scenario 1 – een begeleide les die elke stap uitlegt – en probeer daarna de andere: elk heeft een eigen kaart, almanakpagina’s, een uitgewerkt plan dat je kunt aanpassen en oefenvragen.',
+    open: 'Openen',
+    back: 'Alle scenario’s',
+    guided: 'Begin hier · begeleide les, 10 hoofdstukken',
+    worked: 'Uitgewerkt plan · oefenen',
     h: {
       brief: 'De opdracht',
       almanac: 'Almanakpagina’s',

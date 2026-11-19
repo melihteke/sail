@@ -36,7 +36,7 @@ import {
   type PassagePlan,
 } from './calc'
 import type { Feature, LatLon, Scenario, TideEvent } from './scenario'
-import { EXTRA_SCENARIOS, SALTMERE } from './scenarios'
+import { ALL_SCENARIOS, SALTMERE } from './scenarios'
 import { fill, num, type AlmanacText, type AWidget, type ScenarioText } from './text'
 import { almanacTexts, scenarioTexts } from './texts'
 import { planVars } from './vars'
@@ -1615,20 +1615,25 @@ function PracticeWidget() {
 export function ScenarioCards() {
   const { u, lang } = useAlmanac()
   return (
-    <div className="grid gap-3 md:grid-cols-3">
-      {EXTRA_SCENARIOS.map((x) => {
+    <div className="grid gap-4 sm:grid-cols-2">
+      {ALL_SCENARIOS.map((x, i) => {
         const t = scenarioTexts[x.id][lang]
+        const first = i === 0
         return (
           <Link
             key={x.id}
             to={`/rya/learn/passage-planning/${x.id}`}
-            className="block rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-navy-900/60"
+            className={`flex flex-col rounded-xl border bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-navy-900/60 ${first ? 'border-2 border-sea-500/60' : 'border-slate-200 dark:border-white/10'}`}
           >
-            <div className="text-3xl" aria-hidden>
-              {x.icon}
+            <div className="flex items-start justify-between gap-2">
+              <span className="text-3xl" aria-hidden>
+                {x.icon}
+              </span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-navy-900 text-sm font-bold text-white dark:bg-sea-500">{i + 1}</span>
             </div>
-            <h4 className="mt-2 font-semibold">{t.title}</h4>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{t.summary}</p>
+            <div className={`mt-2 text-xs font-semibold uppercase tracking-wide ${first ? 'text-sea-500' : 'text-slate-500'}`}>{first ? u.sc.guided : u.sc.worked}</div>
+            <h3 className="mt-1 text-lg font-semibold">{t.title}</h3>
+            <p className="mt-1 flex-1 text-sm text-slate-600 dark:text-slate-300">{t.summary}</p>
             <div className="mt-3 text-sm font-medium text-sea-500">{u.sc.open} →</div>
           </Link>
         )

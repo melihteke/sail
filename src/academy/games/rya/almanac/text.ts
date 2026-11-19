@@ -108,11 +108,12 @@ export interface AlmanacUi {
   }
   check: { title: string; intro: string; correct: string; wrong: string; score: string }
   sc: {
-    more: string
-    moreIntro: string
+    pick: string
+    pickIntro: string
     open: string
     back: string
-    backMain: string
+    guided: string
+    worked: string
     h: { brief: string; almanac: string; tides: string; gate: string; streams: string; departure: string; overview: string; route: string; cts: string; sheet: string; practice: string }
     tidesTable: string
   }

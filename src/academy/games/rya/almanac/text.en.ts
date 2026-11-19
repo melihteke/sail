@@ -4,7 +4,7 @@ import { uiEn } from './ui.en'
 export const almanacEn: AlmanacText = {
   title: 'End-to-end passage planning with the almanac',
   intro:
-    'Two harbours in a fictional area, their tide tables and a tidal stream atlas – then a step-by-step passage plan the RYA Day Skipper way: HW/LW, the depth gate, tidal streams, departure time, waypoints and course to steer.',
+    'A complete passage plan the RYA Day Skipper way, using the almanac: HW and LW, depth gates, tidal streams and currents, departure time, waypoints and course to steer.',
   chapters: {
     start: {
       title: 'Getting started: what is an almanac and what will we do?',
@@ -761,10 +761,6 @@ export const almanacEn: AlmanacText = {
               ],
             },
           ],
-        },
-        {
-          h: 'More scenarios: same method, new waters',
-          blocks: [{ p: 'Ready for more? Each scenario below has its own chart, almanac pages and a full worked plan: a wind farm off a Dutch-style coast, a traffic separation scheme with a marina sill, and the Bosphorus past Kız Kulesi, where there is hardly any tide but a strong current.' }, { aw: 'scenarios' }],
         },
       ],
     },
