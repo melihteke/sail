@@ -8,7 +8,7 @@ import { loadJson, saveJson } from '../../lib/storage'
 import { courses, isCourse, type Course, type CourseId } from './courses'
 import { gameStars } from './progress'
 import { lessonsForCourse } from './lessons/lessons'
-import { LessonCards, PassagePlanCard } from './lessons/LessonPage'
+import { LessonCards, PassagePlanCard, WeatherCard } from './lessons/LessonPage'
 import { Panel, StarsView, TabBar } from './ui'
 
 const TABS = ['lessons', 'games', 'briefing', 'quiz', 'checklist'] as const
@@ -40,7 +40,12 @@ function CoursePage({ course }: { course: Course }) {
           <>
             <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">{t('rya.lessons.courseHint')}</p>
             <LessonCards items={lessonsForCourse(course.id)} />
-            {course.id === 'day-skipper' && <PassagePlanCard />}
+            {course.id === 'day-skipper' && (
+              <>
+                <PassagePlanCard />
+                <WeatherCard />
+              </>
+            )}
           </>
         )}
         {tab === 'games' && <Games t={t} course={course} />}

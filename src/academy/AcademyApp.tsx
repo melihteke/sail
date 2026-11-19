@@ -28,6 +28,7 @@ const LessonIndex = load(() => import("./games/rya/lessons/LessonPage"), "Lesson
 const LessonRoute = load(() => import("./games/rya/lessons/LessonPage"), "LessonRoute");
 const PassagePlanning = load(() => import("./games/rya/almanac/PassagePlanningPage"), "PassagePlanningPage");
 const PassageScenario = load(() => import("./games/rya/almanac/PassagePlanningPage"), "ScenarioRoute");
+const WeatherLesson = load(() => import("./games/rya/weather/WeatherPage"), "WeatherPage");
 
 function AcademyLayout() {
   return (
@@ -62,6 +63,7 @@ export default function AcademyApp() {
             <Route path="rya/learn" element={<LessonIndex />} />
             <Route path="rya/learn/passage-planning" element={<PassagePlanning />} />
             <Route path="rya/learn/passage-planning/:scenario" element={<PassageScenario />} />
+            <Route path="rya/learn/weather" element={<WeatherLesson />} />
             <Route path="rya/learn/:lesson" element={<LessonRoute />} />
             <Route path="rya/:course" element={<CourseModule />} />
             <Route path="rya/:course/:game" element={<GameRoute />} />
