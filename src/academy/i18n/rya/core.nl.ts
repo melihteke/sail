@@ -391,7 +391,7 @@ export const ryaCoreNl: Record<keyof typeof ryaCoreEn, string> = {
   'rya.tab.lessons': 'Lessen',
   'rya.pp.title': 'Tochtplanning van begin tot eind met de almanak',
   'rya.pp.summary': 'Twee fictieve havens, hun getijtafels en stroomatlas, en dan stap voor stap een volledig tochtplan: HW/LW, dieptepoort, stromen, vertrektijd, waypoints en te sturen koers.',
-  'rya.pp.badge': 'Grote les · 10 hoofdstukken · oefenen',
+  'rya.pp.badge': 'Oefenen van begin tot eind · 10 hoofdstukken · 3 extra scenario’s',
   'rya.lessons.title': 'Lessen per onderwerp',
   'rya.lessons.intro': 'Stap-voor-stap uitleg met uitgewerkte voorbeelden en rekenhulpen. Lees een les, doe de korte test en speel daarna de bijbehorende spellen.',
   'rya.lessons.open': 'Lees de les',

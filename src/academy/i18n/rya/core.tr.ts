@@ -391,7 +391,7 @@ export const ryaCoreTr: Record<keyof typeof ryaCoreEn, string> = {
   'rya.tab.lessons': 'Konu anlatımı',
   'rya.pp.title': 'Almanakla uçtan uca seyir planlama',
   'rya.pp.summary': 'İki kurgusal liman, gelgit tabloları ve akıntı atlasıyla adım adım tam bir seyir planı: HW/LW, derinlik kapısı, akıntılar, kalkış saati, waypointler ve Course to Steer.',
-  'rya.pp.badge': 'Büyük ders · 10 bölüm · alıştırmalar',
+  'rya.pp.badge': 'Uçtan uca uygulama · 10 bölüm · 3 ek senaryo',
   'rya.lessons.title': 'Konu anlatımları',
   'rya.lessons.intro': 'Çözümlü örnekler ve hesaplayıcılarla adım adım açıklamalar. Bir dersi oku, kısa testi çöz, sonra ilgili oyunları oyna.',
   'rya.lessons.open': 'Dersi oku',

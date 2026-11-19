@@ -1,34 +1,18 @@
-import {
-  APPROACH_TO_BAR,
-  BAR_TO_ANCHOR,
-  BOAT,
-  DIAMONDS,
-  GANNET,
-  HALYARD,
-  HALYARD_TABLE,
-  HARBOUR_OUT,
-  LEG_DIAMOND,
-  SUMMER_OFFSET_MIN,
-  VARIATION_W,
-  WAYPOINTS,
-  type DiamondRow,
-  type LatLon,
-  type TideEvent,
-} from './data'
+import type { DiamondRow, LatLon, LegSpec, Scenario, SecondaryPort, TideEvent } from './scenario'
 
 const DEG = Math.PI / 180
 export const r1 = (v: number) => Math.round(v * 10) / 10
 export const mod = (a: number, n: number) => ((a % n) + n) % n
 
-/** 0–1439 minutes → "HHMM". */
+/** Minutes → "HHMM" (wraps round midnight). */
 export function fmtHM(min: number): string {
   const m = mod(Math.round(min), 1440)
   return `${String(Math.floor(m / 60)).padStart(2, '0')}${String(m % 60).padStart(2, '0')}`
 }
-export const fmtLocal = (utMin: number) => fmtHM(utMin + SUMMER_OFFSET_MIN)
+export const fmtLocal = (s: Scenario, utMin: number) => fmtHM(utMin + s.offset)
 export const fmtDiff = (min: number) => `${min < 0 ? '−' : '+'}${fmtHM(Math.abs(min))}`
 export const fmtBrg = (deg: number) => `${String(mod(Math.round(deg), 360)).padStart(3, '0')}°`
-export const fmtH = (m: number) => m.toFixed(1)
+export const hourLabel = (k: number) => (k === 0 ? 'HW' : `HW${k > 0 ? '+' : '−'}${Math.abs(k)}`)
 
 /* ---------------- Secondary port ---------------- */
 
@@ -49,9 +33,9 @@ export function timeDifference(stdT: number, times: number[], diffs: number[]): 
 }
 
 /** Height difference at a secondary port, interpolated between neap and spring levels. */
-export function heightDifference(stdH: number, kind: 'HW' | 'LW'): number {
-  const L = HALYARD.levels
-  const d = GANNET.hDiff
+export function heightDifference(s: Scenario, stdH: number, kind: 'HW' | 'LW'): number {
+  const L = s.tidal!.standard.levels
+  const d = s.tidal!.secondary!.hDiff
   if (kind === 'HW') return d.mhwn + ((d.mhws - d.mhwn) * (stdH - L.mhwn)) / (L.mhws - L.mhwn)
   return d.mlws + ((d.mlwn - d.mlws) * (stdH - L.mlws)) / (L.mlwn - L.mlws)
 }
@@ -62,33 +46,34 @@ export interface SecondaryEvent extends TideEvent {
   hDiff: number
 }
 
-export function gannetEvent(std: TideEvent): SecondaryEvent {
-  const raw = std.kind === 'HW' ? timeDifference(std.t, GANNET.hwTimes, GANNET.hwDiff) : timeDifference(std.t, GANNET.lwTimes, GANNET.lwDiff)
+export function secEvent(s: Scenario, std: TideEvent): SecondaryEvent {
+  const sec = s.tidal!.secondary as SecondaryPort
+  const raw = std.kind === 'HW' ? timeDifference(std.t, sec.hwTimes, sec.hwDiff) : timeDifference(std.t, sec.lwTimes, sec.lwDiff)
   const tDiff = Math.round(raw)
-  const hDiff = r1(heightDifference(std.h, std.kind))
+  const hDiff = r1(heightDifference(s, std.h, std.kind))
   return { std, kind: std.kind, t: std.t + tDiff, h: r1(std.h + hDiff), tDiff, hDiff }
 }
 
-/** The day's events with the neighbouring days' events attached (times relative to this day's midnight). */
-export function halyardEvents(day: number): TideEvent[] {
+/** Standard-port events of the day with the neighbouring days attached (times relative to this day's midnight). */
+export function stdEvents(s: Scenario, day: number): TideEvent[] {
   const out: TideEvent[] = []
-  for (const row of HALYARD_TABLE) {
+  for (const row of s.tidal!.standard.table) {
     const off = (row.day - day) * 1440
     if (Math.abs(row.day - day) <= 1) for (const e of row.events) out.push({ ...e, t: e.t + off })
   }
   return out.sort((a, b) => a.t - b.t)
 }
 
-export const gannetEvents = (day: number): SecondaryEvent[] => halyardEvents(day).map(gannetEvent)
+export const secEvents = (s: Scenario, day: number): SecondaryEvent[] => stdEvents(s, day).map((e) => secEvent(s, e))
 
-export function dayEvents(day: number): TideEvent[] {
-  return HALYARD_TABLE.find((r) => r.day === day)?.events ?? []
+export function dayEvents(s: Scenario, day: number): TideEvent[] {
+  return s.tidal!.standard.table.find((r) => r.day === day)?.events ?? []
 }
 
-/** Morning HW of the day (first HW after 0600 UT) and the LW before it. */
-export function mainTide(day: number): { lw: TideEvent; hw: TideEvent; range: number } {
-  const ev = halyardEvents(day)
-  const i = ev.findIndex((e) => e.kind === 'HW' && e.t >= 360)
+/** The HW that governs the plan and the LW before it. */
+export function mainTide(s: Scenario, day: number): { lw: TideEvent; hw: TideEvent; range: number } {
+  const ev = stdEvents(s, day)
+  const i = ev.findIndex((e) => e.kind === 'HW' && e.t >= s.tidal!.mainHwAfter)
   const hw = ev[i]
   const lw = ev[i - 1]
   return { lw, hw, range: r1(hw.h - lw.h) }
@@ -114,7 +99,7 @@ export function twelfthsHours(frac: number): number {
   return 6
 }
 
-/** Height at time t (minutes) between tide events, rule of twelfths with "tidal hours" = duration / 6. */
+/** Height at time t between tide events: rule of twelfths with "tidal hours" = duration / 6. */
 export function heightAt(events: TideEvent[], t: number): number {
   for (let i = 0; i + 1 < events.length; i++) {
     const a = events[i]
@@ -127,66 +112,95 @@ export function heightAt(events: TideEvent[], t: number): number {
   return t < events[0].t ? events[0].h : events[events.length - 1].h
 }
 
-/** First time between two events at which the tide reaches `need` (rising) or falls to it (falling). */
+/** Time between two events at which the tide reaches `need`. */
 export function timeForHeight(a: TideEvent, b: TideEvent, need: number): number | null {
-  const range = b.h - a.h
-  const frac = (need - a.h) / range
+  const frac = (need - a.h) / (b.h - a.h)
   if (frac < 0 || frac > 1) return null
   return a.t + twelfthsHours(frac) * ((b.t - a.t) / 6)
 }
 
-export const neededHeight = () => r1(GANNET.barDrying + BOAT.draft + BOAT.clearance)
+export const gateEvents = (s: Scenario, day: number): TideEvent[] => (s.tidal?.gate?.port === 'secondary' ? secEvents(s, day) : stdEvents(s, day))
+export const gatePortName = (s: Scenario) => (s.tidal?.gate?.port === 'secondary' ? s.tidal.secondary!.name : s.tidal!.standard.name)
+export const neededHeight = (s: Scenario) => r1(s.tidal!.gate!.drying + s.boat.draft + s.boat.clearance)
 
-/** Window around the Gannet Cove HW that follows the morning Port Halyard HW. */
-export function barWindow(day: number): { open: number; close: number; lw: TideEvent; hw: TideEvent; lw2: TideEvent; need: number } {
-  const ev = gannetEvents(day)
-  const main = mainTide(day)
-  const i = ev.findIndex((e) => e.std.t === main.hw.t)
-  const lw = ev[i - 1]
-  const hw = ev[i]
-  const lw2 = ev[i + 1]
-  const need = neededHeight()
-  return { open: Math.round(timeForHeight(lw, hw, need)!), close: Math.round(timeForHeight(hw, lw2, need)!), lw, hw, lw2, need }
+export interface GateWindow {
+  open: number
+  close: number
+  lw: TideEvent
+  hw: TideEvent
+  lw2: TideEvent
+  need: number
+}
+
+/** Window round the gate-port HW nearest to `around` (default: the HW that goes with the main tide). */
+export function gateWindow(s: Scenario, day: number, around?: number): GateWindow | null {
+  if (!s.tidal?.gate) return null
+  const ev = gateEvents(s, day)
+  const ref = around ?? mainTide(s, day).hw.t + 30
+  let i = -1
+  for (let k = 1; k + 1 < ev.length; k++) if (ev[k].kind === 'HW' && (i < 0 || Math.abs(ev[k].t - ref) < Math.abs(ev[i].t - ref))) i = k
+  if (i < 0) return null
+  const need = neededHeight(s)
+  const open = timeForHeight(ev[i - 1], ev[i], need)
+  const close = timeForHeight(ev[i], ev[i + 1], need)
+  if (open === null || close === null) return null
+  return { open: Math.round(open), close: Math.round(close), lw: ev[i - 1], hw: ev[i], lw2: ev[i + 1], need }
 }
 
 /* ---------------- Tidal streams ---------------- */
 
-export function rangeFactor(range: number): number {
-  return (range - HALYARD.neapRange) / (HALYARD.springRange - HALYARD.neapRange)
+export function rangeFactor(s: Scenario, range: number): number {
+  const t = s.tidal!.standard
+  return (range - t.neapRange) / (t.springRange - t.neapRange)
 }
 
-export function streamRate(row: DiamondRow, range: number): number {
-  return Math.max(0, r1(row.np + (row.sp - row.np) * rangeFactor(range)))
+export function streamRate(s: Scenario, row: DiamondRow, range: number): number {
+  return Math.max(0, r1(row.np + (row.sp - row.np) * rangeFactor(s, range)))
 }
 
-/** Hour of the stream table (−6…+6) for time t, relative to the nearest Port Halyard HW. */
-export function streamHour(day: number, t: number): { hour: number; hw: TideEvent } {
-  const hws = halyardEvents(day).filter((e) => e.kind === 'HW')
+/** Hour of the stream table (−6…+6) for time t, relative to the nearest standard-port HW. */
+export function streamHour(s: Scenario, day: number, t: number): { hour: number; hw: TideEvent } {
+  const hws = stdEvents(s, day).filter((e) => e.kind === 'HW')
   let best = hws[0]
   for (const h of hws) if (Math.abs(t - h.t) < Math.abs(t - best.t)) best = h
   return { hour: Math.max(-6, Math.min(6, Math.round((t - best.t) / 60))), hw: best }
 }
 
-export const hourLabel = (k: number) => (k === 0 ? 'HW' : `HW${k > 0 ? '+' : '−'}${Math.abs(k)}`)
+export const diamondOf = (s: Scenario, id: string) => s.diamonds.find((d) => d.id === id)!
+
+/** Is the stream in this diamond row going our way? */
+export function isFair(s: Scenario, row: DiamondRow): boolean {
+  return Math.cos((row.set - s.overallTrack) * DEG) > 0.2
+}
 
 /* ---------------- Route ---------------- */
 
 /** Plane sailing: true bearing (°) and distance (nm) between two positions in minutes. */
-export function legGeometry(a: LatLon, b: LatLon): { dlat: number; dep: number; brg: number; nm: number } {
+export function legGeometry(a: LatLon, b: LatLon): { dlat: number; dep: number; dlong: number; brg: number; nm: number } {
   const dlat = b.lat - a.lat
   const meanLat = (a.lat + b.lat) / 2 / 60
-  const dep = (b.lon - a.lon) * Math.cos(meanLat * DEG)
-  return { dlat, dep, brg: mod(Math.atan2(dep, dlat) / DEG, 360), nm: Math.hypot(dlat, dep) }
+  const dlong = b.lon - a.lon
+  const dep = dlong * Math.cos(meanLat * DEG)
+  return { dlat, dep, dlong, brg: mod(Math.atan2(dep, dlat) / DEG, 360), nm: Math.hypot(dlat, dep) }
 }
 
-export const toMagnetic = (trueDeg: number) => mod(trueDeg + VARIATION_W, 360)
+/** Moves a position `nm` miles towards `brg` (°T). */
+export function moveBy(p: LatLon, brg: number, nm: number): LatLon {
+  const dlat = nm * Math.cos(brg * DEG)
+  const dep = nm * Math.sin(brg * DEG)
+  return { lat: p.lat + dlat, lon: p.lon + dep / Math.cos(((p.lat + dlat / 2) / 60) * DEG) }
+}
+
+export const toMagnetic = (s: Scenario, trueDeg: number) => mod(trueDeg - s.variation, 360)
+export const fmtVariation = (s: Scenario) => `${Math.abs(s.variation)}°${s.variation < 0 ? 'W' : 'E'}`
 
 export function fmtPos(p: LatLon): string {
   const f = (v: number, pos: string, neg: string, w: number) => {
     const a = Math.abs(v)
     const d = Math.floor(a / 60 + 1e-9)
-    const m = a - d * 60
-    return `${String(d).padStart(w, '0')}°${m.toFixed(1).padStart(4, '0')}′${v >= 0 ? pos : neg}`
+    const m = Math.round((a - d * 60) * 100) / 100
+    const ms = m % 0.1 < 0.001 || m % 0.1 > 0.099 ? m.toFixed(1) : m.toFixed(2)
+    return `${String(d).padStart(w, '0')}°${ms.padStart(ms.length === 3 ? 4 : 5, '0')}′${v >= 0 ? pos : neg}`
   }
   return `${f(p.lat, 'N', 'S', 2)} ${f(p.lon, 'E', 'W', 3)}`
 }
@@ -195,7 +209,7 @@ export interface CtsResult {
   /** True heading to steer. */
   heading: number
   sog: number
-  /** Degrees the bow points up-stream of the track (+ = to starboard of track). */
+  /** Degrees the bow points off the track (+ = to starboard of track). */
   offset: number
 }
 
@@ -212,92 +226,149 @@ export function courseToSteer(track: number, set: number, rate: number, speed: n
 export interface LegPlan {
   from: string
   to: string
+  a: LatLon
+  b: LatLon
   track: number
   nm: number
   start: number
-  hour: number
-  diamond: 'A' | 'B'
-  row: DiamondRow
+  /** Stream table hour, or null for a steady current. */
+  hour: number | null
+  diamond: string | null
+  set: number
   rate: number
+  sp?: number
+  np?: number
   cts: number
   ctsM: number
   offset: number
   sog: number
   minutes: number
   end: number
+  /** Fixed-heading leg across a traffic separation scheme. */
+  fixed: boolean
+  /** Sideways set while crossing the lane (miles, + = to starboard of the heading). */
+  setNm?: number
 }
 
 export interface PassagePlan {
   day: number
-  range: number
-  factor: number
+  range: number | null
+  factor: number | null
   castOff: number
+  depart: number
   legs: LegPlan[]
+  /** Time at the depth gate (arrival bar, or departure sill = cast-off). */
   barEta: number
-  barHeight: number
-  need: number
-  window: { open: number; close: number }
+  barHeight: number | null
+  need: number | null
+  window: { open: number; close: number } | null
+  /** Arrival at the berth or anchorage. */
   anchor: number
-  /** Stream against us on any leg. */
+  /** Stream against us on any course-to-steer leg. */
   foul: boolean
   barOk: boolean
 }
 
-export function legs() {
-  return WAYPOINTS.slice(1).map((b, i) => {
-    const a = WAYPOINTS[i]
-    const g = legGeometry(a, b)
-    return { from: a.id, to: b.id, track: Math.round(g.brg), nm: r1(g.nm), dlat: g.dlat, dep: g.dep }
-  })
-}
-
 const minutesFor = (nm: number, kn: number) => Math.round((nm / kn) * 60)
 
-/** Runs the passage from WPT1 at `depart` (UT minutes). */
-export function planPassage(day: number, depart: number): PassagePlan {
-  const { range } = mainTide(day)
+function streamFor(s: Scenario, spec: LegSpec, day: number, t: number, range: number | null, scale: number) {
+  if ('current' in spec) return { hour: null, diamond: null, set: spec.current.set, rate: r1(spec.current.rate * scale) }
+  const d = diamondOf(s, spec.diamond)
+  const { hour } = streamHour(s, day, t)
+  const row = d.rows[hour + 6]
+  return { hour, diamond: d.id, set: row.set, rate: streamRate(s, row, range!), sp: row.sp, np: row.np }
+}
+
+/** Runs the whole passage from WPT1 at `depart` (UT minutes). `scale` multiplies steady currents. */
+export function planPassage(s: Scenario, day: number, depart: number, scale = 1): PassagePlan {
+  const range = s.tidal ? mainTide(s, day).range : null
+  const speed = s.boat.speed
   let t = depart
-  const plan: LegPlan[] = legs().map((leg, i) => {
-    const id = LEG_DIAMOND[i]
-    const d = DIAMONDS.find((x) => x.id === id)!
+  let pos: LatLon = s.waypoints[0]
+  let fromId = s.waypoints[0].id
+  const plan: LegPlan[] = s.legs.map((spec) => {
+    const start = t
+    if ('heading' in spec) {
+      // Hold the heading across the lane and accept the sideways set of the stream.
+      let minutes = minutesFor(spec.crossNm, speed)
+      let st = streamFor(s, spec, day, t + minutes / 2, range, scale)
+      for (let k = 0; k < 4; k++) {
+        st = streamFor(s, spec, day, t + minutes / 2, range, scale)
+        const along = speed + st.rate * Math.cos((st.set - spec.heading) * DEG)
+        minutes = Math.round((spec.crossNm / along) * 60)
+      }
+      const h = minutes / 60
+      const east = speed * Math.sin(spec.heading * DEG) + st.rate * Math.sin(st.set * DEG)
+      const north = speed * Math.cos(spec.heading * DEG) + st.rate * Math.cos(st.set * DEG)
+      const track = mod(Math.atan2(east, north) / DEG, 360)
+      const sog = Math.hypot(east, north)
+      const b = moveBy(pos, track, sog * h)
+      const lp: LegPlan = {
+        from: fromId,
+        to: 'TSS',
+        a: pos,
+        b,
+        track: Math.round(track),
+        nm: r1(sog * h),
+        start,
+        ...st,
+        cts: spec.heading,
+        ctsM: Math.round(toMagnetic(s, spec.heading)),
+        offset: mod(spec.heading - track + 180, 360) - 180,
+        sog: r1(sog),
+        minutes,
+        end: start + minutes,
+        fixed: true,
+        setNm: r1(st.rate * Math.sin((st.set - spec.heading) * DEG) * h),
+      }
+      pos = b
+      fromId = 'TSS'
+      t += minutes
+      return lp
+    }
+    const target = s.waypoints[spec.to]
+    const g = legGeometry(pos, target)
+    const track = Math.round(g.brg)
+    const nm = r1(g.nm)
     // The stream is taken for the hour containing the middle of the leg; iterate because the leg time depends on it.
-    let minutes = minutesFor(leg.nm, BOAT.speed)
-    let hour = 0
-    let row = d.rows[6]
-    let rate = 0
-    let c = courseToSteer(leg.track, 0, 0, BOAT.speed)!
-    let sog = BOAT.speed
+    let minutes = minutesFor(nm, speed)
+    let st = streamFor(s, spec, day, t + minutes / 2, range, scale)
+    let c = courseToSteer(track, st.set, st.rate, speed) ?? { heading: track, sog: speed - st.rate, offset: 0 }
+    let sog = speed
     for (let k = 0; k < 4; k++) {
-      hour = streamHour(day, t + minutes / 2).hour
-      row = d.rows[hour + 6]
-      rate = streamRate(row, range)
-      c = courseToSteer(leg.track, row.set, rate, BOAT.speed) ?? { heading: leg.track, sog: BOAT.speed - rate, offset: 0 }
+      st = streamFor(s, spec, day, t + minutes / 2, range, scale)
+      c = courseToSteer(track, st.set, st.rate, speed) ?? { heading: track, sog: speed - st.rate, offset: 0 }
       sog = Math.max(0.5, r1(c.sog))
-      minutes = minutesFor(leg.nm, sog)
+      minutes = minutesFor(nm, sog)
     }
     const cts = Math.round(c.heading)
-    const lp: LegPlan = { from: leg.from, to: leg.to, track: leg.track, nm: leg.nm, start: t, hour, diamond: id, row, rate, cts, ctsM: Math.round(toMagnetic(cts)), offset: c.offset, sog, minutes, end: t + minutes }
+    const lp: LegPlan = { from: fromId, to: target.id, a: pos, b: target, track, nm, start, ...st, cts, ctsM: Math.round(toMagnetic(s, cts)), offset: c.offset, sog, minutes, end: start + minutes, fixed: false }
+    pos = target
+    fromId = target.id
     t += minutes
     return lp
   })
-  const barEta = t + minutesFor(APPROACH_TO_BAR.nm, APPROACH_TO_BAR.kn)
-  const w = barWindow(day)
-  const barHeight = r1(heightAt(gannetEvents(day), barEta))
+  const castOff = depart - minutesFor(s.harbourOut.nm, s.harbourOut.kn)
+  const gate = s.tidal?.gate
+  const barEta = gate?.at === 'depart' ? castOff : t + minutesFor(s.approach.nm, s.approach.kn)
+  const w = gate ? gateWindow(s, day, barEta) : null
+  const arrive = (gate?.at === 'depart' ? t + minutesFor(s.approach.nm, s.approach.kn) : barEta) + minutesFor(s.final.nm, s.final.kn)
   return {
     day,
     range,
-    factor: rangeFactor(range),
-    castOff: depart - minutesFor(HARBOUR_OUT.nm, HARBOUR_OUT.kn),
+    factor: range === null ? null : rangeFactor(s, range),
+    castOff,
+    depart,
     legs: plan,
     barEta,
-    barHeight,
-    need: w.need,
-    window: { open: w.open, close: w.close },
-    anchor: barEta + minutesFor(BAR_TO_ANCHOR.nm, BAR_TO_ANCHOR.kn),
-    foul: plan.some((l) => l.sog < BOAT.speed),
-    barOk: barEta >= w.open && barEta <= w.close,
+    barHeight: gate ? r1(heightAt(gateEvents(s, day), barEta)) : null,
+    need: gate ? neededHeight(s) : null,
+    window: w ? { open: w.open, close: w.close } : null,
+    anchor: arrive,
+    foul: s.tidal ? plan.some((l) => !l.fixed && l.sog < speed) : false,
+    barOk: !gate || (!!w && barEta >= w.open && barEta <= w.close),
   }
 }
 
-/** The plan used throughout the worked example: leave WPT1 at 0630 UT (0730 local) on 13 June. */
-export const PLAN_DEPART = 6 * 60 + 30
+export const totalMinutes = (p: PassagePlan) => p.legs.reduce((a, l) => a + l.minutes, 0)
+export const totalNm = (p: PassagePlan) => r1(p.legs.reduce((a, l) => a + l.nm, 0))

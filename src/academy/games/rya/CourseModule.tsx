@@ -39,8 +39,8 @@ function CoursePage({ course }: { course: Course }) {
         {tab === 'lessons' && (
           <>
             <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">{t('rya.lessons.courseHint')}</p>
-            {course.id === 'day-skipper' && <PassagePlanCard />}
             <LessonCards items={lessonsForCourse(course.id)} />
+            {course.id === 'day-skipper' && <PassagePlanCard />}
           </>
         )}
         {tab === 'games' && <Games t={t} course={course} />}

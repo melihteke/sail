@@ -396,7 +396,7 @@ export const ryaCoreEn = {
   'rya.tab.lessons': 'Lessons',
   'rya.pp.title': 'End-to-end passage planning with the almanac',
   'rya.pp.summary': 'Two fictional harbours, their tide tables and stream atlas, then a full passage plan step by step: HW/LW, depth gate, streams, departure time, waypoints and course to steer.',
-  'rya.pp.badge': 'Big lesson · 10 chapters · practice',
+  'rya.pp.badge': 'End-to-end practice · 10 chapters · 3 extra scenarios',
   'rya.lessons.title': 'Topic lessons',
   'rya.lessons.intro': 'Step-by-step explanations with worked examples and calculators. Read a lesson, try the quick check, then play the games that go with it.',
   'rya.lessons.open': 'Read the lesson',

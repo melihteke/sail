@@ -1,11 +1,15 @@
 import { useState, type ReactNode } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { useI18n } from '../../../i18n'
 import { BlockView, rich } from '../lessons/LessonPage'
 import { metaOf, type Block } from '../lessons/lessons'
 import { Feedback, Panel } from '../ui'
-import { almanacTexts, CHAPTER_IDS, fill, type ABlock, type AlmanacText, type ChapterId } from './text'
-import { AlmanacWidget } from './widgets'
+import type { Scenario } from './scenario'
+import { EXTRA_SCENARIOS, scenarioById } from './scenarios'
+import { CHAPTER_IDS, fill, type ABlock, type AlmanacText, type ChapterId } from './text'
+import { almanacTexts, scenarioTexts } from './texts'
+import { fillBlock } from './vars'
+import { AlmanacWidget, DayTidesWidget, ScenarioProvider, usePlanVars } from './widgets'
 
 const isChapter = (v: string | null): v is ChapterId => (CHAPTER_IDS as readonly string[]).includes(v ?? '')
 
@@ -51,6 +55,17 @@ export function PassagePlanningPage() {
               </li>
             ))}
           </ol>
+          <div className="mt-5 hidden text-xs font-semibold uppercase tracking-wide text-slate-500 lg:block">{a.ui.sc.more}</div>
+          <ul className="mt-2 hidden space-y-1 lg:block">
+            {EXTRA_SCENARIOS.map((x) => (
+              <li key={x.id}>
+                <Link to={`/rya/learn/passage-planning/${x.id}`} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5">
+                  <span aria-hidden>{x.icon}</span>
+                  {scenarioTexts[x.id][lang].short}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </nav>
 
         <article>
@@ -98,6 +113,85 @@ export function PassagePlanningPage() {
 function ABlockView({ b, render }: { b: ABlock; render: (b: Block) => ReactNode }) {
   if ('aw' in b) return <AlmanacWidget id={b.aw} />
   return render(b)
+}
+
+/** One extra scenario: the whole plan on one page, step by step, with the scenario's own chart and almanac. */
+export function ScenarioRoute() {
+  const { scenario } = useParams()
+  const s = scenarioById(scenario)
+  if (!s) return <Navigate to="/rya/learn/passage-planning" replace />
+  return (
+    <ScenarioProvider key={s.id} s={s}>
+      <ScenarioPage s={s} />
+    </ScenarioProvider>
+  )
+}
+
+function ScenarioPage({ s }: { s: Scenario }) {
+  const { t, lang } = useI18n()
+  const a = almanacTexts[lang]
+  const u = a.ui
+  const st = scenarioTexts[s.id][lang]
+  const vars = usePlanVars()
+  const meta = metaOf('tides')
+  const extra = (k: keyof AlmanacText['ui']['sc']['h']) => (st.sections?.[k] ?? []).map((b) => fillBlock(b, vars))
+  const gate = !!s.tidal?.gate
+  const sections: { k: keyof AlmanacText['ui']['sc']['h']; blocks: ReactNode[] }[] = []
+  const blocks = (k: keyof AlmanacText['ui']['sc']['h'], before: ReactNode[] = [], after: ReactNode[] = []) => {
+    const text = extra(k).map((b, j) => <ABlockView key={`t${j}`} b={b} render={(x) => <BlockView b={x} t={t} meta={meta} />} />)
+    sections.push({ k, blocks: [...before, ...text, ...after] })
+  }
+  blocks('brief', [], [<AlmanacWidget key="c" id="chart" />])
+  if (s.tidal) {
+    blocks('almanac', [], [<AlmanacWidget key="t" id="tideTable" />, ...(s.tidal.secondary ? [<AlmanacWidget key="d" id="diffBox" />, <AlmanacWidget key="s" id="secondary" />] : [])])
+    blocks('tides', [<DayTidesWidget key="dt" />], [<AlmanacWidget key="cs" id="curveStd" />])
+    if (gate) blocks('gate', [], [<AlmanacWidget key="cg" id="curveGate" />])
+    blocks('streams', [], [<AlmanacWidget key="at" id="atlas" />, <AlmanacWidget key="di" id="diamonds" />, <AlmanacWidget key="sd" id="streamDay" />])
+    blocks('departure', [], [<AlmanacWidget key="dp" id="departure" />])
+  } else {
+    blocks('tides')
+    blocks('streams', [], [<AlmanacWidget key="cu" id="currents" />])
+    blocks('departure')
+  }
+  blocks('overview', [<AlmanacWidget key="ov" id="overview" />])
+  blocks('route', [<AlmanacWidget key="lg" id="legs" />])
+  blocks('cts', [], [<AlmanacWidget key="ct" id="cts" />])
+  blocks('sheet', [<AlmanacWidget key="sh" id="sheet" />])
+  blocks('practice', [<AlmanacWidget key="pr" id="practice" />])
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-8">
+      <Link to="/rya/learn/passage-planning?ch=practice" className="text-sm text-sea-500 hover:underline">
+        ← {u.sc.backMain}
+      </Link>
+      <h1 className="mt-2 text-3xl font-bold tracking-tight text-navy-900 dark:text-white">
+        <span aria-hidden>{s.icon}</span> {st.title}
+      </h1>
+      <p className="mt-2 max-w-3xl text-slate-600 dark:text-slate-300">{st.summary}</p>
+      <div className="mt-2 rounded-lg border-l-4 border-rose-500 bg-rose-50 px-3 py-1.5 text-xs dark:bg-rose-500/10">⚠️ {u.disclaimer}</div>
+      <nav className="mt-4 flex flex-wrap gap-1 text-xs">
+        {sections.map((x, i) => (
+          <a key={x.k} href={`#${x.k}`} onClick={(e) => (e.preventDefault(), document.getElementById(x.k)?.scrollIntoView({ behavior: 'smooth' }))} className="rounded-full border border-slate-300 px-2.5 py-0.5 text-slate-600 hover:bg-slate-50 dark:border-white/20 dark:text-slate-300">
+            {i + 1}. {u.sc.h[x.k]}
+          </a>
+        ))}
+      </nav>
+      {sections.map((x, i) => (
+        <section key={x.k} id={x.k} className="mt-8 scroll-mt-20">
+          <h2 className="text-xl font-semibold text-navy-900 dark:text-white">
+            <span className="mr-2 text-sea-500">{i + 1}.</span>
+            {u.sc.h[x.k]}
+          </h2>
+          <div className="mt-3 space-y-3 text-[15px] leading-relaxed text-slate-700 dark:text-slate-200">{x.blocks}</div>
+        </section>
+      ))}
+      <section className="mt-10 border-t border-slate-200 pt-6 dark:border-white/10">
+        <h2 className="text-lg font-semibold text-navy-900 dark:text-white">{u.sc.more}</h2>
+        <div className="mt-3">
+          <AlmanacWidget id="scenarios" />
+        </div>
+      </section>
+    </div>
+  )
 }
 
 function AlmanacCheck({ a }: { a: AlmanacText }) {
