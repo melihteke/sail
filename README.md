@@ -70,6 +70,15 @@ media and handles the Google login of the admin panel.
   - Stats, map, wind and the tack/gybe analysis are worked out in the browser.
   - Title, date, location and boat are suggested.
 - **Editor:** basics, the four story sections (Markdown with preview), boat picker, autosave, publish/unpublish.
+  - **Quick / Detailed** mode and a "Log entry" checklist that shows what is still missing (advisory, never blocks).
+  - **Logbook** fields: passage type, departure → arrival, skipper, observed Beaufort, sea state, visibility, tidal
+    waters, night hours (suggested from the track and sunset/sunrise) and engine time (from the event log unless set).
+    They show in a "Log" box on the sail page.
+  - **Private notes** (notes and boat/gear issues) in a separate admin-only table; never published.
+  - **Event log** can be added to, corrected and pruned. Once edited, an app re-upload no longer replaces it.
+  - **History:** one saved version per editing session (last 50), with restore.
+- **Logbook** (`#/logbook`): all sails as a logbook table with filters (dates, boat, type, status), totals (nm, hours,
+  night hours, tidal, as skipper), a print/PDF layout and CSV export (private notes optional).
 - **Media:**
   - Photos: iPhone HEIC/JPG/PNG are converted to JPG, resized, and EXIF/GPS is stripped.
   - Short videos: up to 50 MB, with a poster frame.
@@ -77,8 +86,9 @@ media and handles the Google login of the admin panel.
   - Captions, ordering and a cover pick.
 - **Boats:** add/edit boats, photo with credit, specs table, main boat.
 - **Settings:** the place behind each home page card (live wind, 3-day forecast, daylight, sea now, Windy wind map and rain radar, the maps with a zoom level), with address autocomplete. Forecast, daylight and radar follow the live wind place until they get their own. Changes show on the site without a deploy.
-- **Deploy site:** rebuilds the static site through the `publish` edge function (about 2 minutes) and shows
-  whether the latest changes are live.
+- **Deploy site:** rebuilds the static site through the `publish` edge function (about 2 minutes) and follows the run:
+  "live" when it succeeds, or a clear failure with a link to the GitHub run and **Retry**. Saved changes are never
+  lost when a deploy fails.
 
 **Sail Tracker app** ([melihteke/sail-tracker](https://github.com/melihteke/sail-tracker), Android)
 
@@ -104,9 +114,11 @@ Adding a sail day to day (Turkish): **[ADDING-A-SAIL.md](ADDING-A-SAIL.md)**.
 
 ```
 supabase/migrations/0001_schema.sql  tables, row level security, storage buckets, admin list
+supabase/migrations/0006_logbook_pro.sql  log fields, sail_private, sail_revisions, editable events
 supabase/functions/publish/          edge function: admin check → GitHub workflow_dispatch
 supabase/tests/rls.test.ts           runs the migration in PGlite and tests the security rules
 src/lib/sails.ts                     build-time data layer (Supabase, or the Markdown fallback)
+src/lib/logbook.ts                   log fields, night/engine hours, completeness checklist, CSV
 src/lib/gpx.ts · analysis.ts · wind.ts   GPX stats, tack/gybe + point-of-sail analysis, Open-Meteo wind
 src/lib/admin-api.ts · media-process.ts  admin CRUD, uploads, in-browser photo/video processing
 src/components/admin/                admin panel (React)
@@ -156,6 +168,7 @@ Pushing to `main` runs the tests and deploys. The admin panel's **Deploy site** 
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.8 | 2026-11-20 | Melih Teke | Professional logbook in the admin: structured log fields, private notes, completeness checklist, quick/detailed mode, editable event log, revision history, logbook export (print/CSV) and deploy result tracking with retry. |
 | 1.7 | 2026-11-15 | Melih Teke | Tides lesson: redrawn Moon/Earth animation with Moon-phase view and phase strip; adjustable cross-stream correction angle with the calculation (rule of 60, arcsin, vector triangle). |
 | 1.6 | 2026-11-15 | Melih Teke | Tides & anchoring: kinds of current, Moon/springs-neaps animation, interactive tidal stream atlas and tidal diamond, scope table, guided tasks in the anchored-through-the-tide widget, step-by-step Anchor Bay guide. |
 | 1.5 | 2026-11-15 | Melih Teke | Tides lesson: richer tidal streams, tidal gates and tide & anchoring sections with animated stream, gate-planner and anchored-through-the-tide widgets. |

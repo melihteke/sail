@@ -8,6 +8,13 @@ export type StoredStats = Omit<TrackStats, "track">;
 export type SailRole = "skipper" | "helm" | "crew" | "trimmer" | "student";
 export const SAIL_ROLES: SailRole[] = ["helm", "skipper", "crew", "trimmer", "student"];
 
+export const PASSAGE_TYPES = ["day_sail", "passage", "training", "race", "delivery", "cruise"] as const;
+export type PassageType = (typeof PASSAGE_TYPES)[number];
+export const SEA_STATES = ["calm", "smooth", "slight", "moderate", "rough", "very_rough"] as const;
+export type SeaState = (typeof SEA_STATES)[number];
+export const VISIBILITIES = ["good", "moderate", "poor", "fog"] as const;
+export type Visibility = (typeof VISIBILITIES)[number];
+
 export interface BoatSpec {
   label: string;
   value: string;
@@ -73,6 +80,33 @@ export interface SailRow {
   /** Set for sails uploaded by the Sail Tracker app */
   client_id?: string | null;
   source?: "web" | "app";
+  passage_type: PassageType | null;
+  departure: string | null;
+  arrival: string | null;
+  skipper: string | null;
+  /** Numeric from Postgres arrives as a string or number */
+  night_hours: number | string | null;
+  tidal: boolean;
+  observed_bft: number | null;
+  sea_state: SeaState | null;
+  visibility: Visibility | null;
+  /** null = use the value worked out from the event log */
+  engine_minutes: number | null;
+}
+
+/** Admin-only notes (table sail_private); never part of the public site. */
+export interface SailPrivateRow {
+  sail_id: string;
+  notes: string;
+  maintenance: string;
+  updated_at: string;
+}
+
+export interface SailRevision {
+  id: string;
+  sail_id: string;
+  changed_at: string;
+  snapshot: Partial<SailRow>;
 }
 
 export type MediaKind = "photo" | "video" | "youtube" | "link";

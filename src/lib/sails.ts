@@ -8,6 +8,7 @@ import windCache from "@/data/wind-cache.json";
 import { analyzeSail, type SailAnalysis } from "./analysis";
 import type { SailEvent } from "./events";
 import { computeStats, type TrackStats } from "./gpx";
+import { logFacts, type LogFacts } from "./logbook";
 import { sailMedia as legacyMedia } from "./media";
 import { splitSections, type SailSections } from "./sections";
 import type { BoatRow, BoatSpec, MediaRow, PhotoCredit, SailRole, SailRow } from "./types";
@@ -71,6 +72,8 @@ export interface Sail {
   gpx: { file: string } | { url: string };
   /** Event log recorded with the Sail Tracker app (empty for other sails) */
   events: SailEvent[];
+  /** Structured logbook fields (passage type, route, conditions…) */
+  log: LogFacts;
 }
 
 export interface Logbook {
@@ -210,6 +213,7 @@ async function loadSupabase(): Promise<Logbook> {
       localDate: localDate(stats.start),
       gpx: { url: storageUrl("gpx", row.gpx_path) },
       events: eventsBySail.get(row.id) ?? [],
+      log: logFacts(row, eventsBySail.get(row.id) ?? [], stats.end),
     });
   }
   return { source: "supabase", sails: sortSails(sails), boats };
@@ -296,6 +300,7 @@ async function loadMarkdown(): Promise<Logbook> {
         localDate: localDate(stats.start),
         gpx: { file },
         events: [],
+        log: logFacts({}),
       };
     }),
   );

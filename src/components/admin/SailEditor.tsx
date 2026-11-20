@@ -1,13 +1,15 @@
 import * as React from "react";
 import { ArrowLeft, Eye, EyeOff, RefreshCw, Trash2, Upload } from "lucide-react";
 import { deleteSail, getSail, listBoats, listEvents, processGpx, processStoredGpx, refreshWind, replaceGpx, updateSail, type SailPatch } from "@/lib/admin-api";
-import { EVENT_META, describeEvent, summarizeLog, type EventRow } from "@/lib/events";
+import { type EventRow } from "@/lib/events";
+import { completeness } from "@/lib/logbook";
 import { POINT_OF_SAIL_LABEL, type PointOfSail } from "@/lib/analysis";
 import { SECTION_TITLES } from "@/lib/sections";
 import { SAIL_ROLES, type BoatRow, type SailRow } from "@/lib/types";
 import { beaufort, compass, formatDuration, formatKn, formatNm } from "@/lib/units";
 import { url } from "@/lib/url";
 import { DeployContext } from "./AdminApp";
+import { CompletenessPanel, EventLogCard, HistoryCard, LogbookCard, ModeSwitch, PrivateNotesCard, useEditorMode } from "./LogbookPanels";
 import MediaManager from "./MediaManager";
 import TrackPreview from "./TrackPreview";
 import { Button, Card, DropZone, Field, Input, MarkdownField, Notice, SaveState, Select, Spinner, TagInput, navigate, useAutosave } from "./ui";
@@ -28,6 +30,8 @@ export default function SailEditor({ id }: { id: string }) {
   const [notice, setNotice] = React.useState<{ tone: "ok" | "error" | "warn"; text: string } | null>(null);
 
   const [events, setEvents] = React.useState<EventRow[]>([]);
+  const [mediaCount, setMediaCount] = React.useState(0);
+  const [mode, setMode] = useEditorMode();
 
   React.useEffect(() => {
     let active = true;
@@ -79,8 +83,14 @@ export default function SailEditor({ id }: { id: string }) {
   }
 
   const published = sail.status === "published";
+  const checklist = completeness(sail, { mediaCount });
+  const detailed = mode === "detailed";
 
   const togglePublish = async () => {
+    if (!published) {
+      const missing = checklist.filter((i) => !i.done && (detailed || !i.detailed) && i.key !== "track");
+      if (missing.length && !confirm(`This log entry is missing: ${missing.map((i) => i.label.toLowerCase()).join(", ")}.\n\nPublish anyway?`)) return;
+    }
     setBusy("publish");
     setNotice(null);
     try {
@@ -155,6 +165,7 @@ export default function SailEditor({ id }: { id: string }) {
         <h1 className="min-w-0 flex-1 truncate text-2xl font-semibold tracking-tight">{sail.title || "Untitled sail"}</h1>
         {sail.source === "app" && <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-medium text-sky-800 dark:bg-sky-900/40 dark:text-sky-200">From the app</span>}
         <SaveState state={save.state} error={save.error} />
+        <ModeSwitch mode={mode} onChange={setMode} />
         {published && (
           <a href={url(`/logbook/${sail.slug}`)} target="_blank" rel="noopener" className="text-xs text-primary hover:underline">
             View live
@@ -170,6 +181,8 @@ export default function SailEditor({ id }: { id: string }) {
       </p>
       {notice && <Notice tone={notice.tone}>{notice.text}</Notice>}
 
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_16rem]">
+      <div className="order-2 min-w-0 space-y-5 lg:order-1">
       <Card title="Basics">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Title" className="sm:col-span-2">
@@ -209,9 +222,12 @@ export default function SailEditor({ id }: { id: string }) {
           <Field label="Sails">
             <Input value={sail.sails_used ?? ""} onChange={(e) => set("sails_used", e.currentTarget.value || null)} placeholder="Main + jib" />
           </Field>
+          {detailed && (
           <Field label="Tags" hint="Comma separated">
             <TagInput value={sail.tags} onChange={(v) => set("tags", v)} placeholder="gusty, reefing" />
           </Field>
+          )}
+          {detailed && (
           <Field label="Rating">
             <div className="flex h-[38px] items-center gap-1" role="radiogroup" aria-label="Rating">
               {[1, 2, 3, 4, 5].map((n) => (
@@ -229,6 +245,7 @@ export default function SailEditor({ id }: { id: string }) {
               ))}
             </div>
           </Field>
+          )}
           <Field label="Reef">
             <label className="flex h-[38px] items-center gap-2 text-sm">
               <input type="checkbox" checked={sail.reef} onChange={(e) => set("reef", e.currentTarget.checked)} className="h-4 w-4 accent-[var(--primary)]" />
@@ -238,17 +255,23 @@ export default function SailEditor({ id }: { id: string }) {
         </div>
       </Card>
 
+      <LogbookCard sail={sail} set={set} events={events} mode={mode} />
+
       <Card title="Story">
         <div className="grid gap-6 lg:grid-cols-2">
-          {SECTION_FIELDS.map((f) => (
+          {SECTION_FIELDS.filter((f) => detailed || f.key !== "notes" || sail.notes.trim()).map((f) => (
             <MarkdownField key={f.key} label={f.title} value={sail[f.key]} placeholder={f.placeholder} onChange={(v) => set(f.key, v)} />
           ))}
         </div>
       </Card>
 
-      {events.length > 0 && <EventLog events={events} endIso={stats?.end ?? events[events.length - 1]!.at} />}
+      <PrivateNotesCard sailId={sail.id} />
 
-      <MediaManager sailId={sail.id} coverId={sail.cover_media_id} onCoverChange={(mediaId) => set("cover_media_id", mediaId)} />
+      {(events.length > 0 || detailed) && (
+        <EventLogCard sailId={sail.id} events={events} setEvents={setEvents} endIso={stats?.end ?? null} defaultIso={stats?.start ?? `${sail.date}T12:00:00`} />
+      )}
+
+      <MediaManager sailId={sail.id} coverId={sail.cover_media_id} onCoverChange={(mediaId) => set("cover_media_id", mediaId)} onCountChange={setMediaCount} />
 
       <Card
         title="Track"
@@ -292,6 +315,8 @@ export default function SailEditor({ id }: { id: string }) {
         </div>
       </Card>
 
+      <HistoryCard sail={sail} flush={save.flush} onRestored={(s) => setSail(s)} />
+
       <Card title="Advanced">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="URL slug" hint={published ? "Changing it breaks existing links to this sail." : "Part of the page address: /logbook/<slug>"}>
@@ -304,27 +329,11 @@ export default function SailEditor({ id }: { id: string }) {
           </Button>
         </div>
       </Card>
+      </div>
+      <aside className="order-1 lg:order-2">
+        <CompletenessPanel items={checklist} mode={mode} />
+      </aside>
+      </div>
     </div>
-  );
-}
-
-function EventLog({ events, endIso }: { events: EventRow[]; endIso: string }) {
-  const log = summarizeLog(events, Date.parse(endIso));
-  const time = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  return (
-    <Card title={`Event log · ${events.length}`}>
-      <p className="-mt-2 mb-3 text-sm text-muted-foreground">
-        Recorded on the boat. Under sail {formatDuration(log.sailingMs / 1000)} · under engine {formatDuration(log.engineMs / 1000)}.
-      </p>
-      <ol className="max-h-80 space-y-1 overflow-y-auto text-sm">
-        {events.map((e) => (
-          <li key={e.id} className="flex items-baseline gap-2">
-            <span className="w-12 shrink-0 font-mono text-xs tabular-nums text-muted-foreground">{time(e.at)}</span>
-            <span aria-hidden="true">{EVENT_META[e.kind]?.icon ?? "•"}</span>
-            <span className={EVENT_META[e.kind]?.tone === "alert" ? "font-semibold text-rose-600" : ""}>{describeEvent(e)}</span>
-          </li>
-        ))}
-      </ol>
-    </Card>
   );
 }

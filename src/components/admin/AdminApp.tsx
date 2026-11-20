@@ -11,11 +11,21 @@ import BoatList from "./BoatList";
 import BoatEditor from "./BoatEditor";
 import SettingsPage from "./SettingsPage";
 import RacePage from "./RacePage";
+import LogbookPage from "./LogbookPage";
 
-type Route = { page: "sails" } | { page: "sail-new" } | { page: "sail"; id: string } | { page: "boats" } | { page: "boat"; id: string | null } | { page: "settings" } | { page: "races" };
+type Route =
+  | { page: "sails" }
+  | { page: "sail-new" }
+  | { page: "sail"; id: string }
+  | { page: "boats" }
+  | { page: "boat"; id: string | null }
+  | { page: "logbook" }
+  | { page: "settings" }
+  | { page: "races" };
 
 function parseRoute(hash: string): Route {
   const parts = hash.replace(/^#\/?/, "").split("/").filter(Boolean);
+  if (parts[0] === "logbook") return { page: "logbook" };
   if (parts[0] === "settings") return { page: "settings" };
   if (parts[0] === "races") return { page: "races" };
   if (parts[0] === "sails" && parts[1] === "new") return { page: "sail-new" };
@@ -48,15 +58,19 @@ function DeployBar({ children }: { children: React.ReactNode }) {
   const [run, setRun] = React.useState<DeployRun | null>(null);
   const [pending, setPending] = React.useState<number | null>(null);
   const [busy, setBusy] = React.useState(false);
-  const [message, setMessage] = React.useState<{ tone: "ok" | "error"; text: string } | null>(null);
+  const [message, setMessage] = React.useState<{ tone: "ok" | "error"; text: string; url?: string } | null>(null);
+  // Set while we wait for the run we started to show up and finish.
+  const [watching, setWatching] = React.useState<number | null>(null);
 
   const refresh = React.useCallback(async () => {
     try {
       const { latest, lastSuccess } = await latestDeploy();
       setRun(latest);
       setPending(lastSuccess ? await pendingChanges(lastSuccess.createdAt) : null);
+      return latest;
     } catch {
       setRun(null);
+      return null;
     }
   }, []);
 
@@ -66,10 +80,30 @@ function DeployBar({ children }: { children: React.ReactNode }) {
 
   const running = run && run.status !== "completed";
   React.useEffect(() => {
-    if (!running) return;
+    if (!running || watching) return;
     const timer = window.setInterval(() => void refresh(), 10_000);
     return () => window.clearInterval(timer);
-  }, [running, refresh]);
+  }, [running, watching, refresh]);
+
+  React.useEffect(() => {
+    if (!watching) return;
+    const timer = window.setInterval(async () => {
+      const latest = await refresh();
+      const ours = latest && Date.parse(latest.createdAt) >= watching - 15_000 ? latest : null;
+      if (ours?.status === "completed") {
+        setWatching(null);
+        setMessage(
+          ours.conclusion === "success"
+            ? { tone: "ok", text: "The site is live with your changes." }
+            : { tone: "error", text: `The deploy ${ours.conclusion ?? "failed"}. Your changes are saved; only the site update failed.`, url: ours.url },
+        );
+      } else if (Date.now() - watching > 10 * 60_000) {
+        setWatching(null);
+        setMessage({ tone: "error", text: "The deploy is taking unusually long. Check it on GitHub.", url: ours?.url });
+      }
+    }, 6_000);
+    return () => window.clearInterval(timer);
+  }, [watching, refresh]);
 
   const deploy = React.useCallback(async () => {
     setBusy(true);
@@ -77,17 +111,17 @@ function DeployBar({ children }: { children: React.ReactNode }) {
     try {
       await triggerDeploy();
       setMessage({ tone: "ok", text: "Deploy started. The site updates in about 2 minutes." });
-      window.setTimeout(() => void refresh(), 4_000);
+      setWatching(Date.now());
     } catch (e) {
-      setMessage({ tone: "error", text: `Deploy failed: ${(e as Error).message}` });
+      setMessage({ tone: "error", text: `Could not start the deploy: ${(e as Error).message}. Your changes are saved.` });
     } finally {
       setBusy(false);
     }
-  }, [refresh]);
+  }, []);
 
   const status = !run
     ? "Deploy status unknown"
-    : running
+    : running || watching
       ? "Deploying…"
       : run.conclusion === "success"
         ? `Live · deployed ${new Date(run.updatedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`
@@ -95,9 +129,9 @@ function DeployBar({ children }: { children: React.ReactNode }) {
 
   return (
     <DeployContext.Provider value={{ deploy, refresh: () => void refresh() }}>
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card px-4 py-2.5 text-sm shadow-sm">
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card px-4 py-2.5 text-sm shadow-sm print:hidden">
         <span className="flex items-center gap-2">
-          {running ? <Spinner className="h-3.5 w-3.5 text-primary" /> : <span className={`h-2.5 w-2.5 rounded-full ${run?.conclusion === "success" ? "bg-emerald-500" : run ? "bg-destructive" : "bg-muted-foreground"}`} />}
+          {running || watching ? <Spinner className="h-3.5 w-3.5 text-primary" /> : <span className={`h-2.5 w-2.5 rounded-full ${run?.conclusion === "success" ? "bg-emerald-500" : run ? "bg-destructive" : "bg-muted-foreground"}`} />}
           {run ? (
             <a href={run.url} target="_blank" rel="noopener" className="hover:underline">
               {status}
@@ -106,18 +140,32 @@ function DeployBar({ children }: { children: React.ReactNode }) {
             status
           )}
         </span>
-        {pending != null && pending > 0 && !running && (
+        {pending != null && pending > 0 && !running && !watching && (
           <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-200">
             {pending} {pending === 1 ? "change" : "changes"} not live yet
           </span>
         )}
-        <Button variant="primary" size="sm" className="ml-auto" onClick={() => void deploy()} disabled={busy || Boolean(running)}>
+        <Button variant="primary" size="sm" className="ml-auto" onClick={() => void deploy()} disabled={busy || Boolean(running) || Boolean(watching)}>
           {busy ? <Spinner className="h-3.5 w-3.5" /> : <Rocket className="h-3.5 w-3.5" />} Deploy site
         </Button>
       </div>
       {message && (
         <div className="mt-2">
-          <Notice tone={message.tone}>{message.text}</Notice>
+          <Notice tone={message.tone}>
+            <span className="flex flex-wrap items-center gap-2">
+              {message.text}
+              {message.url && (
+                <a href={message.url} target="_blank" rel="noopener" className="underline">
+                  Open the run on GitHub
+                </a>
+              )}
+              {message.tone === "error" && (
+                <Button size="sm" className="ml-auto" onClick={() => void deploy()} disabled={busy || Boolean(watching)}>
+                  Retry
+                </Button>
+              )}
+            </span>
+          </Notice>
         </div>
       )}
       <div className="mt-5">{children}</div>
@@ -183,13 +231,16 @@ export default function AdminApp() {
     );
   }
 
-  const tab = route.page === "settings" || route.page === "races" ? route.page : route.page.startsWith("boat") ? "boats" : "sails";
+  const tab = route.page === "settings" || route.page === "races" || route.page === "logbook" ? route.page : route.page.startsWith("boat") ? "boats" : "sails";
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div className="flex items-center gap-1 rounded-lg bg-muted/70 p-1 text-sm font-medium">
           <a href="#/sails" className={`rounded-md px-3 py-1.5 ${tab === "sails" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
             Sails
+          </a>
+          <a href="#/logbook" className={`rounded-md px-3 py-1.5 ${tab === "logbook" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+            Logbook
           </a>
           <a href="#/boats" className={`rounded-md px-3 py-1.5 ${tab === "boats" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
             Boats
@@ -220,6 +271,7 @@ export default function AdminApp() {
         {route.page === "boat" && <BoatEditor key={route.id ?? "new"} id={route.id} />}
         {route.page === "settings" && <SettingsPage />}
         {route.page === "races" && <RacePage />}
+        {route.page === "logbook" && <LogbookPage />}
       </DeployBar>
     </div>
   );

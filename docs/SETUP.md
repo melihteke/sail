@@ -24,7 +24,11 @@ breaks along the way.
    [`supabase/migrations/0004_race_courses.sql`](../supabase/migrations/0004_race_courses.sql) (the academy race:
    courses, scoreboards and the server-side race check), then
    [`supabase/migrations/0005_sail_log.sql`](../supabase/migrations/0005_sail_log.sql) (uploads from the Sail Tracker
-   Android app: the `sail_events` log and the `app_save_sail` function). All of them are safe to run again.
+   Android app: the `sail_events` log and the `app_save_sail` function), then
+   [`supabase/migrations/0006_logbook_pro.sql`](../supabase/migrations/0006_logbook_pro.sql) (structured log fields,
+   admin-only private notes in `sail_private`, the `sail_revisions` history and editable event logs). All of them are
+   safe to run again. Run them in order: running `0005` again after `0006` puts back the older `app_save_sail`, so run
+   `0006` after it.
 3. **Project Settings → API**: copy the **Project URL** and the **anon / publishable key**. Both are public by design.
    Also note the **service_role / secret key** for step 6. That one is secret: never commit or share it.
 
@@ -124,3 +128,11 @@ prints. The schema in `supabase/migrations` is applied automatically.
 - **Pausing:** Supabase pauses free projects after 7 days without any activity. The public site keeps working (it's
   static). Only the admin panel needs the project: open the Supabase dashboard and click **Restore**.
 - **Adding another admin:** run `insert into public.admins (email) values ('someone@gmail.com');` in the SQL editor.
+- **Private notes** live in `sail_private`, which only admins can read (row level security). The public build never
+  queries it, and a published sail row never contains them.
+
+## Revision History
+
+| Version | Date | Author | Changes |
+|---------|------|--------|---------|
+| 1.1 | 2026-11-20 | Melih Teke | Added migration 0006 (logbook fields, private notes, revision history, editable events). |

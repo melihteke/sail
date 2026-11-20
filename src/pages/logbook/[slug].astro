@@ -11,6 +11,7 @@ import MediaGallery from "@/components/MediaGallery.astro";
 import SailTrack from "@/components/SailTrack";
 import { SITE } from "@/config";
 import { EVENT_META, describeEvent, summarizeLog } from "@/lib/events";
+import { PASSAGE_LABEL, SEA_STATE_LABEL, VISIBILITY_LABEL, hasLogFacts } from "@/lib/logbook";
 import { SECTION_TITLES, type SailSections } from "@/lib/sections";
 import { formatLocal, getSails, type Sail } from "@/lib/sails";
 import { formatDuration, formatKn, formatNm } from "@/lib/units";
@@ -52,6 +53,21 @@ const photoPins = sail.media.flatMap((m) => (m.kind === "photo" && m.lat != null
 const timeline = sail.events
   .filter((e) => e.kind !== "start" && e.kind !== "stop")
   .map((e) => ({ time: formatLocal(e.at, { hour: "2-digit", minute: "2-digit" }), icon: EVENT_META[e.kind]?.icon ?? "•", text: describeEvent(e), tone: EVENT_META[e.kind]?.tone ?? "neutral" }));
+// Structured logbook fields; rows without a value are left out.
+const f = sail.log;
+const route = f.departure && f.arrival ? (f.departure === f.arrival ? `${f.departure} (round trip)` : `${f.departure} → ${f.arrival}`) : (f.departure ?? f.arrival);
+const conditions = [f.observedBft !== null ? `Bft ${f.observedBft}` : null, f.seaState ? `${SEA_STATE_LABEL[f.seaState].toLowerCase()} sea` : null, f.visibility ? `${VISIBILITY_LABEL[f.visibility].toLowerCase()} visibility` : null]
+  .filter(Boolean)
+  .join(" · ");
+const logRows = [
+  { label: "Type", value: f.passageType ? PASSAGE_LABEL[f.passageType] : null },
+  { label: "Route", value: route },
+  { label: "Skipper", value: f.skipper ?? (sail.role === "skipper" && hasLogFacts(f) ? "Me" : null) },
+  { label: "Observed", value: conditions || null },
+  { label: "Night hours", value: f.nightHours ? `${f.nightHours} h` : null },
+  { label: "Engine", value: f.engineMinutes !== null && !log ? (f.engineMinutes ? formatDuration(f.engineMinutes * 60) : "Not used") : null },
+  { label: "Tidal waters", value: f.tidal ? "Yes" : null },
+].filter((r): r is { label: string; value: string } => Boolean(r.value));
 const sections = (Object.keys(SECTION_TITLES) as (keyof SailSections)[])
   .filter((key) => sail.sections[key].trim())
   .map((key) => ({ key, title: SECTION_TITLES[key], html: marked.parse(sail.sections[key], { async: false }) as string }));
@@ -161,6 +177,21 @@ const jsonLd = {
                 ))
               }
             </ol>
+          </section>
+        )
+      }
+      {
+        logRows.length > 0 && (
+          <section aria-labelledby="log-facts" class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <h2 id="log-facts" class="text-sm font-semibold">Log</h2>
+            <dl class="mt-3 space-y-2 text-sm">
+              {logRows.map((r) => (
+                <div class="flex justify-between gap-3">
+                  <dt class="text-muted-foreground">{r.label}</dt>
+                  <dd class="text-right font-medium">{r.value}</dd>
+                </div>
+              ))}
+            </dl>
           </section>
         )
       }

@@ -29,12 +29,27 @@ function Thumb({ item }: { item: MediaRow }) {
 
 const KIND_LABEL: Record<MediaRow["kind"], string> = { photo: "Photo", video: "Video", youtube: "YouTube", link: "Link" };
 
-export default function MediaManager({ sailId, coverId, onCoverChange }: { sailId: string; coverId: string | null; onCoverChange: (id: string | null) => void }) {
+export default function MediaManager({
+  sailId,
+  coverId,
+  onCoverChange,
+  onCountChange,
+}: {
+  sailId: string;
+  coverId: string | null;
+  onCoverChange: (id: string | null) => void;
+  onCountChange?: (count: number) => void;
+}) {
   const [items, setItems] = React.useState<MediaRow[] | null>(null);
   const [progress, setProgress] = React.useState<string | null>(null);
   const [notice, setNotice] = React.useState<{ tone: "ok" | "warn" | "error"; text: string } | null>(null);
   const [yt, setYt] = React.useState({ url: "", caption: "" });
   const [link, setLink] = React.useState({ url: "", caption: "" });
+
+  const count = items?.length;
+  React.useEffect(() => {
+    if (count !== undefined) onCountChange?.(count);
+  }, [count, onCountChange]);
 
   const reload = React.useCallback(async () => {
     try {

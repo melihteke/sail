@@ -5,7 +5,7 @@ import { computeStats, type TrackStats } from "./gpx";
 import { extensionOf, processPhoto, processVideo, BOAT_PHOTO_MAX_PX } from "./media-process";
 import { sailSlug, slugify } from "./sections";
 import { db } from "./supabase";
-import type { BoatRow, MediaRow, SailRow } from "./types";
+import type { BoatRow, MediaRow, SailPrivateRow, SailRevision, SailRow } from "./types";
 import { fetchSailWind } from "./wind";
 import { parseYouTube } from "./youtube";
 
@@ -123,6 +123,86 @@ export async function processStoredGpx(sail: SailRow) {
 
 export async function listEvents(sailId: string) {
   return check(await db().from("sail_events").select("*").eq("sail_id", sailId).order("at")) as EventRow[];
+}
+
+/** Admin edits mark the event, so a later upload from the app no longer replaces the log. */
+export async function createEvent(sailId: string, e: Pick<EventRow, "at" | "kind" | "data">) {
+  return check(await db().from("sail_events").insert({ sail_id: sailId, at: e.at, kind: e.kind, data: e.data, edited: true }).select("*").single()) as EventRow;
+}
+
+export async function updateEvent(id: string, patch: Partial<Pick<EventRow, "at" | "kind" | "data">>) {
+  return check(await db().from("sail_events").update({ ...patch, edited: true }).eq("id", id).select("*").single()) as EventRow;
+}
+
+export async function deleteEvent(sailId: string, id: string) {
+  check(await db().from("sail_events").delete().eq("id", id));
+  // Keep the "edited" marker on the remaining events so the deletion survives an app re-upload.
+  check(await db().from("sail_events").update({ edited: true }).eq("sail_id", sailId));
+}
+
+// --- Private notes and revisions ---------------------------------------------------------------------
+
+export async function getPrivate(sailId: string) {
+  const row = check(await db().from("sail_private").select("*").eq("sail_id", sailId).maybeSingle()) as SailPrivateRow | null;
+  return row ?? { sail_id: sailId, notes: "", maintenance: "", updated_at: "" };
+}
+
+export async function savePrivate(sailId: string, patch: Partial<Pick<SailPrivateRow, "notes" | "maintenance">>) {
+  return check(await db().from("sail_private").upsert({ sail_id: sailId, ...patch }).select("*").single()) as SailPrivateRow;
+}
+
+/** Private notes of all sails, for the logbook export. */
+export async function listPrivate() {
+  return check(await db().from("sail_private").select("sail_id, notes, maintenance")) as Pick<SailPrivateRow, "sail_id" | "notes" | "maintenance">[];
+}
+
+export async function listRevisions(sailId: string) {
+  return check(await db().from("sail_revisions").select("*").eq("sail_id", sailId).order("changed_at", { ascending: false })) as SailRevision[];
+}
+
+export async function restoreRevision(revisionId: string, sailId: string) {
+  check(await db().rpc("restore_sail_revision", { rev: revisionId }));
+  return getSail(sailId);
+}
+
+/** Engine and docking events of all sails, to work out engine time in the logbook export. */
+export async function listEngineEvents() {
+  return check(
+    await db().from("sail_events").select("sail_id, at, kind, lat, lon, data").in("kind", ["engine_on", "engine_off", "docked", "stop"]).order("at"),
+  ) as (EventRow & { sail_id: string })[];
+}
+
+/** All sails with the fields of the logbook export (no track points). */
+export async function listLogbook() {
+  return check(
+    await db()
+      .from("sails")
+      .select(
+        "id, slug, status, title, date, location, boat_id, role, skipper, passage_type, departure, arrival, night_hours, tidal, observed_bft, sea_state, visibility, engine_minutes, stats",
+      )
+      .order("date", { ascending: false }),
+  ) as Pick<
+    SailRow,
+    | "id"
+    | "slug"
+    | "status"
+    | "title"
+    | "date"
+    | "location"
+    | "boat_id"
+    | "role"
+    | "skipper"
+    | "passage_type"
+    | "departure"
+    | "arrival"
+    | "night_hours"
+    | "tidal"
+    | "observed_bft"
+    | "sea_state"
+    | "visibility"
+    | "engine_minutes"
+    | "stats"
+  >[];
 }
 
 export async function replaceGpx(sailId: string, gpx: ProcessedGpx) {
