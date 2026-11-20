@@ -1,22 +1,17 @@
 import * as React from "react";
 import { ArrowLeft, ImagePlus, Plus, Trash2, X } from "lucide-react";
-import { deleteBoat, listBoats, publicUrl, saveBoat, uploadBoatPhoto, MEDIA_BUCKET, type BoatPatch } from "@/lib/admin-api";
-import { slugify } from "@/lib/sections";
+import { boatSlugFor, deleteBoat, listBoats, publicUrl, saveBoat, uploadBoatPhoto, MEDIA_BUCKET, type BoatPatch } from "@/lib/admin-api";
 import type { BoatRow, BoatSpec, PhotoCredit } from "@/lib/types";
 import { url } from "@/lib/url";
 import { Button, Card, DropZone, Field, Input, MarkdownField, Notice, SaveState, Spinner, navigate, useAutosave } from "./ui";
 
-const EMPTY: BoatPatch = { name: "", slug: "", model: "", description: "", specs: [], is_default: false };
-
-export default function BoatEditor({ id }: { id: string | null }) {
+export default function BoatEditor({ id }: { id: string }) {
   const [boat, setBoat] = React.useState<BoatRow | null>(null);
-  const [draft, setDraft] = React.useState<BoatPatch>(EMPTY);
   const [error, setError] = React.useState<string | null>(null);
-  const [busy, setBusy] = React.useState<null | "create" | "photo" | "delete">(null);
+  const [busy, setBusy] = React.useState<null | "photo" | "delete">(null);
   const [notice, setNotice] = React.useState<{ tone: "ok" | "error"; text: string } | null>(null);
 
   React.useEffect(() => {
-    if (!id) return;
     listBoats()
       .then((boats) => {
         const found = boats.find((b) => b.id === id);
@@ -28,41 +23,27 @@ export default function BoatEditor({ id }: { id: string | null }) {
 
   const save = useAutosave<BoatRow>(async (patch) => {
     if (!boat) return;
-    const updated = await saveBoat(boat.id, patch as BoatPatch);
+    // A new boat gets a readable URL from its first real name.
+    const slug = patch.name !== undefined && patch.slug === undefined ? await boatSlugFor(boat, patch.name) : null;
+    const updated = await saveBoat(boat.id, { ...(patch as BoatPatch), ...(slug ? { slug } : {}) });
     setBoat((b) => (b ? { ...b, slug: updated.slug, updated_at: updated.updated_at } : updated));
   });
 
-  // New boat: collect fields locally until "Create boat"; existing boat: autosave each change.
-  const value = (boat ?? draft) as BoatRow;
+  const value = (boat ?? {}) as BoatRow;
   const set = <K extends keyof BoatRow>(key: K, v: BoatRow[K]) => {
-    if (boat) {
-      setBoat({ ...boat, [key]: v });
-      save.queue({ [key]: v } as Partial<BoatRow>);
-    } else {
-      setDraft((d) => ({ ...d, [key]: v, ...(key === "name" ? { slug: slugify(String(v)) } : {}) }));
-    }
+    if (!boat) return;
+    setBoat({ ...boat, [key]: v });
+    save.queue({ [key]: v } as Partial<BoatRow>);
   };
 
   if (error) return <Notice tone="error">{error}</Notice>;
-  if (id && !boat) {
+  if (!boat) {
     return (
       <div className="flex justify-center py-16 text-muted-foreground">
         <Spinner />
       </div>
     );
   }
-
-  const create = async () => {
-    if (!draft.name?.trim()) return setNotice({ tone: "error", text: "Give the boat a name." });
-    setBusy("create");
-    try {
-      const created = await saveBoat(null, { ...draft, name: draft.name.trim(), slug: draft.slug || slugify(draft.name) });
-      navigate(`#/boats/${created.id}`);
-    } catch (e) {
-      setNotice({ tone: "error", text: (e as Error).message });
-      setBusy(null);
-    }
-  };
 
   const onPhoto = async (files: File[]) => {
     const file = files[0];
@@ -106,14 +87,13 @@ export default function BoatEditor({ id }: { id: string | null }) {
         <Button variant="ghost" size="sm" onClick={() => navigate("#/boats")} aria-label="Back to boats">
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="min-w-0 flex-1 truncate text-2xl font-semibold tracking-tight">{boat ? boat.name || "Boat" : "New boat"}</h1>
-        {boat && <SaveState state={save.state} error={save.error} />}
-        {boat && (
-          <a href={url(`/boats/${boat.slug}`)} target="_blank" rel="noopener" className="text-xs text-primary hover:underline">
-            View live
-          </a>
-        )}
+        <h1 className="min-w-0 flex-1 truncate text-2xl font-semibold tracking-tight">{boat.name || "Boat"}</h1>
+        <SaveState state={save.state} error={save.error} />
+        <a href={url(`/boats/${boat.slug}`)} target="_blank" rel="noopener" className="text-xs text-primary hover:underline">
+          View live
+        </a>
       </div>
+      <p className="-mt-3 text-xs text-muted-foreground">Everything is optional and saved automatically. Fill in what you know now, the rest later.</p>
       {notice && <Notice tone={notice.tone}>{notice.text}</Notice>}
 
       <Card title="Boat">
@@ -155,13 +135,6 @@ export default function BoatEditor({ id }: { id: string | null }) {
         <div className="mt-5">
           <MarkdownField label="Description" value={value.description ?? ""} onChange={(v) => set("description", v)} placeholder="History, character, what she's like to sail…" />
         </div>
-        {!boat && (
-          <div className="mt-5">
-            <Button variant="primary" onClick={() => void create()} disabled={busy !== null}>
-              {busy === "create" && <Spinner className="h-3.5 w-3.5" />} Create boat
-            </Button>
-          </div>
-        )}
       </Card>
 
       {boat && (

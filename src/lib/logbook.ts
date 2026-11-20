@@ -102,7 +102,7 @@ export interface CheckItem {
 export function completeness(sail: SailRow, opts: { mediaCount: number }): CheckItem[] {
   const story = [sail.how_it_went, sail.what_i_practised, sail.learnings].some((s) => s.trim());
   return [
-    { key: "track", label: "GPX track", done: Boolean(sail.gpx_path) },
+    { key: "track", label: "Track, or distance & time", done: Boolean(sail.gpx_path) || toNumber(sail.manual_distance_nm) !== null || sail.manual_duration_min !== null },
     { key: "title", label: "Title & summary", done: Boolean(sail.title.trim() && sail.summary.trim()) },
     { key: "boat", label: "Boat", done: Boolean(sail.boat_id) },
     { key: "type", label: "Passage type", done: Boolean(sail.passage_type) },

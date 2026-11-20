@@ -1,20 +1,23 @@
 # Yeni seyir logu ekleme
 
-Seyirler artık **admin panelinden** ekleniyor: <https://sail.mteke.com/admin/>
-(İlk kurulum için [docs/SETUP.md](docs/SETUP.md).)
+Seyirler **admin panelinden** ekleniyor: <https://sail.mteke.com/admin/>
+(İlk kurulum için [docs/SETUP.md](docs/SETUP.md).) **Her alan isteğe bağlıdır** ve otomatik kaydedilir; istediğin
+zaman geri dönüp ekleyebilir ya da değiştirebilirsin.
 
-## 1. GPX'i al
-
-Upwind, Strava, Garmin, Navionics gibi uygulamalardan seyri **GPX** olarak export et (Strava: aktivite → `⋯` →
-**Export GPX**). Zaman damgalı track noktaları olan her GPX olur.
-
-## 2. Giriş yap ve "New sail"
+## 1. Giriş yap ve "New sail"
 
 1. <https://sail.mteke.com/admin/> → **Sign in with Google** (melihteke@gmail.com).
-2. **New sail** → GPX dosyasını kutuya sürükle (ya da tıklayıp seç).
-3. Birkaç saniye içinde önizleme gelir: harita, mesafe, süre, hız, o saatlerin rüzgarı, tack/jibe sayısı ve
-   en çok hangi seyir yönünde gittiğin. Başlık, tarih, konum ve tekne otomatik önerilir; istersen değiştir.
-4. **Create draft & continue** → seyir taslak olarak kaydedilir ve editör açılır.
+2. **Logbook** sekmesinde **New sail** → bugünün tarihi ve ana teknenle bir taslak hemen açılır. GPX, fotoğraf ya da
+   başka bir şey girmen gerekmez.
+
+## 2. GPX (isteğe bağlı)
+
+Upwind, Strava, Garmin, Navionics gibi bir uygulamada kaydın varsa **GPX** olarak export et (Strava: aktivite → `⋯`
+→ **Export GPX**) ve editördeki **Track** kartına bırak: harita, mesafe, süre, hız, o saatlerin rüzgarı ve tack/jibe
+sayısı hesaplanır. İlk GPX tarihi düzeltir ve başlık boşsa bir başlık önerir.
+
+GPX yoksa aynı kartta **mesafeyi (nm)** ve **süreyi (saat)** elle girebilirsin. Seyir sitede haritasız görünür; bu
+değerler toplamlara ve logbook dökümüne girer.
 
 ## 3. Bilgileri ve hikâyeyi doldur
 
@@ -59,18 +62,19 @@ Sağdaki **Log entry** listesi neyin eksik olduğunu gösterir; sadece yol göst
   canlıya al.
 - **Unpublish** seyri siteden kaldırır (taslak olarak kalır). **Delete sail** her şeyi (track ve medya dahil) siler.
 
-## Logbook dökümü
+## Logbook listesi ve dökümü
 
-Admin → **Logbook**: tüm seyirler seyir defteri tablosu olarak (tarih, tekne, rol, skipper, tür, rota, mil, saat, gece
-saati, motor, gelgit, koşullar). Tarih, tekne, tür ve duruma göre filtrele; üstte toplamlar görünür.
-**Print / PDF** ile yazdır ya da PDF kaydet (A4 yatay), **CSV** ile Excel'e al. "Include private notes" işaretlersen
-özel notlar da eklenir; bu dosyayı paylaşırken dikkat et.
+Admin → **Logbook** hem seyir listesi hem seyir defteridir: arama kutusu, toplamlar (seyir, gün, mil, saat, gece
+saati, gelgit / skipper) ve seyirler. Bir satıra tıklayınca editör açılır. **Filters & export** altında tarih, tekne,
+tür ve duruma göre filtrele; **Print / PDF** tüm logbook sütunlarıyla yazdırır (A4 yatay), **CSV** Excel'e aktarır.
+"Include private notes" işaretlersen özel notlar da eklenir; bu dosyayı paylaşırken dikkat et.
 
 ## Tekne eklemek
 
-Admin → **Boats** → **New boat**: ad, model, açıklama, fotoğraf (başkasının fotoğrafıysa kredi/lisans alanlarını
-doldur), özellik tablosu. "Main boat" işaretli tekne yeni seyirlerde otomatik seçilir. Teknenin sitedeki sayfası:
-`/boats/<slug>`; orada o teknede yaptığın toplam mil ve seyirler listelenir.
+Admin → **Boats** → **New boat**: "New boat" adında bir tekne hemen açılır. Ad, model, açıklama, fotoğraf (başkasının
+fotoğrafıysa kredi/lisans alanlarını doldur) ve özellik tablosu **isteğe bağlıdır**, otomatik kaydedilir. İlk gerçek
+ad girildiğinde sayfa adresi de (`/boats/<slug>`) ona göre ayarlanır. "Main boat" işaretli tekne yeni seyirlerde
+otomatik seçilir; teknenin sayfasında o teknede yaptığın toplam mil ve seyirler listelenir.
 
 ## Notlar
 
@@ -86,4 +90,5 @@ doldur), özellik tablosu. "Main boat" işaretli tekne yeni seyirlerde otomatik 
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.2 | 2026-11-20 | Melih Teke | New sail/New boat tek tıkla açılıyor, her alan isteğe bağlı; GPX'siz seyir (elle mesafe/süre); Sails ve Logbook tek sekmede. |
 | 1.1 | 2026-11-20 | Melih Teke | Logbook alanları, özel notlar, olay günlüğü düzenleme, geçmiş, Quick/Detailed mod, Logbook dökümü ve deploy takibi eklendi. |

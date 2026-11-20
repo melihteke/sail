@@ -54,7 +54,7 @@ const jsonLd = {
       <StatCard i18n="stat.sails" label="Sails logged" value={String(career.count)} hint={`${career.days} ${career.days === 1 ? "day" : "days"} on the water`} />
       <StatCard i18n="stat.distance" label="Distance" value={formatNm(career.totalNm)} hint="over ground" />
       <StatCard i18n="stat.time" label="Time sailing" value={formatDuration(career.totalSec)} hint="dock to dock" />
-      <StatCard i18n="stat.top" label="Top speed" value={career.fastest ? formatKn(career.fastest.stats.maxSpeedKn) : "–"} hint={career.fastest?.title} />
+      <StatCard i18n="stat.top" label="Top speed" value={career.fastest ? formatKn(career.fastest.stats!.maxSpeedKn) : "–"} hint={career.fastest?.title} />
     </div>
   </section>
 

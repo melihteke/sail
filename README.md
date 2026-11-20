@@ -66,9 +66,14 @@ media and handles the Google login of the admin panel.
 
 **Admin panel** (`/admin/`, Google login, only `melihteke@gmail.com`)
 
-- **New sail:** drop a GPX file (Upwind, Strava, Garmin…).
-  - Stats, map, wind and the tack/gybe analysis are worked out in the browser.
-  - Title, date, location and boat are suggested.
+- **Logbook** (`#/sails`): the one list of all sails, with search, totals (nm, hours, night hours, tidal, as skipper),
+  filters (dates, boat, type, status), a print/PDF layout with every logbook column and CSV export (private notes
+  optional). Click a row to edit.
+- **New sail:** opens a blank draft right away (today, main boat). Everything is optional and can be added later.
+  - A GPX (Upwind, Strava, Garmin…) is optional: drop it on the Track card and stats, map, wind and the tack/gybe
+    analysis are worked out in the browser; the first track also sets the date and suggests a title.
+  - Without a GPX, distance and time can be entered by hand. Such sails show on the site without a map and count in
+    the totals.
 - **Editor:** basics, the four story sections (Markdown with preview), boat picker, autosave, publish/unpublish.
   - **Quick / Detailed** mode and a "Log entry" checklist that shows what is still missing (advisory, never blocks).
   - **Logbook** fields: passage type, departure → arrival, skipper, observed Beaufort, sea state, visibility, tidal
@@ -77,14 +82,13 @@ media and handles the Google login of the admin panel.
   - **Private notes** (notes and boat/gear issues) in a separate admin-only table; never published.
   - **Event log** can be added to, corrected and pruned. Once edited, an app re-upload no longer replaces it.
   - **History:** one saved version per editing session (last 50), with restore.
-- **Logbook** (`#/logbook`): all sails as a logbook table with filters (dates, boat, type, status), totals (nm, hours,
-  night hours, tidal, as skipper), a print/PDF layout and CSV export (private notes optional).
 - **Media:**
   - Photos: iPhone HEIC/JPG/PNG are converted to JPG, resized, and EXIF/GPS is stripped.
   - Short videos: up to 50 MB, with a poster frame.
   - YouTube links and other links.
   - Captions, ordering and a cover pick.
-- **Boats:** add/edit boats, photo with credit, specs table, main boat.
+- **Boats:** "New boat" opens a blank boat right away; every field is optional. Photo with credit, specs table, main
+  boat. The page address follows the first real name.
 - **Settings:** the place behind each home page card (live wind, 3-day forecast, daylight, sea now, Windy wind map and rain radar, the maps with a zoom level), with address autocomplete. Forecast, daylight and radar follow the live wind place until they get their own. Changes show on the site without a deploy.
 - **Deploy site:** rebuilds the static site through the `publish` edge function (about 2 minutes) and follows the run:
   "live" when it succeeds, or a clear failure with a link to the GitHub run and **Retry**. Saved changes are never
@@ -168,6 +172,7 @@ Pushing to `main` runs the tests and deploys. The admin panel's **Deploy site** 
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.9 | 2026-11-20 | Melih Teke | One Logbook tab for listing and exporting sails; New sail/New boat open a blank record with every field optional; sails without a GPX (hand-entered distance/time, shown without a map); removed the mteke.com link from About. |
 | 1.8 | 2026-11-20 | Melih Teke | Professional logbook in the admin: structured log fields, private notes, completeness checklist, quick/detailed mode, editable event log, revision history, logbook export (print/CSV) and deploy result tracking with retry. |
 | 1.7 | 2026-11-15 | Melih Teke | Tides lesson: redrawn Moon/Earth animation with Moon-phase view and phase strip; adjustable cross-stream correction angle with the calculation (rule of 60, arcsin, vector triangle). |
 | 1.6 | 2026-11-15 | Melih Teke | Tides & anchoring: kinds of current, Moon/springs-neaps animation, interactive tidal stream atlas and tidal diamond, scope table, guided tasks in the anchored-through-the-tide widget, step-by-step Anchor Bay guide. |

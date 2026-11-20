@@ -33,16 +33,16 @@ interface Props {
 
 const { sail, newer, older } = Astro.props;
 const { stats, wind, analysis } = sail;
-const date = formatLocal(stats.start, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-const times = `${formatLocal(stats.start, { hour: "2-digit", minute: "2-digit" })}–${formatLocal(stats.end, { hour: "2-digit", minute: "2-digit" })}`;
+const date = formatLocal(sail.startIso, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+const times = stats ? `${formatLocal(stats.start, { hour: "2-digit", minute: "2-digit" })}–${formatLocal(stats.end, { hour: "2-digit", minute: "2-digit" })}` : null;
 const details = [
   { label: "Role", value: sail.role[0]!.toUpperCase() + sail.role.slice(1) },
   { label: "Crew", value: sail.crew.length ? sail.crew.join(", ") : "–" },
   { label: "Sails", value: sail.sailsUsed ? `${sail.sailsUsed}${sail.reef ? " (reefed)" : ""}` : sail.reef ? "Reefed" : "–" },
 ];
 // Event log from the Sail Tracker app: engine vs sailing time, timeline and map pins.
-const startMs = Date.parse(stats.start);
-const endMs = Date.parse(stats.end);
+const startMs = Date.parse(stats?.start ?? sail.events[0]?.at ?? sail.startIso);
+const endMs = Date.parse(stats?.end ?? sail.events[sail.events.length - 1]?.at ?? sail.startIso);
 const log = sail.events.length ? summarizeLog(sail.events, endMs) : null;
 if (log) details.push({ label: "Under sail / engine", value: `${formatDuration(log.sailingMs / 1000)} / ${formatDuration(log.engineMs / 1000)}` });
 const mapEvents = sail.events
@@ -79,23 +79,27 @@ const jsonLd = {
   "@type": "BlogPosting",
   headline: sail.title,
   description: sail.summary,
-  datePublished: stats.start,
+  datePublished: sail.startIso,
   author: { "@type": "Person", name: SITE.author, url: new URL(url("/about"), Astro.site).toString() },
   mainEntityOfPage: pageUrl,
   url: pageUrl,
   ...(shareImage ? { image: new URL(shareImage, Astro.site).toString() } : {}),
   keywords: ["sailing", ...sail.tags].join(", "),
-  contentLocation: { "@type": "Place", name: sail.location, geo: { "@type": "GeoCoordinates", latitude: stats.startPoint.lat, longitude: stats.startPoint.lon } },
+  contentLocation: {
+    "@type": "Place",
+    name: sail.location,
+    ...(stats ? { geo: { "@type": "GeoCoordinates", latitude: stats.startPoint.lat, longitude: stats.startPoint.lon } } : {}),
+  },
 };
 ---
 
-<BaseLayout title={sail.title} description={sail.summary} image={shareImage} ogType="article" publishedTime={stats.start} jsonLd={jsonLd}>
+<BaseLayout title={sail.title} description={sail.summary} image={shareImage} ogType="article" publishedTime={sail.startIso} jsonLd={jsonLd}>
   <nav class="text-sm text-muted-foreground" aria-label="Breadcrumb">
     <a href={url("/logbook")} class="hover:text-foreground">Logbook</a>{" / "}<span class="text-foreground">{sail.title}</span>
   </nav>
 
   <header class="mt-4 max-w-3xl">
-    <p class="text-sm text-muted-foreground">{date} · {times} · {sail.location}</p>
+    <p class="text-sm text-muted-foreground">{[date, times, sail.location].filter(Boolean).join(" · ")}</p>
     <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{sail.title}</h1>
     <p class="mt-3 text-lg text-muted-foreground">{sail.summary}</p>
     <div class="mt-4 flex flex-wrap items-center gap-2">
@@ -106,33 +110,48 @@ const jsonLd = {
     </div>
   </header>
 
-  <section aria-label="Sail statistics" class="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
-    <StatCard label="Distance" value={formatNm(stats.distanceNm)} hint="over ground" />
-    <StatCard label="Duration" value={formatDuration(stats.elapsedSec)} hint={`${formatDuration(stats.movingSec)} moving`} />
-    <StatCard label="Avg speed" value={formatKn(stats.avgSpeedKn)} hint="while moving" />
-    <StatCard label="Max speed" value={formatKn(stats.maxSpeedKn)} hint="10 s average" />
-  </section>
+  {
+    stats ? (
+      <section aria-label="Sail statistics" class="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <StatCard label="Distance" value={formatNm(stats.distanceNm)} hint="over ground" />
+        <StatCard label="Duration" value={formatDuration(stats.elapsedSec)} hint={`${formatDuration(stats.movingSec)} moving`} />
+        <StatCard label="Avg speed" value={formatKn(stats.avgSpeedKn)} hint="while moving" />
+        <StatCard label="Max speed" value={formatKn(stats.maxSpeedKn)} hint="10 s average" />
+      </section>
+    ) : (
+      (sail.distanceNm !== null || sail.elapsedSec !== null) && (
+        <section aria-label="Sail statistics" class="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
+          {sail.distanceNm !== null && <StatCard label="Distance" value={formatNm(sail.distanceNm)} hint="as logged" />}
+          {sail.elapsedSec !== null && <StatCard label="Duration" value={formatDuration(sail.elapsedSec)} hint="as logged" />}
+        </section>
+      )
+    )
+  }
 
-  <section aria-label="Track and replay" class="mt-6">
-    <SailTrack
-      client:only="react"
-      track={stats.track}
-      bounds={stats.bounds}
-      startIso={stats.start}
-      timeZone={SITE.timeZone}
-      maxSpeedKn={stats.maxSpeedKn}
-      windHours={wind?.hours ?? []}
-      twa={analysis?.twa ?? []}
-      maneuvers={analysis?.maneuvers ?? []}
-      events={mapEvents}
-      engine={engineSecs}
-      photos={photoPins}
-    />
-  </section>
+  {
+    stats && (
+      <section aria-label="Track and replay" class="mt-6">
+        <SailTrack
+          client:only="react"
+          track={stats.track}
+          bounds={stats.bounds}
+          startIso={stats.start}
+          timeZone={SITE.timeZone}
+          maxSpeedKn={stats.maxSpeedKn}
+          windHours={wind?.hours ?? []}
+          twa={analysis?.twa ?? []}
+          maneuvers={analysis?.maneuvers ?? []}
+          events={mapEvents}
+          engine={engineSecs}
+          photos={photoPins}
+        />
+      </section>
+    )
+  }
 
   <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
     <div class="min-w-0 space-y-6">
-      {wind ? <WindStrip wind={wind} /> : <p class="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">Wind data is not available for this sail.</p>}
+      {wind ? <WindStrip wind={wind} /> : stats && <p class="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">Wind data is not available for this sail.</p>}
 
       {
         sections.length > 0 && (
@@ -213,13 +232,17 @@ const jsonLd = {
             ))
           }
         </dl>
-        <a
-          href={url(`/tracks/${sail.slug}.gpx`)}
-          download
-          class="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
-        >
-          Download GPX
-        </a>
+        {
+          sail.gpx && (
+            <a
+              href={url(`/tracks/${sail.slug}.gpx`)}
+              download
+              class="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+            >
+              Download GPX
+            </a>
+          )
+        }
       </div>
     </aside>
   </div>

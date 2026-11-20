@@ -1,11 +1,9 @@
 import * as React from "react";
 import { ExternalLink, LogOut, Rocket } from "lucide-react";
 import { signInWithGoogle, signOut, useAuth } from "@/lib/auth";
-import { latestDeploy, pendingChanges, triggerDeploy, type DeployRun } from "@/lib/admin-api";
+import { createBlankBoat, createBlankSail, latestDeploy, pendingChanges, triggerDeploy, type DeployRun } from "@/lib/admin-api";
 import { url } from "@/lib/url";
 import { Button, Notice, Spinner } from "./ui";
-import SailList from "./SailList";
-import SailNew from "./SailNew";
 import SailEditor from "./SailEditor";
 import BoatList from "./BoatList";
 import BoatEditor from "./BoatEditor";
@@ -18,21 +16,41 @@ type Route =
   | { page: "sail-new" }
   | { page: "sail"; id: string }
   | { page: "boats" }
-  | { page: "boat"; id: string | null }
-  | { page: "logbook" }
+  | { page: "boat-new" }
+  | { page: "boat"; id: string }
   | { page: "settings" }
   | { page: "races" };
 
 function parseRoute(hash: string): Route {
   const parts = hash.replace(/^#\/?/, "").split("/").filter(Boolean);
-  if (parts[0] === "logbook") return { page: "logbook" };
   if (parts[0] === "settings") return { page: "settings" };
   if (parts[0] === "races") return { page: "races" };
   if (parts[0] === "sails" && parts[1] === "new") return { page: "sail-new" };
   if (parts[0] === "sails" && parts[1]) return { page: "sail", id: parts[1] };
-  if (parts[0] === "boats" && parts[1]) return { page: "boat", id: parts[1] === "new" ? null : parts[1] };
+  if (parts[0] === "boats" && parts[1] === "new") return { page: "boat-new" };
+  if (parts[0] === "boats" && parts[1]) return { page: "boat", id: parts[1] };
   if (parts[0] === "boats") return { page: "boats" };
   return { page: "sails" };
+}
+
+/** Creates a blank record right away and opens its editor (replacing this URL, so Back doesn't create another). */
+function CreateAndOpen({ create, path, label }: { create: () => Promise<{ id: string }>; path: string; label: string }) {
+  const [error, setError] = React.useState<string | null>(null);
+  const started = React.useRef(false);
+  React.useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    create().then(
+      (row) => window.location.replace(`#/${path}/${row.id}`),
+      (e: Error) => setError(e.message),
+    );
+  }, [create, path]);
+  if (error) return <Notice tone="error">Could not create the {label}: {error}</Notice>;
+  return (
+    <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
+      <Spinner /> Creating a new {label}…
+    </div>
+  );
 }
 
 function useRoute() {
@@ -231,15 +249,12 @@ export default function AdminApp() {
     );
   }
 
-  const tab = route.page === "settings" || route.page === "races" || route.page === "logbook" ? route.page : route.page.startsWith("boat") ? "boats" : "sails";
+  const tab = route.page === "settings" || route.page === "races" ? route.page : route.page.startsWith("boat") ? "boats" : "sails";
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div className="flex items-center gap-1 rounded-lg bg-muted/70 p-1 text-sm font-medium">
           <a href="#/sails" className={`rounded-md px-3 py-1.5 ${tab === "sails" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
-            Sails
-          </a>
-          <a href="#/logbook" className={`rounded-md px-3 py-1.5 ${tab === "logbook" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
             Logbook
           </a>
           <a href="#/boats" className={`rounded-md px-3 py-1.5 ${tab === "boats" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
@@ -264,14 +279,14 @@ export default function AdminApp() {
         </div>
       </div>
       <DeployBar>
-        {route.page === "sails" && <SailList />}
-        {route.page === "sail-new" && <SailNew />}
+        {route.page === "sails" && <LogbookPage />}
+        {route.page === "sail-new" && <CreateAndOpen create={createBlankSail} path="sails" label="sail" />}
         {route.page === "sail" && <SailEditor key={route.id} id={route.id} />}
         {route.page === "boats" && <BoatList />}
-        {route.page === "boat" && <BoatEditor key={route.id ?? "new"} id={route.id} />}
+        {route.page === "boat-new" && <CreateAndOpen create={createBlankBoat} path="boats" label="boat" />}
+        {route.page === "boat" && <BoatEditor key={route.id} id={route.id} />}
         {route.page === "settings" && <SettingsPage />}
         {route.page === "races" && <RacePage />}
-        {route.page === "logbook" && <LogbookPage />}
       </DeployBar>
     </div>
   );

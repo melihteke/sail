@@ -1,8 +1,8 @@
 import * as React from "react";
 import { ArrowLeft, Eye, EyeOff, RefreshCw, Trash2, Upload } from "lucide-react";
-import { deleteSail, getSail, listBoats, listEvents, processGpx, processStoredGpx, refreshWind, replaceGpx, updateSail, type SailPatch } from "@/lib/admin-api";
+import { deleteSail, getSail, listBoats, listEvents, processGpx, processStoredGpx, refreshWind, replaceGpx, settleSlug, suggestTitle, updateSail, type SailPatch } from "@/lib/admin-api";
 import { type EventRow } from "@/lib/events";
-import { completeness } from "@/lib/logbook";
+import { completeness, toNumber } from "@/lib/logbook";
 import { POINT_OF_SAIL_LABEL, type PointOfSail } from "@/lib/analysis";
 import { SECTION_TITLES } from "@/lib/sections";
 import { SAIL_ROLES, type BoatRow, type SailRow } from "@/lib/types";
@@ -95,9 +95,9 @@ export default function SailEditor({ id }: { id: string }) {
     setNotice(null);
     try {
       await save.flush();
-      if (!published && !sail.gpx_path) throw new Error("Add a GPX track before publishing.");
+      const slug = published ? sail.slug : await settleSlug(sail);
       const updated = await updateSail(id, { status: published ? "draft" : "published" });
-      setSail((s) => (s ? { ...s, status: updated.status, published_at: updated.published_at } : s));
+      setSail((s) => (s ? { ...s, slug, status: updated.status, published_at: updated.published_at } : s));
       await deploy();
       setNotice({ tone: "ok", text: published ? "Unpublished. The site is rebuilding without this sail." : "Published! The site is rebuilding; the sail goes live in about 2 minutes." });
     } catch (e) {
@@ -110,14 +110,21 @@ export default function SailEditor({ id }: { id: string }) {
   const onGpx = async (files: File[]) => {
     const file = files[0];
     if (!file) return;
-    if (!confirm("Replace the track? Stats, wind and the manoeuvre analysis will be recalculated.")) return;
+    const first = !sail.stats;
+    if (!first && !confirm("Replace the track? Stats, wind and the manoeuvre analysis will be recalculated.")) return;
     setBusy("gpx");
     setNotice(null);
     try {
+      await save.flush();
       const gpx = await processGpx(file);
       const updated = await replaceGpx(id, gpx);
       setSail((s) => (s ? { ...s, ...updated } : updated));
-      setNotice({ tone: gpx.windError ? "warn" : "ok", text: gpx.windError ? `Track replaced, but wind failed: ${gpx.windError}` : "Track replaced." });
+      // The first track also fills in the date and, if still empty, a title.
+      if (first) {
+        if (gpx.localDate !== sail.date) set("date", gpx.localDate);
+        if (!sail.title.trim()) set("title", suggestTitle(gpx));
+      }
+      setNotice({ tone: gpx.windError ? "warn" : "ok", text: gpx.windError ? `Track added, but wind failed: ${gpx.windError}` : first ? "Track added." : "Track replaced." });
     } catch (e) {
       setNotice({ tone: "error", text: (e as Error).message });
     } finally {
@@ -177,19 +184,20 @@ export default function SailEditor({ id }: { id: string }) {
         </Button>
       </div>
       <p className="-mt-3 text-xs text-muted-foreground">
-        {published ? "Published · edits go live after the next deploy (button above)." : "Draft · only you can see it until you publish."}
+        {published ? "Published · edits go live after the next deploy (button above)." : "Draft · only you can see it until you publish."} Every field is optional and saved
+        automatically; add or change anything later.
       </p>
       {notice && <Notice tone={notice.tone}>{notice.text}</Notice>}
 
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_16rem]">
-      <div className="order-2 min-w-0 space-y-5 lg:order-1">
+      <div className="min-w-0 space-y-5">
       <Card title="Basics">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Title" className="sm:col-span-2">
-            <Input value={sail.title} onChange={(e) => set("title", e.currentTarget.value)} />
+            <Input value={sail.title} onChange={(e) => set("title", e.currentTarget.value)} placeholder="Gusty morning on De Poel" />
           </Field>
           <Field label="Date">
-            <Input type="date" value={sail.date} onChange={(e) => set("date", e.currentTarget.value)} />
+            <Input type="date" value={sail.date} onChange={(e) => e.currentTarget.value && set("date", e.currentTarget.value)} />
           </Field>
           <Field label="Location">
             <Input value={sail.location} onChange={(e) => set("location", e.currentTarget.value)} />
@@ -255,8 +263,6 @@ export default function SailEditor({ id }: { id: string }) {
         </div>
       </Card>
 
-      <LogbookCard sail={sail} set={set} events={events} mode={mode} />
-
       <Card title="Story">
         <div className="grid gap-6 lg:grid-cols-2">
           {SECTION_FIELDS.filter((f) => detailed || f.key !== "notes" || sail.notes.trim()).map((f) => (
@@ -265,22 +271,18 @@ export default function SailEditor({ id }: { id: string }) {
         </div>
       </Card>
 
-      <PrivateNotesCard sailId={sail.id} />
-
-      {(events.length > 0 || detailed) && (
-        <EventLogCard sailId={sail.id} events={events} setEvents={setEvents} endIso={stats?.end ?? null} defaultIso={stats?.start ?? `${sail.date}T12:00:00`} />
-      )}
-
       <MediaManager sailId={sail.id} coverId={sail.cover_media_id} onCoverChange={(mediaId) => set("cover_media_id", mediaId)} onCountChange={setMediaCount} />
+
+      <LogbookCard sail={sail} set={set} events={events} mode={mode} />
 
       <Card
         title="Track"
         actions={
-          <>
-            <Button size="sm" onClick={() => void onRefreshWind()} disabled={busy !== null || !stats}>
+          stats && (
+            <Button size="sm" onClick={() => void onRefreshWind()} disabled={busy !== null}>
               {busy === "wind" ? <Spinner className="h-3.5 w-3.5" /> : <RefreshCw className="h-3.5 w-3.5" />} Refresh wind
             </Button>
-          </>
+          )
         }
       >
         {stats && sail.track ? (
@@ -305,15 +307,45 @@ export default function SailEditor({ id }: { id: string }) {
             <TrackPreview track={sail.track} bounds={stats.bounds} maxSpeedKn={stats.maxSpeedKn} />
           </>
         ) : (
-          <Notice tone="warn">No track yet. Drop a GPX file below.</Notice>
+          <>
+            <p className="-mt-2 mb-3 text-sm text-muted-foreground">
+              Optional. Without a GPX the sail shows without a map; enter distance and time by hand if you know them.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Distance (nm)">
+                <Input
+                  type="number"
+                  min={0}
+                  step={0.1}
+                  value={toNumber(sail.manual_distance_nm) ?? ""}
+                  onChange={(e) => set("manual_distance_nm", e.currentTarget.value === "" ? null : Number(e.currentTarget.value))}
+                />
+              </Field>
+              <Field label="Time out (hours)">
+                <Input
+                  type="number"
+                  min={0}
+                  step={0.25}
+                  value={sail.manual_duration_min !== null && sail.manual_duration_min !== undefined ? Math.round((sail.manual_duration_min / 60) * 100) / 100 : ""}
+                  onChange={(e) => set("manual_duration_min", e.currentTarget.value === "" ? null : Math.round(Number(e.currentTarget.value) * 60))}
+                />
+              </Field>
+            </div>
+          </>
         )}
         <div className="mt-4">
           <DropZone accept=".gpx,application/gpx+xml" onFiles={(f) => void onGpx(f)} disabled={busy !== null}>
             {busy === "gpx" ? <Spinner className="text-primary" /> : <Upload className="h-5 w-5 text-muted-foreground" />}
-            <span className="text-xs">{stats ? "Replace GPX" : "Upload GPX"}</span>
+            <span className="text-xs">{stats ? "Replace GPX" : "Add a GPX track (optional): map, speeds, wind and tacks are worked out"}</span>
           </DropZone>
         </div>
       </Card>
+
+      <PrivateNotesCard sailId={sail.id} />
+
+      {(events.length > 0 || detailed) && (
+        <EventLogCard sailId={sail.id} events={events} setEvents={setEvents} endIso={stats?.end ?? null} defaultIso={stats?.start ?? `${sail.date}T12:00:00`} />
+      )}
 
       <HistoryCard sail={sail} flush={save.flush} onRestored={(s) => setSail(s)} />
 
@@ -330,7 +362,7 @@ export default function SailEditor({ id }: { id: string }) {
         </div>
       </Card>
       </div>
-      <aside className="order-1 lg:order-2">
+      <aside>
         <CompletenessPanel items={checklist} mode={mode} />
       </aside>
       </div>

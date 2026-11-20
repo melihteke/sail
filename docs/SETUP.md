@@ -26,7 +26,9 @@ breaks along the way.
    [`supabase/migrations/0005_sail_log.sql`](../supabase/migrations/0005_sail_log.sql) (uploads from the Sail Tracker
    Android app: the `sail_events` log and the `app_save_sail` function), then
    [`supabase/migrations/0006_logbook_pro.sql`](../supabase/migrations/0006_logbook_pro.sql) (structured log fields,
-   admin-only private notes in `sail_private`, the `sail_revisions` history and editable event logs). All of them are
+   admin-only private notes in `sail_private`, the `sail_revisions` history and editable event logs) and
+   [`supabase/migrations/0007_manual_sails.sql`](../supabase/migrations/0007_manual_sails.sql) (hand-entered distance
+   and time for sails without a GPX). All of them are
    safe to run again. Run them in order: running `0005` again after `0006` puts back the older `app_save_sail`, so run
    `0006` after it.
 3. **Project Settings → API**: copy the **Project URL** and the **anon / publishable key**. Both are public by design.
@@ -135,4 +137,5 @@ prints. The schema in `supabase/migrations` is applied automatically.
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.2 | 2026-11-20 | Melih Teke | Added migration 0007 (sails without a GPX track). |
 | 1.1 | 2026-11-20 | Melih Teke | Added migration 0006 (logbook fields, private notes, revision history, editable events). |

@@ -361,6 +361,8 @@ const FIELD_LABEL: Partial<Record<keyof SailRow, string>> = {
   sea_state: "sea state",
   visibility: "visibility",
   engine_minutes: "engine",
+  manual_distance_nm: "distance",
+  manual_duration_min: "time out",
 };
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null) || (a != null && b != null && String(a) === String(b));

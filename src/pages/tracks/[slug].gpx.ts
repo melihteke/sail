@@ -3,7 +3,7 @@ import { getSails, readGpx, type Sail } from "@/lib/sails";
 
 export const getStaticPaths = (async () => {
   const sails = await getSails();
-  return sails.map((sail) => ({ params: { slug: sail.slug }, props: { sail } }));
+  return sails.filter((sail) => sail.gpx).map((sail) => ({ params: { slug: sail.slug }, props: { sail } }));
 }) satisfies GetStaticPaths;
 
 export const GET: APIRoute = async ({ props }) => {

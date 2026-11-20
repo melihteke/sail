@@ -35,8 +35,10 @@ const cover = sail.explicitCover;
           decoding="async"
           class="h-full w-full object-cover transition group-hover:scale-[1.03] dark:brightness-[0.8] dark:contrast-[1.1] dark:saturate-[0.85]"
         />
-      ) : (
+      ) : stats ? (
         <TrackSvg track={stats.track} class="h-full w-full p-4 text-sea" />
+      ) : (
+        <div class="flex h-full w-full items-center justify-center text-5xl text-sea/40" aria-hidden="true">⛵</div>
       )
     }
     {
@@ -56,14 +58,14 @@ const cover = sail.explicitCover;
   </div>
   <div class="flex flex-1 flex-col p-4">
     <p class="text-xs text-muted-foreground">
-      {formatLocal(stats.start, { weekday: "short", day: "numeric", month: "short", year: "numeric" })} · {sail.location}
+      {formatLocal(sail.startIso, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}{sail.location ? ` · ${sail.location}` : ""}
     </p>
     <h3 class="mt-1 font-semibold leading-snug tracking-tight group-hover:text-primary">{sail.title}</h3>
     <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{sail.summary}</p>
     <dl class="mt-auto grid grid-cols-3 gap-2 pt-4 text-xs">
-      <div><dt class="text-muted-foreground">Distance</dt><dd class="font-semibold tabular-nums">{formatNm(stats.distanceNm)}</dd></div>
-      <div><dt class="text-muted-foreground">Time</dt><dd class="font-semibold tabular-nums">{formatDuration(stats.elapsedSec)}</dd></div>
-      <div><dt class="text-muted-foreground">Max</dt><dd class="font-semibold tabular-nums">{formatKn(stats.maxSpeedKn)}</dd></div>
+      <div><dt class="text-muted-foreground">Distance</dt><dd class="font-semibold tabular-nums">{sail.distanceNm !== null ? formatNm(sail.distanceNm) : "–"}</dd></div>
+      <div><dt class="text-muted-foreground">Time</dt><dd class="font-semibold tabular-nums">{sail.elapsedSec !== null ? formatDuration(sail.elapsedSec) : "–"}</dd></div>
+      <div><dt class="text-muted-foreground">Max</dt><dd class="font-semibold tabular-nums">{stats ? formatKn(stats.maxSpeedKn) : "–"}</dd></div>
     </dl>
   </div>
 </a>

@@ -83,7 +83,7 @@ const facts = [
     <StatCard label="Sails" value={String(stats.count)} hint={`${stats.days} ${stats.days === 1 ? "day" : "days"} on the water`} />
     <StatCard label="Distance" value={formatNm(stats.totalNm)} hint="logged on this boat" />
     <StatCard label="Time aboard" value={formatDuration(stats.totalSec)} />
-    <StatCard label="Top speed" value={stats.fastest ? formatKn(stats.fastest.stats.maxSpeedKn) : "–"} hint={stats.fastest?.title} />
+    <StatCard label="Top speed" value={stats.fastest ? formatKn(stats.fastest.stats!.maxSpeedKn) : "–"} hint={stats.fastest?.title} />
   </section>
 
   {

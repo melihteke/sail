@@ -28,7 +28,7 @@ for (const sail of sails) {
         <div class="flex items-baseline gap-3 border-b border-border pb-2">
           <h2 id={`y-${year}`} class="text-xl font-semibold tracking-tight">{year}</h2>
           <span class="text-sm text-muted-foreground">
-            {list.length} {list.length === 1 ? "sail" : "sails"} · {formatNm(list.reduce((s, x) => s + x.stats.distanceNm, 0))}
+            {list.length} {list.length === 1 ? "sail" : "sails"} · {formatNm(list.reduce((s, x) => s + (x.distanceNm ?? 0), 0))}
           </span>
         </div>
         <div class="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

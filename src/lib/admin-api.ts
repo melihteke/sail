@@ -6,6 +6,7 @@ import { extensionOf, processPhoto, processVideo, BOAT_PHOTO_MAX_PX } from "./me
 import { sailSlug, slugify } from "./sections";
 import { db } from "./supabase";
 import type { BoatRow, MediaRow, SailPrivateRow, SailRevision, SailRow } from "./types";
+import { beaufort } from "./units";
 import { fetchSailWind } from "./wind";
 import { parseYouTube } from "./youtube";
 
@@ -64,15 +65,6 @@ function gpxFields(gpx: ProcessedGpx) {
 
 // --- Sails ------------------------------------------------------------------------------------------
 
-export async function listSails() {
-  return check(
-    await db()
-      .from("sails")
-      .select("id, slug, status, title, date, location, boat_id, updated_at, published_at, stats")
-      .order("date", { ascending: false }),
-  ) as Pick<SailRow, "id" | "slug" | "status" | "title" | "date" | "location" | "boat_id" | "updated_at" | "published_at" | "stats">[];
-}
-
 export async function getSail(id: string) {
   return check(await db().from("sails").select("*").eq("id", id).single()) as SailRow;
 }
@@ -84,25 +76,40 @@ async function uniqueSlug(base: string, ignoreId?: string) {
   for (let i = 2; ; i++) if (!taken.has(`${base}-${i}`)) return `${base}-${i}`;
 }
 
-export async function createSailFromGpx(gpx: ProcessedGpx, defaults: { title: string; location: string; boatId: string | null }) {
-  const slug = await uniqueSlug(sailSlug(gpx.localDate, defaults.title));
-  const row = check(
+/** Slug of a new sail until it gets a title, e.g. 2026-11-20-new-sail(-2). */
+export const isPlaceholderSlug = (slug: string) => /^\d{4}-\d{2}-\d{2}-new-sail(-\d+)?$/.test(slug);
+
+/** A blank draft for today on the main boat: everything else can be filled in (or not) later. */
+export async function createBlankSail() {
+  const boats = check(await db().from("boats").select("id, home_water, is_default").order("sort")) as Pick<BoatRow, "id" | "home_water" | "is_default">[];
+  const main = boats.find((b) => b.is_default) ?? null;
+  const date = localDateFmt.format(new Date());
+  const slug = await uniqueSlug(`${date}-new-sail`);
+  return check(
     await db()
       .from("sails")
-      .insert({
-        slug,
-        title: defaults.title,
-        date: gpx.localDate,
-        location: defaults.location,
-        boat_id: defaults.boatId,
-        status: "draft",
-        ...gpxFields(gpx),
-      })
+      .insert({ slug, title: "", date, location: main?.home_water ?? "", boat_id: main?.id ?? null, status: "draft" })
       .select("*")
       .single(),
   ) as SailRow;
-  const gpxPath = await uploadGpx(row.id, gpx.xml);
-  return check(await db().from("sails").update({ gpx_path: gpxPath }).eq("id", row.id).select("*").single()) as SailRow;
+}
+
+/** Gives a sail that still has its placeholder slug a readable one from its date and title. */
+export async function settleSlug(sail: SailRow) {
+  if (!isPlaceholderSlug(sail.slug) || !sail.title.trim()) return sail.slug;
+  const slug = await uniqueSlug(sailSlug(sail.date, sail.title), sail.id);
+  check(await db().from("sails").update({ slug }).eq("id", sail.id));
+  return slug;
+}
+
+/** Title suggestion from the GPX activity name ("Morning Sail") or the time of day and wind. */
+export function suggestTitle(gpx: ProcessedGpx) {
+  const generic = /^(morning|afternoon|evening|night|lunch)?\s*(sail(ing)?|activity|track)?$/i;
+  if (gpx.name && !generic.test(gpx.name.trim())) return gpx.name.trim();
+  const hour = Number(new Date(gpx.stats.start).toLocaleString("en-GB", { hour: "2-digit", hour12: false, timeZone: SITE.timeZone }));
+  const part = hour < 12 ? "Morning" : hour < 17 ? "Afternoon" : "Evening";
+  const windy = gpx.wind ? beaufort(gpx.wind.avgKn).force : 0;
+  return `${windy >= 4 ? "Windy " + part.toLowerCase() : part} sail`;
 }
 
 async function uploadGpx(sailId: string, xml: string) {
@@ -178,7 +185,7 @@ export async function listLogbook() {
     await db()
       .from("sails")
       .select(
-        "id, slug, status, title, date, location, boat_id, role, skipper, passage_type, departure, arrival, night_hours, tidal, observed_bft, sea_state, visibility, engine_minutes, stats",
+        "id, slug, status, title, date, location, boat_id, role, skipper, passage_type, departure, arrival, night_hours, tidal, observed_bft, sea_state, visibility, engine_minutes, manual_distance_nm, manual_duration_min, stats",
       )
       .order("date", { ascending: false }),
   ) as Pick<
@@ -201,6 +208,8 @@ export async function listLogbook() {
     | "sea_state"
     | "visibility"
     | "engine_minutes"
+    | "manual_distance_nm"
+    | "manual_duration_min"
     | "stats"
   >[];
 }
@@ -348,6 +357,27 @@ export async function uploadBoatPhoto(boatId: string, file: File, previous: stri
   const path = await upload(`boats/${boatId}/${crypto.randomUUID()}.jpg`, photo.full, "image/jpeg");
   if (previous) await db().storage.from(MEDIA_BUCKET).remove([previous]);
   return saveBoat(boatId, { photo_path: path });
+}
+
+/** Slug of a new boat until it gets a name, e.g. new-boat(-2). */
+export const isPlaceholderBoatSlug = (slug: string) => /^new-boat(-\d+)?$/.test(slug);
+
+async function uniqueBoatSlug(base: string, ignoreId?: string) {
+  const rows = check(await db().from("boats").select("id, slug").like("slug", `${base}%`)) as { id: string; slug: string }[];
+  const taken = new Set(rows.filter((r) => r.id !== ignoreId).map((r) => r.slug));
+  if (!taken.has(base)) return base;
+  for (let i = 2; ; i++) if (!taken.has(`${base}-${i}`)) return `${base}-${i}`;
+}
+
+/** A blank boat to fill in later. */
+export async function createBlankBoat() {
+  return saveBoat(null, { name: "New boat", slug: await uniqueBoatSlug("new-boat"), description: "", specs: [], is_default: false });
+}
+
+/** The readable slug a boat named `name` should get, or null to keep the current one. */
+export async function boatSlugFor(boat: BoatRow, name: string) {
+  if (!isPlaceholderBoatSlug(boat.slug) || !slugify(name) || name.trim() === "New boat") return null;
+  return uniqueBoatSlug(slugify(name), boat.id);
 }
 
 export async function deleteBoat(boat: BoatRow) {

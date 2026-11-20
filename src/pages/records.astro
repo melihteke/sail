@@ -7,11 +7,11 @@ import { url } from "@/lib/url";
 
 const sails = await getSails();
 const career = careerStats(sails);
-const date = (s: Sail) => formatLocal(s.stats.start, { day: "numeric", month: "short", year: "numeric" });
+const date = (s: Sail) => formatLocal(s.startIso, { day: "numeric", month: "short", year: "numeric" });
 const records = [
-  { label: "Top speed", sail: career.fastest, value: (s: Sail) => formatKn(s.stats.maxSpeedKn), note: "10-second average speed over ground" },
-  { label: "Longest distance", sail: career.longest, value: (s: Sail) => formatNm(s.stats.distanceNm), note: "distance over ground" },
-  { label: "Longest time out", sail: career.longestTime, value: (s: Sail) => formatDuration(s.stats.elapsedSec), note: "dock to dock" },
+  { label: "Top speed", sail: career.fastest, value: (s: Sail) => formatKn(s.stats!.maxSpeedKn), note: "10-second average speed over ground" },
+  { label: "Longest distance", sail: career.longest, value: (s: Sail) => formatNm(s.distanceNm ?? 0), note: "distance over ground" },
+  { label: "Longest time out", sail: career.longestTime, value: (s: Sail) => formatDuration(s.elapsedSec ?? 0), note: "dock to dock" },
   { label: "Windiest day", sail: career.windiest, value: (s: Sail) => (s.wind ? `${s.wind.maxGustKn.toFixed(0)} kn gusts` : "–"), note: "strongest modelled gust" },
   {
     label: "Most manoeuvres",
@@ -21,8 +21,8 @@ const records = [
   },
   {
     label: "Fastest average",
-    sail: sails.reduce<Sail | null>((best, s) => (!best || s.stats.avgSpeedKn > best.stats.avgSpeedKn ? s : best), null),
-    value: (s: Sail) => formatKn(s.stats.avgSpeedKn),
+    sail: sails.filter((s) => s.stats).reduce<Sail | null>((best, s) => (!best || s.stats!.avgSpeedKn > best.stats!.avgSpeedKn ? s : best), null),
+    value: (s: Sail) => formatKn(s.stats!.avgSpeedKn),
     note: "average speed while moving",
   },
 ].filter((r) => r.sail);
@@ -53,7 +53,7 @@ const records = [
           <p class="mt-1 text-3xl font-semibold tabular-nums tracking-tight">{r.value(r.sail!)}</p>
           <p class="mt-0.5 text-xs text-muted-foreground">{r.note}</p>
           <p class="mt-4 text-sm font-medium group-hover:text-primary">{r.sail!.title}</p>
-          <p class="text-xs text-muted-foreground">{date(r.sail!)} · {r.sail!.location}</p>
+          <p class="text-xs text-muted-foreground">{date(r.sail!)}{r.sail!.location ? ` · ${r.sail!.location}` : ""}</p>
         </a>
       ))
     }

@@ -92,6 +92,9 @@ export interface SailRow {
   visibility: Visibility | null;
   /** null = use the value worked out from the event log */
   engine_minutes: number | null;
+  /** Only used when the sail has no GPX track */
+  manual_distance_nm: number | string | null;
+  manual_duration_min: number | null;
 }
 
 /** Admin-only notes (table sail_private); never part of the public site. */

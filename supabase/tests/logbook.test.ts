@@ -47,6 +47,7 @@ beforeAll(async () => {
     await db.exec(readFileSync(join(dir, "migrations", file), "utf8"));
   }
   await db.exec(readFileSync(join(dir, "migrations", "0006_logbook_pro.sql"), "utf8"));
+  await db.exec(readFileSync(join(dir, "migrations", "0007_manual_sails.sql"), "utf8"));
   for (const [k, email] of [["melih", "melihteke@gmail.com"], ["stranger", "stranger@gmail.com"]]) {
     users[k!] = (await db.query<{ id: string }>(`insert into auth.users (email) values ($1) returning id`, [email])).rows[0]!.id;
   }
@@ -104,6 +105,19 @@ describe("revisions", () => {
     const row = (await db.query<{ title: string; how_it_went: string }>(`select title, how_it_went from public.sails where id = $1`, [id])).rows[0]!;
     expect(row).toEqual({ title: "First title", how_it_went: "Calm" });
     expect((await revisions(id))[0]!.snapshot.title).toBe("Second");
+  });
+
+  it("restores hand-entered distance and duration of a sail without a track", async () => {
+    const id = await newSail("draft");
+    await db.query(`update public.sails set manual_distance_nm = 12.5, manual_duration_min = 240 where id = $1`, [id]);
+    const [rev] = await revisions(id);
+    await db.query(`delete from public.sail_revisions where id <> $1`, [rev!.id]);
+    await db.query(`update public.sail_revisions set changed_at = now() - interval '1 hour'`);
+    await db.query(`update public.sails set manual_distance_nm = 3 where id = $1`, [id]);
+    const [latest] = await revisions(id);
+    await as("melih", () => db.query(`select public.restore_sail_revision($1)`, [latest!.id]));
+    const row = (await db.query<{ manual_distance_nm: string; manual_duration_min: number }>(`select manual_distance_nm, manual_duration_min from public.sails where id = $1`, [id])).rows[0]!;
+    expect(row).toEqual({ manual_distance_nm: "12.5", manual_duration_min: 240 });
   });
 });
 

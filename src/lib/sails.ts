@@ -8,7 +8,7 @@ import windCache from "@/data/wind-cache.json";
 import { analyzeSail, type SailAnalysis } from "./analysis";
 import type { SailEvent } from "./events";
 import { computeStats, type TrackStats } from "./gpx";
-import { logFacts, type LogFacts } from "./logbook";
+import { logFacts, toNumber, type LogFacts } from "./logbook";
 import { sailMedia as legacyMedia } from "./media";
 import { splitSections, type SailSections } from "./sections";
 import type { BoatRow, BoatSpec, MediaRow, PhotoCredit, SailRole, SailRow } from "./types";
@@ -59,7 +59,13 @@ export interface Sail {
   tags: string[];
   sections: SailSections;
   boat: BoatView | null;
-  stats: TrackStats;
+  /** Track statistics; null for a sail logged without a GPX track */
+  stats: TrackStats | null;
+  /** From the track, or entered by hand when there is no track */
+  distanceNm: number | null;
+  elapsedSec: number | null;
+  /** Start of the sail (track start, or noon local time on the logged date) */
+  startIso: string;
   wind: WindSummary | null;
   analysis: SailAnalysis | null;
   media: MediaView[];
@@ -68,8 +74,8 @@ export interface Sail {
   explicitCover: ImageRef | null;
   /** Local (site time zone) calendar date of the start, YYYY-MM-DD */
   localDate: string;
-  /** Where to read the original GPX from at build time */
-  gpx: { file: string } | { url: string };
+  /** Where to read the original GPX from at build time; null without a track */
+  gpx: { file: string } | { url: string } | null;
   /** Event log recorded with the Sail Tracker app (empty for other sails) */
   events: SailEvent[];
   /** Structured logbook fields (passage type, route, conditions…) */
@@ -183,16 +189,11 @@ async function loadSupabase(): Promise<Logbook> {
 
   const sails: Sail[] = [];
   for (const row of sailRows) {
-    if (!row.stats || !row.track || !row.gpx_path) {
-      console.warn(`[logbook] skipping "${row.slug}": no GPX track yet`);
-      continue;
-    }
     const media = mediaBySail.get(row.id) ?? [];
-    const stats: TrackStats = { ...row.stats, track: row.track };
-    const analysis = row.analysis ? ({ twa: [], ...row.analysis } as SailAnalysis) : analyzeSail(stats.track, row.wind, stats.start);
-    sails.push({
+    const events = eventsBySail.get(row.id) ?? [];
+    const base = {
       slug: row.slug,
-      title: row.title,
+      title: row.title.trim() || `Sail on ${row.date}`,
       date: row.date,
       location: row.location,
       summary: row.summary,
@@ -204,19 +205,51 @@ async function loadSupabase(): Promise<Logbook> {
       tags: row.tags ?? [],
       sections: { howItWent: row.how_it_went, whatIPractised: row.what_i_practised, learnings: row.learnings, notes: row.notes },
       boat: (row.boat_id && boatById.get(row.boat_id)) || null,
-      stats,
-      wind: row.wind,
-      analysis,
       media,
       cover: coverOf(media, row.cover_media_id),
       explicitCover: row.cover_media_id && media.some((m) => m.id === row.cover_media_id) ? coverOf(media, row.cover_media_id) : null,
+      events,
+    };
+    if (!row.stats || !row.track || !row.gpx_path) {
+      // Logged without a GPX track: no map or speeds, distance and time as entered by hand.
+      const duration = row.manual_duration_min ?? null;
+      sails.push({
+        ...base,
+        stats: null,
+        distanceNm: toNumber(row.manual_distance_nm),
+        elapsedSec: duration !== null ? duration * 60 : null,
+        startIso: noonUtc(row.date),
+        wind: row.wind,
+        analysis: null,
+        localDate: row.date,
+        gpx: null,
+        log: logFacts(row, events),
+      });
+      continue;
+    }
+    const stats: TrackStats = { ...row.stats, track: row.track };
+    const analysis = row.analysis ? ({ twa: [], ...row.analysis } as SailAnalysis) : analyzeSail(stats.track, row.wind, stats.start);
+    sails.push({
+      ...base,
+      stats,
+      distanceNm: stats.distanceNm,
+      elapsedSec: stats.elapsedSec,
+      startIso: stats.start,
+      wind: row.wind,
+      analysis,
       localDate: localDate(stats.start),
       gpx: { url: storageUrl("gpx", row.gpx_path) },
-      events: eventsBySail.get(row.id) ?? [],
-      log: logFacts(row, eventsBySail.get(row.id) ?? [], stats.end),
+      log: logFacts(row, events, stats.end),
     });
   }
   return { source: "supabase", sails: sortSails(sails), boats };
+}
+
+/** Noon in the site's time zone on a calendar date, as an ISO string (good enough for sorting and feeds). */
+function noonUtc(date: string) {
+  const guess = new Date(`${date}T12:00:00Z`);
+  const local = new Intl.DateTimeFormat("en-GB", { timeZone: SITE.timeZone, hour: "2-digit", hour12: false }).format(guess);
+  return new Date(guess.getTime() - (Number(local) - 12) * 3600_000).toISOString();
 }
 
 // --- Legacy markdown content (used until Supabase is configured) -----------------------------------
@@ -292,6 +325,9 @@ async function loadMarkdown(): Promise<Logbook> {
         sections: splitSections(entry.body ?? ""),
         boat,
         stats,
+        distanceNm: stats.distanceNm,
+        elapsedSec: stats.elapsedSec,
+        startIso: stats.start,
         wind,
         analysis: analyzeSail(stats.track, wind, stats.start),
         media,
@@ -310,7 +346,7 @@ async function loadMarkdown(): Promise<Logbook> {
 // --- Public API ------------------------------------------------------------------------------------
 
 function sortSails(sails: Sail[]) {
-  return sails.sort((a, b) => b.stats.start.localeCompare(a.stats.start));
+  return sails.sort((a, b) => b.startIso.localeCompare(a.startIso));
 }
 
 let cached: Promise<Logbook> | null = null;
@@ -330,6 +366,7 @@ export async function getBoats() {
 }
 
 export async function readGpx(sail: Sail) {
+  if (!sail.gpx) throw new Error(`GPX ${sail.slug}: no track`);
   if ("file" in sail.gpx) return readFile(sail.gpx.file, "utf8");
   const res = await fetch(sail.gpx.url);
   if (!res.ok) throw new Error(`GPX ${sail.slug}: ${res.status}`);
@@ -337,18 +374,19 @@ export async function readGpx(sail: Sail) {
 }
 
 export function careerStats(sails: Sail[]) {
-  const pick = (score: (s: Sail) => number) =>
-    sails.reduce<Sail | null>((best, x) => (score(x) > (best ? score(best) : -Infinity) ? x : best), null);
+  const pick = (from: Sail[], score: (s: Sail) => number) =>
+    from.reduce<Sail | null>((best, x) => (score(x) > (best ? score(best) : -Infinity) ? x : best), null);
+  const tracked = sails.filter((s) => s.stats);
   return {
     count: sails.length,
-    totalNm: sails.reduce((s, x) => s + x.stats.distanceNm, 0),
-    totalSec: sails.reduce((s, x) => s + x.stats.elapsedSec, 0),
+    totalNm: sails.reduce((s, x) => s + (x.distanceNm ?? 0), 0),
+    totalSec: sails.reduce((s, x) => s + (x.elapsedSec ?? 0), 0),
     days: new Set(sails.map((s) => s.localDate)).size,
-    fastest: pick((s) => s.stats.maxSpeedKn),
-    longest: pick((s) => s.stats.distanceNm),
-    longestTime: pick((s) => s.stats.elapsedSec),
-    windiest: pick((s) => s.wind?.maxGustKn ?? -1),
-    busiest: pick((s) => (s.analysis ? s.analysis.tacks + s.analysis.gybes : -1)),
+    fastest: pick(tracked, (s) => s.stats!.maxSpeedKn),
+    longest: pick(sails.filter((s) => s.distanceNm !== null), (s) => s.distanceNm!),
+    longestTime: pick(sails.filter((s) => s.elapsedSec !== null), (s) => s.elapsedSec!),
+    windiest: pick(sails, (s) => s.wind?.maxGustKn ?? -1),
+    busiest: pick(sails, (s) => (s.analysis ? s.analysis.tacks + s.analysis.gybes : -1)),
     tacks: sails.reduce((s, x) => s + (x.analysis?.tacks ?? 0), 0),
     gybes: sails.reduce((s, x) => s + (x.analysis?.gybes ?? 0), 0),
   };
@@ -357,7 +395,7 @@ export function careerStats(sails: Sail[]) {
 /** Per-day nautical miles for the activity heatmap. */
 export function activityData(sails: Sail[]) {
   const byDay = new Map<string, number>();
-  for (const sail of sails) byDay.set(sail.localDate, (byDay.get(sail.localDate) ?? 0) + sail.stats.distanceNm);
+  for (const sail of sails) byDay.set(sail.localDate, (byDay.get(sail.localDate) ?? 0) + (sail.distanceNm ?? 0));
   return [...byDay].map(([date, nm]) => ({ date, value: Math.round(nm * 10) / 10 }));
 }
 
