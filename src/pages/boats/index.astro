@@ -24,7 +24,7 @@ const cards = boats.map((boat) => ({ boat, stats: careerStats(sails.filter((s) =
           class="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <div class="overflow-hidden">
-            <BoatPhoto boat={boat} class="aspect-[4/3] w-full object-cover transition group-hover:scale-[1.02]" />
+            <BoatPhoto boat={boat} class="transition group-hover:scale-[1.02]" />
           </div>
           <div class="flex flex-1 flex-col p-4">
             <p class="text-xs text-muted-foreground">{boat.model ?? "Boat"}{boat.isDefault ? " · Main boat" : ""}</p>

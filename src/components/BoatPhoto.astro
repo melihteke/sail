@@ -3,17 +3,33 @@ import type { BoatView } from "@/lib/sails";
 
 interface Props {
   boat: BoatView;
+  /**
+   * frame: fixed 4:3 box (cards), the whole photo shown on a blurred copy of itself, never cropped.
+   * natural: the photo at its own shape (portrait or landscape), never cropped.
+   */
+  fit?: "frame" | "natural";
   class?: string;
   eager?: boolean;
 }
-const { boat, class: className = "aspect-[4/3] w-full object-cover", eager = false } = Astro.props;
+const { boat, fit = "frame", class: className = "", eager = false } = Astro.props;
+const alt = `${boat.name}${boat.model ? `, a ${boat.model}` : ""}`;
+const loading = eager ? "eager" : "lazy";
 ---
 
 {
   boat.photo ? (
-    <img src={boat.photo.src} alt={`${boat.name}${boat.model ? `, a ${boat.model}` : ""}`} width={boat.photo.width} height={boat.photo.height} loading={eager ? "eager" : "lazy"} decoding="async" class={className} />
+    fit === "natural" ? (
+      <div class:list={["flex items-center justify-center", className]}>
+        <img src={boat.photo.src} alt={alt} width={boat.photo.width} height={boat.photo.height} loading={loading} decoding="async" class="block h-auto max-h-[80vh] w-auto max-w-full" />
+      </div>
+    ) : (
+      <div class:list={["relative aspect-[4/3] w-full overflow-hidden bg-slate-200 dark:bg-slate-800", className]}>
+        <img src={boat.photo.src} alt="" aria-hidden="true" loading={loading} decoding="async" class="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-xl" />
+        <img src={boat.photo.src} alt={alt} width={boat.photo.width} height={boat.photo.height} loading={loading} decoding="async" class="relative h-full w-full object-contain" />
+      </div>
+    )
   ) : (
-    <svg viewBox="0 0 400 300" class={className} role="img" aria-label={`Illustration of ${boat.name}`}>
+    <svg viewBox="0 0 400 300" class:list={["aspect-[4/3] w-full", className]} role="img" aria-label={`Illustration of ${boat.name}`}>
       <rect width="400" height="300" fill="#e0f2fe" />
       <circle cx="320" cy="60" r="26" fill="#fbbf24" opacity="0.85" />
       <line x1="200" y1="38" x2="200" y2="205" stroke="#334155" stroke-width="4" stroke-linecap="round" />

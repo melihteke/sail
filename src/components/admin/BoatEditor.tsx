@@ -143,7 +143,7 @@ export default function BoatEditor({ id }: { id: string }) {
             <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
               <div className="overflow-hidden rounded-xl border border-border bg-sky-100 dark:bg-sky-950">
                 {boat.photo_path ? (
-                  <img src={publicUrl(MEDIA_BUCKET, boat.photo_path)} alt="" className="aspect-[4/3] w-full object-cover" />
+                  <img src={publicUrl(MEDIA_BUCKET, boat.photo_path)} alt="" className="mx-auto block max-h-96 w-auto max-w-full object-contain" />
                 ) : (
                   <div className="flex aspect-[4/3] items-center justify-center text-sm text-muted-foreground">No photo yet</div>
                 )}

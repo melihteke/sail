@@ -117,7 +117,17 @@ function Curriculum() {
       <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide">🎓 {t('hub.rya.badge')}</div>
       <h2 className="mt-3 text-2xl font-bold tracking-tight">{t('hub.section.rya')}</h2>
       <p className="mt-1 max-w-2xl text-sm text-sky-100">{t('hub.rya.intro')}</p>
-      <ol className="mt-5 grid items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+      <Link to="/rya" className="mt-5 flex items-center gap-3 rounded-xl bg-white/10 px-4 py-3 ring-1 ring-white/20 transition hover:bg-white/20">
+        <span className="text-2xl" aria-hidden>
+          🗺️
+        </span>
+        <span className="flex-1">
+          <span className="block font-semibold">{t('game.ryaSyllabus.title')}</span>
+          <span className="block text-xs text-sky-100">{t('hub.rya.roadmap')}</span>
+        </span>
+        <span aria-hidden>→</span>
+      </Link>
+      <ol className="mt-4 grid items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
         {COURSES.map((c, i) => (
           <li key={c.id} className="contents">
             {i > 0 && (
@@ -143,16 +153,6 @@ function Curriculum() {
           </li>
         ))}
       </ol>
-      <Link to="/rya" className="mt-4 flex items-center gap-3 rounded-xl bg-white/10 px-4 py-3 ring-1 ring-white/20 transition hover:bg-white/20">
-        <span className="text-2xl" aria-hidden>
-          🗺️
-        </span>
-        <span className="flex-1">
-          <span className="block font-semibold">{t('game.ryaSyllabus.title')}</span>
-          <span className="block text-xs text-sky-100">{t('hub.rya.roadmap')}</span>
-        </span>
-        <span aria-hidden>→</span>
-      </Link>
     </section>
   )
 }

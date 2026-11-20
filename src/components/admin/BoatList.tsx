@@ -35,7 +35,7 @@ export default function BoatList() {
             <li key={b.id}>
               <a href={`#/boats/${b.id}`} className="group block overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-md">
                 <div className="aspect-[4/3] bg-sky-100 dark:bg-sky-950">
-                  {b.photo_path && <img src={publicUrl(MEDIA_BUCKET, b.photo_path)} alt="" className="h-full w-full object-cover" loading="lazy" />}
+                  {b.photo_path && <img src={publicUrl(MEDIA_BUCKET, b.photo_path)} alt="" className="h-full w-full object-contain" loading="lazy" />}
                 </div>
                 <div className="p-4">
                   <p className="text-xs text-muted-foreground">
