@@ -12,6 +12,7 @@ import { swingRadius, tideWindow, TWELFTHS, twelfthsHeight, type WidgetId } from
 import { AtlasWidget, DiamondWidget, GateWidget, MoonWidget, StreamWidget, TideAnchorWidget } from './tideWidgets'
 
 const Rig3DExplorer = lazy(() => import('../rig3d/Rig3D'))
+const RadioPractice = lazy(() => import('../../radio/RadioPractice').then((m) => ({ default: m.RadioPractice })))
 
 const fmt = (min: number) => `${String(Math.floor((((min % 1440) + 1440) % 1440) / 60)).padStart(2, '0')}:${String(Math.round(((min % 60) + 60) % 60)).padStart(2, '0')}`
 const n1 = (v: number) => v.toFixed(1)
@@ -27,6 +28,12 @@ export function LessonWidget({ id }: { id: WidgetId }) {
       </Frame>
     )
   if (id === 'moon') return <MoonWidget t={t} />
+  if (id === 'vhfRadio')
+    return (
+      <Suspense fallback={<p className="p-8 text-center text-sm text-slate-500">…</p>}>
+        <RadioPractice />
+      </Suspense>
+    )
   if (id === 'atlas') return <AtlasWidget t={t} />
   if (id === 'diamond') return <DiamondWidget t={t} />
   if (id === 'stream') return <StreamWidget t={t} />

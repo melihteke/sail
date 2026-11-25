@@ -1,5 +1,6 @@
 import { Fragment, useState, type ReactNode } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import { url } from '@/lib/url'
 import type { MessageKey } from '../../../i18n/en'
 import { useI18n, type Translate } from '../../../i18n'
 import { loadJson, saveJson } from '../../../lib/storage'
@@ -245,6 +246,13 @@ export function BlockView({ b, t, meta }: { b: Block; t: Translate; meta: Lesson
           </tbody>
         </table>
       </div>
+    )
+  if ('img' in b)
+    return (
+      <figure className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-navy-900/60">
+        <img src={url(b.img.src)} alt={b.img.alt} loading="lazy" className="mx-auto block h-auto max-w-full" />
+        <figcaption className="px-4 py-2 text-xs text-slate-500 dark:text-slate-400">{b.img.alt}</figcaption>
+      </figure>
     )
   if ('widget' in b) return <LessonWidget id={b.widget} />
   const g = gameLink(meta, b.game)

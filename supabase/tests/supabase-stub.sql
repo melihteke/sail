@@ -10,6 +10,10 @@ create table auth.users (
 create function auth.uid() returns uuid language sql stable as $$
   select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
 $$;
+-- Supabase builds the claims from the access token; here they come from the signed-in stub user.
+create function auth.jwt() returns jsonb language sql stable security definer as $$
+  select jsonb_build_object('sub', auth.uid(), 'email', (select email from auth.users where id = auth.uid()))
+$$;
 
 create schema storage;
 create table storage.buckets (id text primary key, name text not null, public boolean not null default false);
@@ -21,7 +25,7 @@ create table storage.objects (
 alter table storage.objects enable row level security;
 
 grant usage on schema public, auth, storage to anon, authenticated;
-grant execute on function auth.uid() to anon, authenticated;
+grant execute on function auth.uid(), auth.jwt() to anon, authenticated;
 grant all on storage.objects to anon, authenticated;
 -- Supabase grants table privileges to these roles by default and relies on RLS.
 alter default privileges in schema public grant all on tables to anon, authenticated;

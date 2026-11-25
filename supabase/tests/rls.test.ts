@@ -150,3 +150,22 @@ describe("admin", () => {
     expect(media.rows).toHaveLength(0);
   });
 });
+
+describe("radio_bans", () => {
+  beforeEach(async () => {
+    await db.exec(`delete from public.radio_bans; insert into public.radio_bans (email, reason) values ('stranger@gmail.com', 'abuse'), ('other@gmail.com', 'spam');`);
+  });
+
+  it("shows a signed-in user only their own ban, and nothing to anon", async () => {
+    const own = await as("stranger", () => db.query<{ email: string }>(`select email from public.radio_bans`));
+    expect(own.rows.map((r) => r.email)).toEqual(["stranger@gmail.com"]);
+    expect((await as(null, () => db.query(`select * from public.radio_bans`))).rows).toHaveLength(0);
+  });
+
+  it("lets only admins manage the list", async () => {
+    await as("stranger", () => db.query(`delete from public.radio_bans where email = 'stranger@gmail.com'`));
+    expect((await db.query(`select * from public.radio_bans where email = 'stranger@gmail.com'`)).rows).toHaveLength(1);
+    await as("melih", () => db.query(`insert into public.radio_bans (email) values ('troll@gmail.com')`));
+    expect((await as("melih", () => db.query(`select * from public.radio_bans`))).rows).toHaveLength(3);
+  });
+});

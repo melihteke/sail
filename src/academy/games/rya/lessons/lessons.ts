@@ -4,12 +4,12 @@ import { lessonsEn } from './content.en'
 import { lessonsNl } from './content.nl'
 import { lessonsTr } from './content.tr'
 
-export const LESSON_IDS = ['sails', 'ropes', 'power', 'tides', 'anchoring', 'colregs', 'lights', 'pilotage', 'safety'] as const
+export const LESSON_IDS = ['sails', 'ropes', 'power', 'tides', 'anchoring', 'colregs', 'lights', 'pilotage', 'safety', 'radio'] as const
 export type LessonId = (typeof LESSON_IDS)[number]
 
-export type WidgetId = 'twelfths' | 'scope' | 'points' | 'lights' | 'rig3d' | 'stream' | 'gate' | 'tideanchor' | 'moon' | 'atlas' | 'diamond'
+export type WidgetId = 'twelfths' | 'scope' | 'points' | 'lights' | 'rig3d' | 'stream' | 'gate' | 'tideanchor' | 'moon' | 'atlas' | 'diamond' | 'vhfRadio'
 
-/** A content block. Text may contain **bold**. */
+/** A content block. Text may contain **bold**. Image paths are relative to the site root (public/). */
 export type Block =
   | { p: string }
   | { list: string[] }
@@ -18,6 +18,7 @@ export type Block =
   | { tip: string }
   | { warn: string }
   | { table: { head: string[]; rows: string[][] } }
+  | { img: { src: string; alt: string } }
   | { widget: WidgetId }
   | { game: string }
 
@@ -54,6 +55,7 @@ export const lessonMeta: LessonMeta[] = [
   { id: 'lights', icon: '🔦', courses: ['competent-crew', 'day-skipper'], games: [{ course: 'competent-crew', game: 'lookout' }, { course: 'day-skipper', game: 'collision' }] },
   { id: 'pilotage', icon: '🗺️', courses: ['day-skipper'], games: [{ course: 'day-skipper', game: 'passage' }] },
   { id: 'safety', icon: '🆘', courses: ['competent-crew', 'day-skipper'], games: [{ course: 'competent-crew', game: 'vhf' }, { course: 'day-skipper', game: 'decisions' }] },
+  { id: 'radio', icon: '📻', courses: ['competent-crew', 'day-skipper'], games: [{ course: 'competent-crew', game: 'vhf' }] },
 ]
 
 export const lessonSets: Record<Lang, LessonSet> = { en: lessonsEn, nl: lessonsNl, tr: lessonsTr }

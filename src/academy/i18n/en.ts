@@ -1,4 +1,5 @@
 import { raceEn } from './race/en'
+import { radioEn } from './radio/en'
 import { colregEn } from './colreg/en'
 import { celestialEn } from './celestial/en'
 import { ryaEn } from './rya/en'
@@ -825,6 +826,7 @@ export const en = {
   ...celestialEn,
   ...colregEn,
   ...raceEn,
+  ...radioEn,
   ...ryaEn,
 }
 

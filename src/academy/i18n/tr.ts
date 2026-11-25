@@ -1,4 +1,5 @@
 import { raceTr } from './race/tr'
+import { radioTr } from './radio/tr'
 import { colregTr } from './colreg/tr'
 import { celestialTr } from './celestial/tr'
 import { ryaTr } from './rya/tr'
@@ -827,5 +828,6 @@ export const tr: Messages = {
   ...celestialTr,
   ...colregTr,
   ...raceTr,
+  ...radioTr,
   ...ryaTr,
 }

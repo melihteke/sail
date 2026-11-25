@@ -10,7 +10,7 @@ interface ModuleCard {
 }
 
 interface Section {
-  id: 'navigation' | 'marks' | 'rules' | 'handling' | 'celestial'
+  id: 'navigation' | 'marks' | 'rules' | 'handling' | 'communication' | 'celestial'
   modules: ModuleCard[]
 }
 
@@ -45,6 +45,7 @@ const sections: Section[] = [
       { id: 'race', path: '/race', icon: '🏁' },
     ],
   },
+  { id: 'communication', modules: [{ id: 'vhf', path: '/rya/learn/radio', icon: '📻' }] },
   {
     id: 'celestial',
     modules: [

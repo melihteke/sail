@@ -1,4 +1,5 @@
 import { raceNl } from './race/nl'
+import { radioNl } from './radio/nl'
 import { colregNl } from './colreg/nl'
 import { celestialNl } from './celestial/nl'
 import { ryaNl } from './rya/nl'
@@ -827,5 +828,6 @@ export const nl: Messages = {
   ...celestialNl,
   ...colregNl,
   ...raceNl,
+  ...radioNl,
   ...ryaNl,
 }

@@ -1072,6 +1072,7 @@ export const lessonsTr: LessonSet = {
             ],
           },
           { warn: 'Asla "over and out" deme. Sohbet etme – yalnızca hayati bilgi.' },
+          { tip: 'Kanallar, prosedür kelimeleri, MAYDAY RELAY, DSC ve diğer denizcilerle canlı pratik için: **VHF telsiz: kanallar, prosedürler ve canlı pratik** dersi.' },
           { game: 'vhf' },
         ],
       },
@@ -1101,6 +1102,224 @@ export const lessonsTr: LessonSet = {
       { q: 'DSC tehlike düğmesini ne kadar basılı tutarsın?', options: ['5 saniye', 'Kısa bir basış', 'Biri cevap verene kadar', '1 dakika'], answer: 0, why: 'Beş saniye alarmı gönderir.' },
       { q: 'Mayday mesajı nasıl biter?', options: ['"Over"', '"Over and out"', '"Out"', '"Teşekkürler"'], answer: 0, why: '"Over" cevap beklediğin anlamına gelir; "over and out" asla kullanılmaz.' },
       { q: 'Helikopter kılavuz halat indiriyor. Ne yaparsın?', options: ['Suya değsin, sonra tut – asla bağlama', 'Havada yakala', 'Bir koça bağla', 'Kes'], answer: 0, why: 'Suda statik elektriğini boşaltır; bağlanırsa helikopteri aşağı çekebilir.' },
+    ],
+  },
+  radio: {
+    title: 'VHF telsiz: kanallar, prosedürler ve canlı pratik',
+    summary: 'Denizcilik VHF’i nasıl çalışır, hangi kanal kullanılır, telsizde nasıl konuşulur ve hecelenir, rutin ve tehlike çağrıları, ayrıntılı DSC – ardından VHF pratik telsizinde diğer denizcilerle pratik.',
+    sections: [
+      {
+        h: 'Denizcilik VHF cihazı',
+        blocks: [
+          { p: 'VHF **görüş hattıyla** çalışır: yüksek antenli bir kıyı istasyonuna yaklaşık 20–30 mil, tekneden tekneye ya da el telsiziyle çok daha az. **Aynı anda yalnızca bir istasyon konuşabilir**: bas-konuş tuşunu (**PTT**) basılı tut, konuş, dinlemek için bırak.' },
+          {
+            table: {
+              head: ['Kontrol', 'Ne işe yarar'],
+              rows: [
+                ['**16 / 9** tuşu', 'Doğrudan çağrı ve tehlike kanalına geçer.'],
+                ['**H/L** (25 W / 1 W)', 'Limanda ve yakın mesafede **düşük güç**; uzak mesafe ve tehlike için **yüksek güç**.'],
+                ['**Squelch**', 'Cızırtı tam kesilene kadar aç. Fazla açarsan zayıf istasyonları kaçırırsın.'],
+                ['**Dual / tri watch**', 'Başka kanaldayken 16’yı da dinler. Denizde 16’yı düzgün dinlemenin yerini tutmaz.'],
+                ['**DSC** kırmızı tuşu', 'Kapağın altında. MMSI ve mevkiinle dijital tehlike alarmı gönderir (GPS bağlantısı gerekir).'],
+              ],
+            },
+          },
+          { list: ['Denizcilik VHF’i kullanmak için operatör belgesi (**SRC**; Hollanda’da Marifoonbedieningscertificaat) ve tekne telsiz lisansı gerekir.', 'Lisans tekneye bir **çağrı işareti** (ör. PD1234) ve 9 haneli bir **MMSI** verir (Hollanda MMSI’leri 244, 245 ya da 246 ile başlar).', 'El telsizi yedek olarak ve botta idealdir, ama güverte seviyesinden menzili sadece birkaç mildir.'] },
+        ],
+      },
+      {
+        h: 'Hangi kanal?',
+        blocks: [
+          {
+            table: {
+              head: ['Kanal', 'Kullanım', 'Not'],
+              rows: [
+                ['**16**', 'Tehlike, emniyet ve çağrı', 'Denizde burayı dinle. Çağır, sonra çalışma kanalına geç. Asla sohbet etme.'],
+                ['**70**', 'Sadece DSC', 'Dijital alarmlar – asla ses.'],
+                ['**06**', 'Gemiden gemiye, olay yerinde arama kurtarma', 'Helikopter ve can botları da teknelerle burada konuşur.'],
+                ['**08, 69, 72, 77**', 'Gemiden gemiye çalışma kanalları', '16’da birinde anlaş, sonra geç.'],
+                ['**12, 14**', 'Liman işletmesi, VTS', 'Her liman ya da trafik bölgesi için almanakta yazan kanalı kullan.'],
+                ['**13**', 'Köprüden köprüye seyir emniyeti', 'Büyük gemiler geçişlerini burada ayarlar.'],
+                ['**23, 83**', 'Hollanda Sahil Güvenlik çalışma kanalları', 'Emniyet ve hava durumu yayınları 16’dan duyurulur.'],
+                ['**31 / 80 / M**', 'Marinalar', 'Hollanda marinaları çoğunlukla 31, İngiltere marinaları 80 ya da M (37).'],
+                ['**10**', 'Hollanda ve Belçika iç sularında gemiden gemiye', 'Nehir ve kanallarda (ör. Ren) **ATIS** açık olmak zorunda.'],
+              ],
+            },
+          },
+          { tip: 'Birini çağırmadan önce birkaç saniye **dinle**. Başka bir istasyonun üstüne konuşmaya doubling denir: iki mesaj da karşıya ulaşmaz.' },
+        ],
+      },
+      {
+        h: 'Konuşmak ve hecelemek',
+        blocks: [
+          { p: 'Yavaş ve net konuş, mikrofonu ağzından birkaç santim uzakta tut ve **sayıları rakam rakam** söyle. İsimleri fonetik alfabeyle hecele.' },
+          {
+            table: {
+              head: ['A–I', 'J–R', 'S–Z', 'Sayılar'],
+              rows: [
+                ['A Alfa', 'J Juliett', 'S Sierra', '0 Zero'],
+                ['B Bravo', 'K Kilo', 'T Tango', '1 One'],
+                ['C Charlie', 'L Lima', 'U Uniform', '2 Two'],
+                ['D Delta', 'M Mike', 'V Victor', '3 **Tree**'],
+                ['E Echo', 'N November', 'W Whiskey', '4 **Fower**'],
+                ['F Foxtrot', 'O Oscar', 'X X-ray', '5 **Fife**'],
+                ['G Golf', 'P Papa', 'Y Yankee', '6 Six, 7 Seven'],
+                ['H Hotel', 'Q Quebec', 'Z Zulu', '8 **Ait**'],
+                ['I India', 'R Romeo', '', '9 **Niner**'],
+              ],
+            },
+          },
+          {
+            table: {
+              head: ['Prosedür kelimesi', 'Anlamı'],
+              rows: [
+                ['THIS IS', 'Kendi adından önce söylenir.'],
+                ['OVER', 'Bitirdim, cevabını bekliyorum.'],
+                ['OUT', 'Konuşma bitti, cevap beklenmiyor. Asla "over and out" deme.'],
+                ['RECEIVED', 'Mesajını aldım.'],
+                ['SAY AGAIN', 'Son mesajını (ya da belirttiğim kısmı) tekrarla.'],
+                ['I SPELL', 'Ardından fonetik heceleme geliyor.'],
+                ['CORRECTION', 'Hata yaptım; doğrusu geliyor.'],
+                ['WAIT … MINUTES', 'Ara vermem gerekiyor; beklemede kal.'],
+                ['ALL STATIONS', 'Dinleyen herkese yayın.'],
+                ['STATION CALLING', 'Bir çağrı duydum ama kimin yaptığını anlamadım.'],
+              ],
+            },
+          },
+        ],
+      },
+      {
+        h: 'Rutin bir çağrı',
+        blocks: [
+          { p: 'Karşı istasyonun adını **iki kez**, kendi adını **iki kez** söyle, bir çalışma kanalı öner ve over de. Kısa tut; kanal ortak kullanılıyor.' },
+          {
+            ex: {
+              title: 'Puffin yatı marinadan bir gecelik yer istiyor',
+              lines: [
+                'Puffin: "Den Helder Marina, Den Helder Marina, this is yacht Puffin, Puffin, over."',
+                'Marina: "Puffin, this is Den Helder Marina, go ahead, over."',
+                'Puffin: "Puffin. Request a berth for one night, length eleven metres, draught one decimal eight metres, ETA one five tree zero, over."',
+                'Marina: "Puffin, Den Helder Marina. Pontoon Charlie, box one two, port side to, over."',
+                'Puffin: "Pontoon Charlie, box one two, port side to. Puffin, out."',
+              ],
+            },
+          },
+          { tip: '16’da sadece ilk teması kur. Bir çalışma kanalında anlaş ("channel seven two") ve orada devam et.' },
+        ],
+      },
+      {
+        h: 'Telsizde tehlike, aciliyet ve emniyet',
+        blocks: [
+          { p: 'Öncelikli çağrılar her şeyi keser. Hangisinin ne zaman kullanılacağını ve sesli MAYDAY’in tamamını **Tehlike çağrıları ve acil durumlar** dersi anlatıyor; burada 16’da duyacağın diğer şeyler var.' },
+          {
+            table: {
+              head: ['Çağrı', 'Öncelik', 'Örnek'],
+              rows: [
+                ['**MAYDAY**', 'Tehlike: ciddi ve yakın tehlike', 'Kontrolsüz yangın, batma, denize adam düşmesi'],
+                ['**PAN-PAN**', 'Aciliyet: hayati tehlike yok', 'Sığlık yakınında motor arızası, yaralı mürettebat'],
+                ['**SÉCURITÉ**', 'Emniyet bilgisi', 'Sürüklenen konteyner, fırtına uyarısı'],
+              ],
+            },
+          },
+          {
+            ex: {
+              title: 'MAYDAY RELAY – kimsenin cevap vermediği bir tehlikeyi iletmek',
+              lines: [
+                '"MAYDAY RELAY, MAYDAY RELAY, MAYDAY RELAY"',
+                '"ALL STATIONS, ALL STATIONS, ALL STATIONS (ya da kıyı istasyonu ×3)"',
+                '"THIS IS yacht Puffin, Puffin, Puffin, call sign Papa Delta One Two Tree Fower"',
+                '"Following received from yacht Sea Breeze at one four tree zero UTC:"',
+                '"MAYDAY Sea Breeze, position …, on fire, four persons on board, require immediate assistance, OVER"',
+              ],
+            },
+          },
+          {
+            table: {
+              head: ['Telsiz sessizliği', 'Anlamı'],
+              rows: [
+                ['SEELONCE MAYDAY', 'Sadece tehlikeyi yöneten istasyon kullanır: diğer herkes yayını keser.'],
+                ['PRUDONCE', 'Kısıtlı yayın yapılabilir; tehlike henüz bitmedi.'],
+                ['SEELONCE FEENEE', 'Tehlike bitti; normal yayın devam edebilir.'],
+              ],
+            },
+          },
+          { warn: 'Bir MAYDAY mı duydun? **Not al** (saat, ad, mevki, tehlikenin türü), sessiz kal ve dinle. Kıyı istasyonu birkaç dakika içinde cevap vermezse ve yardım edebiliyorsan onayla; edemiyorsan MAYDAY RELAY gönder.' },
+        ],
+      },
+      {
+        h: 'Ayrıntılı DSC',
+        blocks: [
+          { p: 'Digital Selective Calling, kanal **70**’ten kısa bir dijital mesaj gönderir. Menzildeki her DSC cihazı alarm çalar ve kimin, nerede ve neden çağırdığını gösterir.' },
+          {
+            table: {
+              head: ['DSC çağrısı', 'Kullanım'],
+              rows: [
+                ['**Distress**', 'Kırmızı tuş, 5 saniye basılı. Bir kıyı istasyonu onaylayana kadar otomatik tekrarlanır.'],
+                ['**Urgency / Safety** (tüm gemiler)', 'Bir PAN-PAN ya da SÉCURITÉ’yi duyurur; mesaj 16’dan sesli gelir.'],
+                ['**Individual / routine**', 'Tek bir tekneyi MMSI ile çağırır, telefon gibi; iki telsizi de seçtiğin çalışma kanalına geçirir.'],
+              ],
+            },
+          },
+          {
+            ex: {
+              title: 'Yanlış bir DSC alarmını iptal etmek',
+              lines: [
+                'Telsizin destekliyorsa DSC menüsünden iptal et.',
+                'Kanal 16’da: "ALL STATIONS, ALL STATIONS, ALL STATIONS"',
+                '"THIS IS Puffin, Puffin, Puffin, call sign Papa Delta One Two Tree Fower, MMSI two four four …"',
+                '"Please cancel my distress alert of one four two five UTC. OUT."',
+              ],
+            },
+          },
+          { list: ['**GMDSS deniz alanları**: A1 bir kıyı istasyonunun VHF menzilinde (VHF’de DSC), A2 MF menzili, A3 uydu kapsamı, A4 kutup suları.', 'Kıyı istasyonları hava ve seyir uyarılarını (MSI) 16’da duyurduktan sonra yayınlar. Hollanda Sahil Güvenliği 23 ve 83 kanallarını kullanır.'] },
+        ],
+      },
+      {
+        h: 'VHF pratik telsizinde pratik yap',
+        blocks: [
+          { p: 'radio.mteke.com adresindeki **VHF pratik telsizi** ortak bir eğitim telsizidir: gerçek sesler, gerçek kanallar, DSC tuşu ve prosedür kartları – ama gerçek bir sahil güvenlik yok. Bir arkadaşınla ya da kulüpten biriyle pratik yap; biri tekneyi, diğeri Sahil Güvenlik’i ya da limanı oynar.' },
+          {
+            steps: [
+              'Aşağıdan **Google ile giriş yap**. Telsizi sadece giriş yapan denizciler açabilir; diğerleri yalnızca seçtiğin tekne ya da istasyon adını görür.',
+              'Bir **rol** seç: Vessel (denizdeki tekne), Coast Guard (DSC alarmlarını onaylar ve tehlikeyi yönetir), Port Control (liman) ya da Instructor (tüm kanalları duyar).',
+              'Bir **tekne ya da istasyon adı**, uydurma bir **çağrı işareti** ve **MMSI** gir. Asla bir teknenin gerçek MMSI’sini kullanma.',
+              'Partnerinle bir **tatbikat kodunda** anlaşın (ör. VHF-4821) ve ikiniz de girin. Aynı koda sahip herkes aynı "deniz"dedir.',
+              '**Join exercise**’e bas ve **mikrofona** izin ver. Hoparlörden gelen ses mikrofona yankı yapmasın diye **kulaklık** kullan.',
+            ],
+          },
+          { img: { src: '/academy/vhf/join.webp', alt: 'Tatbikata katılmak: rol, tekne adı, çağrı işareti, MMSI ve ortak tatbikat kodu.' } },
+          {
+            steps: [
+              '**Ekranı** oku: büyük sayı kanalın; STANDBY sessiz demek, RX ve isim kimin konuştuğunu gösterir, TX senin yayında olduğun anlamına gelir.',
+              'Konuşurken **PUSH TO TALK**’u (ya da **boşluk** tuşunu) **basılı tut**, dinlemek için bırak – tıpkı gerçek bir telsiz gibi. Bir yayın 60 saniye sonra kesilir.',
+              'Kanalı **CH ▲ / CH ▼**, listeden ya da kırmızı **16** tuşuyla değiştir. Sadece kendi kanalındaki istasyonları duyarsın.',
+              'Tehlike için: **türü** seç, bir mevki belirle (**Wadden Sea pos** rastgele verir, **GPS** seninkini kullanır) ve **DISTRESS’i 5 saniye basılı tut**. Tüm istasyonlara alarm gider; telsiz sesli MAYDAY için 16’ya geçer.',
+              '**Coast Guard** **Acknowledge (DSC)**’ye basar ve 16’dan cevap verir. **Prosedür kartları** isimler, çağrı işaretleri ve mevkiyle kendiliğinden dolar – ezberleyene kadar yüksek sesle oku.',
+              '**Tatbikat kaydı** her yayını ve alarmı saatiyle tutar. Sonrasında değerlendirme için indir.',
+            ],
+          },
+          { img: { src: '/academy/vhf/vessel.webp', alt: 'DSC alarmı onaylandıktan sonra kanal 16’da yayın yapan tekne; MAYDAY kartı kendiliğinden doldu.' } },
+          { img: { src: '/academy/vhf/coast.webp', alt: 'Sahil Güvenlik görünümü: DSC tehlike alarmı, tekneden RX ve onay kartı.' } },
+          { widget: 'vhfRadio' },
+          {
+            list: [
+              '**Teknede yangın** – tekne DSC alarmı (Fire, explosion) ve sesli MAYDAY gönderir; Sahil Güvenlik onaylar, teknedeki kişi sayısını ve can kurtarma ekipmanını sorar ve SEELONCE MAYDAY ilan eder.',
+              '**Motor arızası** – tekne 16’dan PAN-PAN çağırır; Sahil Güvenlik görüşmeyi kanal 23’e taşır, mevkiyi, sürüklenmeyi ve demirlemenin mümkün olup olmadığını sorar.',
+              '**Limana giriş** – tekne kanal 12’den Port Control’den giriş izni ve yer ister.',
+              '**Seyir uyarısı** – bir istasyon 16’dan SÉCURITÉ duyurur ve uyarıyı kanal 67’de okur.',
+              '**Yanlış alarm** – DISTRESS’e yanlışlıkla bas, sonra cancel (false alert) ile ve 16’dan sesli olarak iptal et.',
+            ],
+          },
+          { warn: 'Bu bir eğitim telsizidir. Asla gerçek bir VHF’te pratik yapma: gerçek bir MAYDAY ya da DSC alarmı gerçek bir kurtarma başlatır.' },
+        ],
+      },
+    ],
+    check: [
+      { q: 'Akşamki demir yeri hakkında konuşmak için başka bir yatı çağırmak istiyorsun. Nerede?', options: ['16’da temas kur, sonra 72 gibi bir gemiden gemiye kanala geç', '16’da kal', 'Kanal 70', 'Kanal 13'], answer: 0, why: '16 sadece ilk temas için; 70 sadece DSC, 13 ise büyük gemiler arası seyir emniyeti içindir.' },
+      { q: 'Telsizde 3 sayısı nasıl söylenir?', options: ['Tree', 'Three', 'Tri', 'Thuree'], answer: 0, why: 'Telsiz sayıları gürültüde anlaşılsın diye Tree, Fower, Fife ve Niner’dır.' },
+      { q: 'Hangi prosedür kelimesi konuşmayı bitirir?', options: ['OUT', 'OVER', 'OVER AND OUT', 'ROGER'], answer: 0, why: 'OUT bitirir; OVER cevap ister. "Over and out" kendi içinde çelişkilidir.' },
+      { q: 'Kimsenin cevap vermediği bir MAYDAY duyuyorsun ve tehlikedeki tekneye ulaşamıyorsun. Ne gönderirsin?', options: ['MAYDAY RELAY', 'SÉCURITÉ', 'PAN-PAN', 'Hiçbir şey'], answer: 0, why: 'MAYDAY RELAY tehlikeyi kıyı istasyonuna ya da tüm gemilere iletir.' },
+      { q: 'DSC tehlike tuşuna yanlışlıkla bastın. Sonra…', options: ['İptal et ve iptali 16’dan ALL STATIONS’a duyur', 'Telsizi kapat ve hiçbir şey söyleme', 'PAN-PAN gönder', 'Can botunu bekle'], answer: 0, why: 'Hemen iptal et ve kurtarma başlamasın diye 16’dan herkese söyle.' },
     ],
   },
 }

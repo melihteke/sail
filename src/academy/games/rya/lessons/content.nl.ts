@@ -1072,6 +1072,7 @@ export const lessonsNl: LessonSet = {
             ],
           },
           { warn: 'Zeg nooit "over and out". Niet kletsen – alleen essentiële informatie.' },
+          { tip: 'Meer over kanalen, procedurewoorden, MAYDAY RELAY en DSC, en live oefenen met andere zeilers: de les **Marifoon: kanalen, procedures en live oefenen**.' },
           { game: 'vhf' },
         ],
       },
@@ -1101,6 +1102,224 @@ export const lessonsNl: LessonSet = {
       { q: 'Hoe lang houd je de DSC-noodknop ingedrukt?', options: ['5 seconden', 'Even kort', 'Tot iemand antwoordt', '1 minuut'], answer: 0, why: 'Vijf seconden verstuurt het alarm.' },
       { q: 'Hoe eindig je een Mayday-bericht?', options: ['"Over"', '"Over and out"', '"Out"', '"Dank u"'], answer: 0, why: '"Over" betekent dat je op antwoord wacht; "over and out" wordt nooit gebruikt.' },
       { q: 'Een helikopter laat een hi-line zakken. Je…', options: ['laat hem het water raken, pakt hem dan – nooit vastmaken', 'vangt hem in de lucht', 'maakt hem vast aan een kikker', 'snijdt hem door'], answer: 0, why: 'Hij ontlaadt statische elektriciteit in het water; vastgemaakt kan hij de helikopter omlaag trekken.' },
+    ],
+  },
+  radio: {
+    title: 'Marifoon: kanalen, procedures en live oefenen',
+    summary: 'Hoe een marifoon werkt, welk kanaal je gebruikt, hoe je spreekt en spelt, routine- en noodoproepen en DSC in detail – en daarna oefenen met andere zeilers op de oefenmarifoon.',
+    sections: [
+      {
+        h: 'De marifoon',
+        blocks: [
+          { p: 'VHF werkt **op zicht**: ongeveer 20–30 mijl van een jacht naar een kuststation met een hoge antenne, veel minder van jacht tot jacht of met een handmarifoon. **Er kan maar één station tegelijk praten**: houd de spreektoets (**PTT**) ingedrukt, spreek en laat los om te luisteren.' },
+          {
+            table: {
+              head: ['Knop', 'Wat hij doet'],
+              rows: [
+                ['**16 / 9**-toets', 'Springt direct naar het aanroep- en noodkanaal.'],
+                ['**H/L** (25 W / 1 W)', 'Gebruik **laag vermogen** in de haven en dichtbij; **hoog vermogen** voor afstand en bij nood.'],
+                ['**Squelch**', 'Draai open tot de ruis net stopt. Te hoog en je mist zwakke stations.'],
+                ['**Dual / tri watch**', 'Luistert 16 mee terwijl je op een ander kanaal staat. Geen vervanging voor echte uitluistering op 16 op zee.'],
+                ['**DSC**-noodknop', 'Onder een klepje. Verstuurt een digitaal noodalarm met je MMSI en positie (GPS-aansluiting nodig).'],
+              ],
+            },
+          },
+          { list: ['Voor een marifoon heb je een bedieningscertificaat nodig (**SRC** of het Marifoonbedieningscertificaat) en een machtiging voor het schip.', 'De machtiging geeft het jacht een **roepnaam** (bijv. PD1234) en een **MMSI** van 9 cijfers (Nederlandse MMSI’s beginnen met 244, 245 of 246).', 'Een handmarifoon is ideaal als reserve en in de bijboot, maar vanaf dekhoogte reikt hij maar een paar mijl.'] },
+        ],
+      },
+      {
+        h: 'Welk kanaal?',
+        blocks: [
+          {
+            table: {
+              head: ['Kanaal', 'Gebruik', 'Let op'],
+              rows: [
+                ['**16**', 'Nood, veiligheid en aanroep', 'Hier luister je op zee. Roep aan en ga naar een werkkanaal. Nooit kletsen.'],
+                ['**70**', 'Alleen DSC', 'Digitale alarmen – nooit spraak.'],
+                ['**06**', 'Schip–schip, opsporing en redding ter plaatse', 'Ook helikopters en reddingboten gebruiken dit met schepen.'],
+                ['**08, 69, 72, 77**', 'Werkkanalen schip–schip', 'Spreek er een af op 16 en schakel over.'],
+                ['**12, 14**', 'Havendienst, VTS', 'Gebruik het kanaal uit de almanak voor elke haven of elk verkeersgebied.'],
+                ['**13**', 'Brug-tot-brug navigatieveiligheid', 'Grote schepen stemmen hier hun passages af.'],
+                ['**23, 83**', 'Werkkanalen van de Kustwacht', 'Veiligheids- en weerberichten worden op 16 aangekondigd.'],
+                ['**31 / 80 / M**', 'Jachthavens', 'Nederlandse havens gebruiken vaak 31, Britse 80 of M (37).'],
+                ['**10**', 'Schip–schip op de Nederlandse en Belgische binnenwateren', 'Op rivieren en kanalen (bijv. de Rijn) moet **ATIS** aan staan.'],
+              ],
+            },
+          },
+          { tip: 'Luister een paar seconden voordat je iemand aanroept. Door een ander station heen praten heet doubling: geen van beide berichten komt aan.' },
+        ],
+      },
+      {
+        h: 'Spreken en spellen',
+        blocks: [
+          { p: 'Spreek langzaam en duidelijk, houd de microfoon een paar centimeter van je mond en zeg **getallen cijfer voor cijfer**. Spel namen met het spellingsalfabet.' },
+          {
+            table: {
+              head: ['A–I', 'J–R', 'S–Z', 'Cijfers'],
+              rows: [
+                ['A Alfa', 'J Juliett', 'S Sierra', '0 Zero'],
+                ['B Bravo', 'K Kilo', 'T Tango', '1 One'],
+                ['C Charlie', 'L Lima', 'U Uniform', '2 Two'],
+                ['D Delta', 'M Mike', 'V Victor', '3 **Tree**'],
+                ['E Echo', 'N November', 'W Whiskey', '4 **Fower**'],
+                ['F Foxtrot', 'O Oscar', 'X X-ray', '5 **Fife**'],
+                ['G Golf', 'P Papa', 'Y Yankee', '6 Six, 7 Seven'],
+                ['H Hotel', 'Q Quebec', 'Z Zulu', '8 **Ait**'],
+                ['I India', 'R Romeo', '', '9 **Niner**'],
+              ],
+            },
+          },
+          {
+            table: {
+              head: ['Procedurewoord', 'Betekenis'],
+              rows: [
+                ['THIS IS', 'Komt voor je eigen naam.'],
+                ['OVER', 'Ik ben klaar en verwacht je antwoord.'],
+                ['OUT', 'Einde van het gesprek, geen antwoord nodig. Nooit "over and out".'],
+                ['RECEIVED', 'Ik heb je bericht ontvangen.'],
+                ['SAY AGAIN', 'Herhaal je laatste bericht (of het deel dat ik noem).'],
+                ['I SPELL', 'Er volgt een spelling.'],
+                ['CORRECTION', 'Ik vergiste me; de juiste versie volgt.'],
+                ['WAIT … MINUTES', 'Ik moet even pauzeren; blijf stand-by.'],
+                ['ALL STATIONS', 'Een bericht voor iedereen die luistert.'],
+                ['STATION CALLING', 'Ik hoorde een oproep, maar niet van wie.'],
+              ],
+            },
+          },
+        ],
+      },
+      {
+        h: 'Een routineoproep',
+        blocks: [
+          { p: 'Roep met de naam van het andere station **twee keer**, je eigen naam **twee keer**, stel een werkkanaal voor en zeg over. Houd het kort; het kanaal wordt gedeeld.' },
+          {
+            ex: {
+              title: 'Jacht Puffin vraagt de haven om een ligplaats',
+              lines: [
+                'Puffin: "Den Helder Marina, Den Helder Marina, this is yacht Puffin, Puffin, over."',
+                'Haven: "Puffin, this is Den Helder Marina, go ahead, over."',
+                'Puffin: "Puffin. Request a berth for one night, length eleven metres, draught one decimal eight metres, ETA one five tree zero, over."',
+                'Haven: "Puffin, Den Helder Marina. Pontoon Charlie, box one two, port side to, over."',
+                'Puffin: "Pontoon Charlie, box one two, port side to. Puffin, out."',
+              ],
+            },
+          },
+          { tip: 'Maak op 16 alleen het eerste contact. Spreek een werkkanaal af ("channel seven two") en ga daar verder.' },
+        ],
+      },
+      {
+        h: 'Nood, spoed en veiligheid op de marifoon',
+        blocks: [
+          { p: 'Oproepen met voorrang onderbreken al het andere. De les **Noodoproepen en calamiteiten** legt uit wanneer je welke gebruikt en geeft de volledige gesproken MAYDAY; hier staat wat je verder op kanaal 16 hoort.' },
+          {
+            table: {
+              head: ['Oproep', 'Voorrang', 'Voorbeeld'],
+              rows: [
+                ['**MAYDAY**', 'Nood: ernstig en direct gevaar', 'Onbeheersbare brand, zinken, man overboord'],
+                ['**PAN-PAN**', 'Spoed: geen direct levensgevaar', 'Motorpech bij een ondiepte, gewonde bemanning'],
+                ['**SÉCURITÉ**', 'Veiligheidsinformatie', 'Drijvende container, stormwaarschuwing'],
+              ],
+            },
+          },
+          {
+            ex: {
+              title: 'MAYDAY RELAY – een noodoproep doorgeven waar niemand op antwoordt',
+              lines: [
+                '"MAYDAY RELAY, MAYDAY RELAY, MAYDAY RELAY"',
+                '"ALL STATIONS, ALL STATIONS, ALL STATIONS (of het kuststation ×3)"',
+                '"THIS IS yacht Puffin, Puffin, Puffin, call sign Papa Delta One Two Tree Fower"',
+                '"Following received from yacht Sea Breeze at one four tree zero UTC:"',
+                '"MAYDAY Sea Breeze, position …, on fire, four persons on board, require immediate assistance, OVER"',
+              ],
+            },
+          },
+          {
+            table: {
+              head: ['Radiostilte', 'Betekenis'],
+              rows: [
+                ['SEELONCE MAYDAY', 'Alleen het station dat de nood leidt gebruikt dit: alle anderen stoppen met zenden.'],
+                ['PRUDONCE', 'Beperkt verkeer mag weer; de noodsituatie is nog niet voorbij.'],
+                ['SEELONCE FEENEE', 'De noodsituatie is voorbij; normaal verkeer mag weer.'],
+              ],
+            },
+          },
+          { warn: 'Hoor je een MAYDAY? **Schrijf hem op** (tijd, naam, positie, aard), zwijg en luister. Antwoordt het kuststation niet binnen een paar minuten en kun je helpen, bevestig dan; anders stuur je een MAYDAY RELAY.' },
+        ],
+      },
+      {
+        h: 'DSC in detail',
+        blocks: [
+          { p: 'Digital Selective Calling verstuurt een kort digitaal bericht op kanaal **70**. Elke DSC-marifoon binnen bereik geeft alarm en toont wie roept, waar en waarom.' },
+          {
+            table: {
+              head: ['DSC-oproep', 'Gebruik'],
+              rows: [
+                ['**Distress**', 'Rode knop, 5 seconden ingedrukt. Wordt automatisch herhaald tot een kuststation bevestigt.'],
+                ['**Urgency / Safety** (alle schepen)', 'Kondigt een PAN-PAN of SÉCURITÉ aan; het bericht volgt gesproken op 16.'],
+                ['**Individual / routine**', 'Roept één schip op MMSI, zoals een telefoontje, en zet beide marifoons op het werkkanaal dat je kiest.'],
+              ],
+            },
+          },
+          {
+            ex: {
+              title: 'Een vals DSC-alarm annuleren',
+              lines: [
+                'Annuleer via het DSC-menu als je marifoon dat kan.',
+                'Op kanaal 16: "ALL STATIONS, ALL STATIONS, ALL STATIONS"',
+                '"THIS IS Puffin, Puffin, Puffin, call sign Papa Delta One Two Tree Fower, MMSI two four four …"',
+                '"Please cancel my distress alert of one four two five UTC. OUT."',
+              ],
+            },
+          },
+          { list: ['**GMDSS-zeegebieden**: A1 binnen VHF-bereik van een kuststation (DSC op VHF), A2 MF-bereik, A3 satellietdekking, A4 poolgebieden.', 'Kuststations zenden weer- en navigatieberichten (MSI) uit na een aankondiging op 16. De Nederlandse Kustwacht gebruikt kanaal 23 en 83.'] },
+        ],
+      },
+      {
+        h: 'Oefenen op de oefenmarifoon',
+        blocks: [
+          { p: 'De **oefenmarifoon** op radio.mteke.com is een gedeelde trainingsmarifoon: echte stemmen, echte kanalen, een DSC-knop en procedurekaarten – maar geen echte Kustwacht. Oefen met een vriend of clubgenoot; de een speelt het jacht, de ander de Kustwacht of de haven.' },
+          {
+            steps: [
+              '**Log hieronder in met Google**. Alleen ingelogde zeilers kunnen de marifoon openen; anderen zien alleen de schips- of stationsnaam die je kiest.',
+              'Kies een **rol**: Vessel (jacht op zee), Coast Guard (bevestigt DSC-alarmen en leidt de noodsituatie), Port Control (haven) of Instructor (hoort alle kanalen).',
+              'Vul een **schips- of stationsnaam** in en een verzonnen **roepnaam** en **MMSI**. Gebruik nooit het echte MMSI van een schip.',
+              'Spreek een **oefencode** af (bijv. VHF-4821) en vul die allebei in. Iedereen met dezelfde code zit op dezelfde "zee".',
+              'Druk op **Join exercise** en geef toegang tot de **microfoon**. Gebruik een **koptelefoon** zodat je luidspreker niet in de microfoon echoot.',
+            ],
+          },
+          { img: { src: '/academy/vhf/join.webp', alt: 'Meedoen aan een oefening: rol, schipsnaam, roepnaam, MMSI en de gedeelde oefencode.' } },
+          {
+            steps: [
+              'Lees het **display**: het grote getal is je kanaal; STANDBY is stil, RX met een naam laat zien wie praat, TX betekent dat jij zendt.',
+              '**Houd PUSH TO TALK ingedrukt** (of de **spatiebalk**) terwijl je praat en laat los om te luisteren – precies als een echte marifoon. Een uitzending stopt na 60 seconden.',
+              'Wissel van kanaal met **CH ▲ / CH ▼**, de lijst of de rode **16**-toets. Je hoort alleen stations op je eigen kanaal.',
+              'Bij nood: kies de **aard**, stel een positie in (**Wadden Sea pos** geeft een willekeurige, **GPS** gebruikt de jouwe) en **houd DISTRESS 5 seconden ingedrukt**. Alle stations krijgen het alarm; de marifoon gaat naar 16 voor je gesproken MAYDAY.',
+              'De **Coast Guard** drukt op **Acknowledge (DSC)** en antwoordt op 16. De **procedurekaarten** vullen zichzelf met namen, roepnamen en positie – lees ze hardop tot je ze kent.',
+              'Het **oefenlogboek** registreert elke uitzending en elk alarm met de tijd. Download het na afloop om na te bespreken.',
+            ],
+          },
+          { img: { src: '/academy/vhf/vessel.webp', alt: 'Het jacht zendt op kanaal 16 nadat zijn DSC-alarm is bevestigd; de MAYDAY-kaart is automatisch ingevuld.' } },
+          { img: { src: '/academy/vhf/coast.webp', alt: 'Het beeld van de Kustwacht: het DSC-noodalarm, RX van het jacht en de bevestigingskaart.' } },
+          { widget: 'vhfRadio' },
+          {
+            list: [
+              '**Brand aan boord** – het jacht stuurt een DSC-alarm (Fire, explosion) en een gesproken MAYDAY; de Kustwacht bevestigt, vraagt naar personen aan boord en reddingsmiddelen en legt SEELONCE MAYDAY op.',
+              '**Motorpech** – het jacht roept PAN-PAN op 16; de Kustwacht gaat naar kanaal 23 en vraagt naar positie, drift en of ankeren mogelijk is.',
+              '**Haven binnenlopen** – het jacht vraagt de havendienst op kanaal 12 om toestemming en een ligplaats.',
+              '**Navigatiewaarschuwing** – een station kondigt SÉCURITÉ aan op 16 en leest de waarschuwing voor op kanaal 67.',
+              '**Vals alarm** – druk per ongeluk op DISTRESS en annuleer met cancel (false alert) en gesproken op 16.',
+            ],
+          },
+          { warn: 'Dit is een oefenmarifoon. Oefen nooit op een echte marifoon: een echte MAYDAY of DSC-melding start een echte reddingsactie.' },
+        ],
+      },
+    ],
+    check: [
+      { q: 'Je wilt een ander jacht oproepen om de ankerplek van vanavond te bespreken. Waar?', options: ['Contact maken op 16 en dan naar een schip–schipkanaal zoals 72', 'Op 16 blijven', 'Kanaal 70', 'Kanaal 13'], answer: 0, why: '16 is alleen voor het eerste contact; 70 is alleen DSC en 13 is voor navigatieveiligheid tussen grote schepen.' },
+      { q: 'Hoe zeg je het cijfer 3 op de marifoon?', options: ['Tree', 'Three', 'Tri', 'Thuree'], answer: 0, why: 'De marifooncijfers zijn Tree, Fower, Fife en Niner, zodat ze door ruis heen verstaanbaar zijn.' },
+      { q: 'Welk procedurewoord beëindigt een gesprek?', options: ['OUT', 'OVER', 'OVER AND OUT', 'ROGER'], answer: 0, why: 'OUT beëindigt; OVER vraagt om antwoord. "Over and out" spreekt zichzelf tegen.' },
+      { q: 'Je hoort een MAYDAY waar niemand op reageert en je kunt het schip in nood niet bereiken. Wat stuur je?', options: ['MAYDAY RELAY', 'SÉCURITÉ', 'PAN-PAN', 'Niets'], answer: 0, why: 'Een MAYDAY RELAY geeft de noodoproep door aan het kuststation of alle schepen.' },
+      { q: 'Je drukte per ongeluk op de DSC-noodknop. Dan…', options: ['Annuleren en de annulering aan ALL STATIONS op 16 melden', 'De marifoon uitzetten en niets zeggen', 'Een PAN-PAN sturen', 'Op de reddingboot wachten'], answer: 0, why: 'Annuleer direct en meld het op 16 zodat er geen reddingsactie start.' },
     ],
   },
 }

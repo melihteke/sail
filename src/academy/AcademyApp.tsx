@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import "./academy.css";
 import { I18nProvider } from "./i18n";
 import { Hub } from "./shell/Hub";
+import { useReturnAfterSignIn } from "./games/radio/returnAfterSignIn";
 
 /** Each module is loaded on demand so the hub opens fast. */
 function load<K extends string>(factory: () => Promise<Record<K, ComponentType>>, name: K) {
@@ -30,9 +31,16 @@ const PassagePlanning = load(() => import("./games/rya/almanac/PassagePlanningPa
 const PassageScenario = load(() => import("./games/rya/almanac/PassagePlanningPage"), "ScenarioRoute");
 const WeatherLesson = load(() => import("./games/rya/weather/WeatherPage"), "WeatherPage");
 
+/** Small, eager: sends the visitor back to the module that started a Google sign-in. */
+function ReturnAfterSignIn() {
+  useReturnAfterSignIn();
+  return null;
+}
+
 function AcademyLayout() {
   return (
     <div className="academy">
+      <ReturnAfterSignIn />
       <Suspense fallback={<div className="p-8 text-center text-sm text-slate-500">…</div>}>
         <Outlet />
       </Suspense>
@@ -59,6 +67,7 @@ export default function AcademyApp() {
             <Route path="sail-trim" element={<TrimModule />} />
             <Route path="sextant" element={<SextantModule />} />
             <Route path="race" element={<RaceModule />} />
+            <Route path="radio" element={<Navigate to="/rya/learn/radio" replace />} />
             <Route path="rya" element={<RyaSyllabus />} />
             <Route path="rya/learn" element={<LessonIndex />} />
             <Route path="rya/learn/passage-planning" element={<PassagePlanning />} />

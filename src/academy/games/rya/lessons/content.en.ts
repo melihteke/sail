@@ -1072,6 +1072,7 @@ export const lessonsEn: LessonSet = {
             ],
           },
           { warn: 'Never say "over and out". Do not chat – only vital information.' },
+          { tip: 'More about channels, procedure words, MAYDAY RELAY and DSC, plus live practice with other sailors: lesson **VHF radio: channels, procedures and live practice**.' },
           { game: 'vhf' },
         ],
       },
@@ -1101,6 +1102,224 @@ export const lessonsEn: LessonSet = {
       { q: 'How long do you hold the DSC distress button?', options: ['5 seconds', 'A quick press', 'Until someone answers', '1 minute'], answer: 0, why: 'Five seconds sends the alert.' },
       { q: 'How do you end a Mayday message?', options: ['"Over"', '"Over and out"', '"Out"', '"Thank you"'], answer: 0, why: '"Over" means you are waiting for an answer; "over and out" is never used.' },
       { q: 'A helicopter lowers a hi-line. You…', options: ['let it touch the water, then handle it – never tie it on', 'catch it in the air', 'tie it to a cleat', 'cut it'], answer: 0, why: 'It discharges static in the water; tied on it could pull the helicopter down.' },
+    ],
+  },
+  radio: {
+    title: 'VHF radio: channels, procedures and live practice',
+    summary: 'How a marine VHF works, which channel to use, how to speak and spell on the radio, routine and distress calls, DSC in depth – then practise with other sailors on the VHF practice radio.',
+    sections: [
+      {
+        h: 'The marine VHF set',
+        blocks: [
+          { p: 'VHF works by **line of sight**: about 20–30 NM from a yacht to a coast station with a high aerial, much less yacht to yacht or with a handheld. Only **one station can talk at a time**: hold the press-to-talk button (**PTT**), speak, release it to listen.' },
+          {
+            table: {
+              head: ['Control', 'What it does'],
+              rows: [
+                ['**16 / 9** key', 'Jumps straight to the calling and distress channel.'],
+                ['**H/L** (25 W / 1 W)', 'Use **low power** in harbour and close by; **high power** for distance and for distress.'],
+                ['**Squelch**', 'Turn it up until the hiss just stops. Too high and you miss weak stations.'],
+                ['**Dual / tri watch**', 'Listens to 16 while you are on another channel. Not a replacement for a proper watch on 16 at sea.'],
+                ['**DSC** red button', 'Under a cover. Sends a digital distress alert with your MMSI and position (needs a GPS feed).'],
+              ],
+            },
+          },
+          { list: ['To use a marine VHF you need an operator certificate (**SRC**, in the Netherlands the Marifoonbedieningscertificaat) and a ship radio licence.', 'The licence gives the yacht a **call sign** (e.g. PD1234) and a 9-digit **MMSI** (Dutch MMSIs start with 244, 245 or 246).', 'A handheld VHF is ideal as a back-up and in the dinghy, but its range from deck level is only a few miles.'] },
+        ],
+      },
+      {
+        h: 'Which channel?',
+        blocks: [
+          {
+            table: {
+              head: ['Channel', 'Use', 'Notes'],
+              rows: [
+                ['**16**', 'Distress, safety and calling', 'Listen here at sea. Call, then move to a working channel. Never chat.'],
+                ['**70**', 'DSC only', 'Digital alerts – never voice.'],
+                ['**06**', 'Ship–ship, search and rescue on scene', 'Also used by helicopters and lifeboats with vessels.'],
+                ['**08, 69, 72, 77**', 'Ship–ship working channels', 'Agree one on 16, then switch.'],
+                ['**12, 14**', 'Port operations, VTS', 'Use the channel listed in the almanac for each port or traffic area.'],
+                ['**13**', 'Bridge-to-bridge navigation safety', 'Big ships coordinate passing here.'],
+                ['**23, 83**', 'Dutch Coastguard working channels', 'Safety and weather broadcasts are announced on 16.'],
+                ['**31 / 80 / M**', 'Marinas', 'NL marinas often use 31, UK marinas 80 or M (37).'],
+                ['**10**', 'Ship–ship on Dutch and Belgian inland waters', 'On rivers and canals (e.g. the Rhine) **ATIS** must be switched on.'],
+              ],
+            },
+          },
+          { tip: 'Before calling anyone, **listen** for a few seconds. Talking over another station is called doubling: neither message gets through.' },
+        ],
+      },
+      {
+        h: 'Speaking and spelling',
+        blocks: [
+          { p: 'Speak slowly and clearly, hold the microphone a few centimetres from your mouth and say **numbers digit by digit**. Spell names with the phonetic alphabet.' },
+          {
+            table: {
+              head: ['A–I', 'J–R', 'S–Z', 'Numbers'],
+              rows: [
+                ['A Alfa', 'J Juliett', 'S Sierra', '0 Zero'],
+                ['B Bravo', 'K Kilo', 'T Tango', '1 One'],
+                ['C Charlie', 'L Lima', 'U Uniform', '2 Two'],
+                ['D Delta', 'M Mike', 'V Victor', '3 **Tree**'],
+                ['E Echo', 'N November', 'W Whiskey', '4 **Fower**'],
+                ['F Foxtrot', 'O Oscar', 'X X-ray', '5 **Fife**'],
+                ['G Golf', 'P Papa', 'Y Yankee', '6 Six, 7 Seven'],
+                ['H Hotel', 'Q Quebec', 'Z Zulu', '8 **Ait**'],
+                ['I India', 'R Romeo', '', '9 **Niner**'],
+              ],
+            },
+          },
+          {
+            table: {
+              head: ['Proword', 'Meaning'],
+              rows: [
+                ['THIS IS', 'Comes before your own name.'],
+                ['OVER', 'I have finished, I expect your reply.'],
+                ['OUT', 'End of the conversation, no reply expected. Never "over and out".'],
+                ['RECEIVED', 'I have received your message.'],
+                ['SAY AGAIN', 'Repeat your last message (or the part you name).'],
+                ['I SPELL', 'Phonetic spelling follows.'],
+                ['CORRECTION', 'I made a mistake; the correct version follows.'],
+                ['WAIT … MINUTES', 'I must pause; stand by.'],
+                ['ALL STATIONS', 'A broadcast to everyone listening.'],
+                ['STATION CALLING', 'I heard a call but not who made it.'],
+              ],
+            },
+          },
+        ],
+      },
+      {
+        h: 'A routine call',
+        blocks: [
+          { p: 'Call with the other station\'s name **twice**, your own name **twice**, propose a working channel and say over. Keep it short; the channel is shared.' },
+          {
+            ex: {
+              title: 'Yacht Puffin asks the marina for a berth',
+              lines: [
+                'Puffin: "Den Helder Marina, Den Helder Marina, this is yacht Puffin, Puffin, over."',
+                'Marina: "Puffin, this is Den Helder Marina, go ahead, over."',
+                'Puffin: "Puffin. Request a berth for one night, length eleven metres, draught one decimal eight metres, ETA one five tree zero, over."',
+                'Marina: "Puffin, Den Helder Marina. Pontoon Charlie, box one two, port side to, over."',
+                'Puffin: "Pontoon Charlie, box one two, port side to. Puffin, out."',
+              ],
+            },
+          },
+          { tip: 'On 16 only make the first contact. Agree a working channel ("channel seven two") and continue there.' },
+        ],
+      },
+      {
+        h: 'Distress, urgency and safety on the radio',
+        blocks: [
+          { p: 'Priority calls interrupt everything else. The lesson **Distress calls and emergencies** explains when to use each one and the full voice MAYDAY; here is what else you will hear on channel 16.' },
+          {
+            table: {
+              head: ['Call', 'Priority', 'Example'],
+              rows: [
+                ['**MAYDAY**', 'Distress: grave and imminent danger', 'Fire out of control, sinking, man overboard'],
+                ['**PAN-PAN**', 'Urgency: no immediate danger to life', 'Engine failure near shoals, injured crew'],
+                ['**SÉCURITÉ**', 'Safety information', 'Drifting container, gale warning'],
+              ],
+            },
+          },
+          {
+            ex: {
+              title: 'MAYDAY RELAY – passing on a distress nobody has answered',
+              lines: [
+                '"MAYDAY RELAY, MAYDAY RELAY, MAYDAY RELAY"',
+                '"ALL STATIONS, ALL STATIONS, ALL STATIONS (or the coast station ×3)"',
+                '"THIS IS yacht Puffin, Puffin, Puffin, call sign Papa Delta One Two Tree Fower"',
+                '"Following received from yacht Sea Breeze at one four tree zero UTC:"',
+                '"MAYDAY Sea Breeze, position …, on fire, four persons on board, require immediate assistance, OVER"',
+              ],
+            },
+          },
+          {
+            table: {
+              head: ['Radio silence', 'Meaning'],
+              rows: [
+                ['SEELONCE MAYDAY', 'Only the station controlling the distress uses it: everyone else stops transmitting.'],
+                ['PRUDONCE', 'Restricted working may resume; the distress is not over yet.'],
+                ['SEELONCE FEENEE', 'The distress is over; normal traffic may resume.'],
+              ],
+            },
+          },
+          { warn: 'Hear a MAYDAY? **Write it down** (time, name, position, nature), stay quiet and listen. If the coast station does not answer within a few minutes and you can help, acknowledge it; otherwise send a MAYDAY RELAY.' },
+        ],
+      },
+      {
+        h: 'DSC in detail',
+        blocks: [
+          { p: 'Digital Selective Calling sends a short digital message on channel **70**. Every DSC set in range sounds an alarm and shows who is calling, where and why.' },
+          {
+            table: {
+              head: ['DSC call', 'Use'],
+              rows: [
+                ['**Distress**', 'Red button, held for 5 seconds. Repeated automatically until acknowledged by a coast station.'],
+                ['**Urgency / Safety** (all ships)', 'Announces a PAN-PAN or SÉCURITÉ; the message follows by voice on 16.'],
+                ['**Individual / routine**', 'Calls one vessel by MMSI, like a phone call, and switches both radios to the working channel you choose.'],
+              ],
+            },
+          },
+          {
+            ex: {
+              title: 'Cancelling a false DSC alert',
+              lines: [
+                'Cancel it in the DSC menu if your radio offers that.',
+                'On channel 16: "ALL STATIONS, ALL STATIONS, ALL STATIONS"',
+                '"THIS IS Puffin, Puffin, Puffin, call sign Papa Delta One Two Tree Fower, MMSI two four four …"',
+                '"Please cancel my distress alert of one four two five UTC. OUT."',
+              ],
+            },
+          },
+          { list: ['**GMDSS sea areas**: A1 within VHF range of a coast station (DSC on VHF), A2 MF range, A3 satellite coverage, A4 polar waters.', 'Coast stations broadcast weather and navigational warnings (MSI) after an announcement on 16. In the Netherlands the Coastguard uses channels 23 and 83.'] },
+        ],
+      },
+      {
+        h: 'Practise on the VHF practice radio',
+        blocks: [
+          { p: 'The **VHF practice radio** at radio.mteke.com is a shared training radio: real voices, real channels, a DSC button and procedure cards – but no real coastguard. Practise with a friend or a club mate; one plays the yacht, the other the Coast Guard or the harbour.' },
+          {
+            steps: [
+              '**Sign in with Google** below. Only signed-in sailors can open the radio; others only see the vessel or station name you choose.',
+              'Choose a **role**: Vessel (yacht at sea), Coast Guard (acknowledges DSC alerts and runs the distress), Port Control (harbour) or Instructor (hears every channel).',
+              'Enter a **vessel or station name**, and a made-up **call sign** and **MMSI**. Never use the real MMSI of a boat.',
+              'Agree an **exercise code** (e.g. VHF-4821) with your partner and both enter it. Everyone with the same code is on the same "sea".',
+              'Press **Join exercise** and allow the **microphone**. Use **headphones** so your speaker does not echo into the microphone.',
+            ],
+          },
+          { img: { src: '/academy/vhf/join.webp', alt: 'Joining an exercise: role, vessel name, call sign, MMSI and the shared exercise code.' } },
+          {
+            steps: [
+              'Read the **display**: the big number is your channel; STANDBY means quiet, RX and the name show who is talking, TX means you are transmitting.',
+              '**Hold PUSH TO TALK** (or the **Space** bar) while you speak and release it to listen – exactly like a real handset. A transmission stops after 60 seconds.',
+              'Change channel with **CH ▲ / CH ▼**, the list, or the red **16** key. You only hear stations on your own channel.',
+              'For a distress: pick the **nature**, set a position (**Wadden Sea pos** gives a random one, **GPS** uses yours) and **hold DISTRESS for 5 seconds**. Every station gets the alarm; the radio switches to 16 for your voice MAYDAY.',
+              'The **Coast Guard** presses **Acknowledge (DSC)** and answers on 16. The **procedure cards** fill themselves in with the names, call signs and position – read them aloud until you know them by heart.',
+              'The **exercise log** records every transmission and alert with the time. Download it afterwards to debrief.',
+            ],
+          },
+          { img: { src: '/academy/vhf/vessel.webp', alt: 'The yacht transmitting on channel 16 after its DSC alert was acknowledged; the MAYDAY card is filled in automatically.' } },
+          { img: { src: '/academy/vhf/coast.webp', alt: 'The Coast Guard view: the DSC distress alert, RX from the yacht and the acknowledgement card.' } },
+          { widget: 'vhfRadio' },
+          {
+            list: [
+              '**Fire on board** – the yacht sends a DSC alert (Fire, explosion) and a voice MAYDAY; the Coast Guard acknowledges, asks for persons on board and life-saving equipment, and imposes SEELONCE MAYDAY.',
+              '**Engine failure** – the yacht calls PAN-PAN on 16; the Coast Guard moves the call to channel 23 and asks for position, drift and whether anchoring is possible.',
+              '**Harbour entry** – the yacht calls Port Control on channel 12 for permission to enter and a berth.',
+              '**Navigational warning** – a station announces SÉCURITÉ on 16 and reads the warning on channel 67.',
+              '**False alert** – press DISTRESS by mistake, then cancel it with cancel (false alert) and by voice on 16.',
+            ],
+          },
+          { warn: 'This is a training radio. Never practise on a real VHF: a real MAYDAY or DSC alert starts a real rescue.' },
+        ],
+      },
+    ],
+    check: [
+      { q: 'You want to call another yacht for a chat about tonight\'s anchorage. Where?', options: ['Make contact on 16, then move to a ship–ship channel such as 72', 'Stay on 16', 'Channel 70', 'Channel 13'], answer: 0, why: '16 is only for the first contact; 70 is DSC only and 13 is for navigation safety between big ships.' },
+      { q: 'How do you say the number 3 on the radio?', options: ['Tree', 'Three', 'Tri', 'Thuree'], answer: 0, why: 'The radio numbers are Tree, Fower, Fife and Niner so they are understood through noise.' },
+      { q: 'Which proword ends a conversation?', options: ['OUT', 'OVER', 'OVER AND OUT', 'ROGER'], answer: 0, why: 'OUT ends it; OVER asks for a reply. "Over and out" is a contradiction.' },
+      { q: 'You hear a MAYDAY that nobody answers and you cannot reach the casualty. What do you send?', options: ['MAYDAY RELAY', 'SÉCURITÉ', 'PAN-PAN', 'Nothing'], answer: 0, why: 'A MAYDAY RELAY passes the distress on to the coast station or all ships.' },
+      { q: 'You pressed the DSC distress button by mistake. Then…', options: ['Cancel it and announce the cancellation to ALL STATIONS on 16', 'Switch the radio off and say nothing', 'Send a PAN-PAN', 'Wait for the lifeboat'], answer: 0, why: 'Cancel at once and tell everyone on 16 so no rescue is started.' },
     ],
   },
 }

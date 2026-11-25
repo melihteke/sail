@@ -48,10 +48,10 @@ export function useAuth() {
   return state;
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(redirectPath = "/admin/") {
   const supabase = getSupabase();
   if (!supabase) return;
-  const redirectTo = new URL(url("/admin/"), window.location.origin).toString();
+  const redirectTo = new URL(url(redirectPath), window.location.origin).toString();
   await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo, queryParams: { prompt: "select_account" } } });
 }
 
