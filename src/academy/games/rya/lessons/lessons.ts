@@ -18,7 +18,7 @@ export type Block =
   | { tip: string }
   | { warn: string }
   | { table: { head: string[]; rows: string[][] } }
-  | { img: { src: string; alt: string } }
+  | { img: { src: string; alt: string; width?: number } }
   | { widget: WidgetId }
   | { game: string }
 

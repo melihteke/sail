@@ -1287,7 +1287,7 @@ export const lessonsNl: LessonSet = {
               'Druk op **Join exercise** en geef toegang tot de **microfoon**. Gebruik een **koptelefoon** zodat je luidspreker niet in de microfoon echoot.',
             ],
           },
-          { img: { src: '/academy/vhf/join.webp', alt: 'Meedoen aan een oefening: rol, schipsnaam, roepnaam, MMSI en de gedeelde oefencode.' } },
+          { img: { src: '/academy/vhf/join.webp', alt: 'Meedoen aan een oefening: rol, schipsnaam, roepnaam, MMSI en de gedeelde oefencode.', width: 504 } },
           {
             steps: [
               'Lees het **display**: het grote getal is je kanaal; STANDBY is stil, RX met een naam laat zien wie praat, TX betekent dat jij zendt.',

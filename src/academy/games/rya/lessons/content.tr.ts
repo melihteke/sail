@@ -1287,7 +1287,7 @@ export const lessonsTr: LessonSet = {
               '**Join exercise**’e bas ve **mikrofona** izin ver. Hoparlörden gelen ses mikrofona yankı yapmasın diye **kulaklık** kullan.',
             ],
           },
-          { img: { src: '/academy/vhf/join.webp', alt: 'Tatbikata katılmak: rol, tekne adı, çağrı işareti, MMSI ve ortak tatbikat kodu.' } },
+          { img: { src: '/academy/vhf/join.webp', alt: 'Tatbikata katılmak: rol, tekne adı, çağrı işareti, MMSI ve ortak tatbikat kodu.', width: 504 } },
           {
             steps: [
               '**Ekranı** oku: büyük sayı kanalın; STANDBY sessiz demek, RX ve isim kimin konuştuğunu gösterir, TX senin yayında olduğun anlamına gelir.',

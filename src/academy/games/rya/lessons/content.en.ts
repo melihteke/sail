@@ -1287,7 +1287,7 @@ export const lessonsEn: LessonSet = {
               'Press **Join exercise** and allow the **microphone**. Use **headphones** so your speaker does not echo into the microphone.',
             ],
           },
-          { img: { src: '/academy/vhf/join.webp', alt: 'Joining an exercise: role, vessel name, call sign, MMSI and the shared exercise code.' } },
+          { img: { src: '/academy/vhf/join.webp', alt: 'Joining an exercise: role, vessel name, call sign, MMSI and the shared exercise code.', width: 504 } },
           {
             steps: [
               'Read the **display**: the big number is your channel; STANDBY means quiet, RX and the name show who is talking, TX means you are transmitting.',
